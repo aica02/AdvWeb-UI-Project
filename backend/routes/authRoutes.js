@@ -1,5 +1,4 @@
 import express from "express";
-import { registerUser, loginUser } from "../controllers/authControl.js";
 import { validateUserInput } from "../middleware/validateInput.js";
 import Joi from "joi";
 
@@ -16,7 +15,10 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-router.post("/register", validateUserInput(registerSchema), registerUser);
-router.post("/login", validateUserInput(loginSchema), loginUser);
+import { register, login } from "../controllers/authControl.js";
+
+
+router.post("/register", register);
+router.post("/login", login);
 
 export default router;
