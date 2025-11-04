@@ -3,7 +3,6 @@ import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL;
 
-
 function App() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [token, setToken] = useState("");
@@ -18,7 +17,11 @@ function App() {
     e.preventDefault();
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-      const { data } = await axios.post(`${API}${endpoint}`, form);
+      // Only send name for register
+      const payload = isLogin
+        ? { email: form.email, password: form.password }
+        : form;
+      const { data } = await axios.post(`${API}${endpoint}`, payload);
       setMessage(isLogin ? "Logged in successfully!" : "Registered successfully!");
       if (data.token) setToken(data.token);
     } catch (err) {
