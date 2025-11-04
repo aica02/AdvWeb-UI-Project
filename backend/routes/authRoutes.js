@@ -4,6 +4,9 @@ import Joi from "joi";
 
 const router = express.Router();
 
+import {register, login, forgotPassword, resetPassword} from "../controllers/authControl.js";
+
+
 const registerSchema = Joi.object({
   name: Joi.string().min(2).required(),
   email: Joi.string().email().required(),
@@ -15,10 +18,10 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-import { register, login } from "../controllers/authControl.js";
-
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 export default router;
