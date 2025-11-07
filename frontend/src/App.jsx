@@ -10,7 +10,7 @@ function App() {
   const [token, setToken] = useState(""); // For JWT or reset token
   const [message, setMessage] = useState("");
   const [isLogin, setIsLogin] = useState(false);
-  const [page, setPage] = useState("main"); // main, forgot, reset
+  const [page, setPage] = useState("main"); // main, forgot and reset password
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
