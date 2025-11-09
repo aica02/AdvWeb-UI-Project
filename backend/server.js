@@ -5,6 +5,10 @@ import cors from "cors";
 import helmet from "helmet";
 import xss from "xss";
 import authRoutes from "./routes/authRoutes.js";
+// import bookRoutes from './src/books/book.route.js';
+// import orderRoutes from './src/orders/order.route.js';
+// import userRoutes from './src/users/user.route.js';
+// import adminRoutes from './src/stats/admin.stats.js';
 
 dotenv.config();
 const app = express();
@@ -15,15 +19,10 @@ app.use(cors());
 app.use(express.json());
 
 // routes
-const bookRoutes = require('./src/books/book.route');
-const orderRoutes = require("./src/orders/order.route")
-const userRoutes =  require("./src/users/user.route")
-const adminRoutes = require("./src/stats/admin.stats")
-
-app.use("/api/books", bookRoutes)
-app.use("/api/orders", orderRoutes)
-app.use("/api/auth", userRoutes)
-app.use("/api/admin", adminRoutes)
+// app.use("/api/books", bookRoutes)
+// app.use("/api/orders", orderRoutes)
+// app.use("/api/auth", userRoutes)
+// app.use("/api/admin", adminRoutes)
 
 // --- Custom XSS Sanitizer ---
 app.use((req, res, next) => {

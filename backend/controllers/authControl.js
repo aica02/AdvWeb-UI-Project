@@ -2,8 +2,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Joi from "joi";
 import User from "../models/userModel.js";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
 
 export const register = async (req, res) => {
   try {
@@ -21,8 +19,8 @@ export const register = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name: name || "", email, password: hashed });
+    // Do NOT hash password here, let the pre-save hook in userModel.js handle it
+    const user = await User.create({ email, password });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
