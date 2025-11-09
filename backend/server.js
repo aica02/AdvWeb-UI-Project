@@ -14,6 +14,12 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// routes
+const bookRoutes = require('./src/books/book.route');
+const orderRoutes = require("./src/orders/order.route")
+const userRoutes =  require("./src/users/user.route")
+const adminRoutes = require("./src/stats/admin.stats")
+
 // --- Custom XSS Sanitizer ---
 app.use((req, res, next) => {
   const sanitizeXSS = (obj) => {
