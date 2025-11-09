@@ -1,11 +1,56 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "../css/authpage.css"
+
+const API = import.meta.env.VITE_API_URL;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
+  const [message, setMessage] = useState("");
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
+    setForm({ email: "", password: "", confirmPassword: "" });
+    setMessage("");
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    try {
+      const { data } = await axios.post(`${API}/api/auth/login`, {
+        email: form.email,
+        password: form.password,
+      });
+      setMessage("Logged in successfully!");
+      // Optionally: save token, redirect, etc.
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Login failed");
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    if (form.password !== form.confirmPassword) {
+      setMessage("Passwords do not match");
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${API}/api/auth/register`, {
+        email: form.email,
+        password: form.password,
+      });
+      setMessage("Registered successfully! Please log in.");
+      setIsLogin(true);
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Signup failed");
+    }
   };
 
   return (
@@ -29,18 +74,17 @@ const AuthPage = () => {
               <h2>Welcome Back!</h2>
               <p>Sign Into your Account</p>
 
-              <form>
-                <input type="email" placeholder="Email" required />
-                <input type="password" placeholder="Password" required />
+              <form onSubmit={handleLogin}>
+                <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+                <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
                 <div className="form-options">
                   <label>
                     <input type="checkbox" /> Remember me
                   </label>
-                  <a href="#">Forgot Password?</a>
                 </div>
                 <button type="submit" className="auth-btn">Log In</button>
               </form>
-
+              {message && <p className="auth-message">{message}</p>}
               <p className="toggle-text">
                 Not a member?{" "}
                 <span onClick={toggleForm} className="toggle-link">
@@ -53,17 +97,17 @@ const AuthPage = () => {
               <h2>Logo</h2>
               <p>Sign Up to use all feature’s of the Application</p>
 
-              <form>
-                <input type="email" placeholder="Email" required />
-                <input type="password" placeholder="Password" required />
-                <input type="password" placeholder="Confirm Password" required />
+              <form onSubmit={handleSignup}>
+                <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+                <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required />
                 <label className="checkbox">
-                  <input type="checkbox" /> By signing up I agree with
+                  <input type="checkbox" required /> By signing up I agree with
                   <span> Terms and Privacy Policy</span>
                 </label>
                 <button type="submit" className="auth-btn">Create Account</button>
               </form>
-
+              {message && <p className="auth-message">{message}</p>}
               <p className="toggle-text">
                 Already have an account?{" "}
                 <span onClick={toggleForm} className="toggle-link">
