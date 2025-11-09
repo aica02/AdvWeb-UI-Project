@@ -19,7 +19,6 @@ export const register = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
-    // Do NOT hash password here, let the pre-save hook in userModel.js handle it
     const user = await User.create({ email, password });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
