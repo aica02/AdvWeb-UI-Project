@@ -28,6 +28,8 @@ export default function Header() {
       setShowLoginModal(false);
       setLoginEmail("");
       setLoginPassword("");
+      localStorage.setItem("token", data.token);
+      navigate("/profile/edit");
     } catch (err) {
       setLoginError(err.response?.data?.message || "Invalid credentials");
     }

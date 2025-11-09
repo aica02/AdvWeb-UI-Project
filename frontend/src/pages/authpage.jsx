@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../css/authpage.css"
+import { Navigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -8,6 +9,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [message, setMessage] = useState("");
+  const [redirect, setRedirect] = useState(false);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -28,7 +30,8 @@ const AuthPage = () => {
         password: form.password,
       });
       setMessage("Logged in successfully!");
-      // Optionally: save token, redirect, etc.
+      localStorage.setItem("token", data.token);
+      setTimeout(() => setRedirect(true), 500); 
     } catch (err) {
       setMessage(err.response?.data?.message || "Login failed");
     }
@@ -52,6 +55,8 @@ const AuthPage = () => {
       setMessage(err.response?.data?.message || "Signup failed");
     }
   };
+
+  if (redirect) return <Navigate to="/profile" replace />;
 
   return (
     <div className={`auth-container ${isLogin ? "login-active" : "signup-active"}`}>
