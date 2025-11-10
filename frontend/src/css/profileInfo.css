@@ -16,13 +16,13 @@
   margin-right: 30px;
 }
 
-.profile-menu {
+.info-profile-menu {
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #fff;
 }
 
-.profile-menu a {
+.info-profile-menu .profile-menu a {
   display: flex;
   justify-content: space-between;
   align-items: center;

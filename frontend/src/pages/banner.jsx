@@ -6,7 +6,7 @@ const HeroCarousel = () => {
     {
       id: 1,
       title: "Harry Potter and the Goblet of Fire",
-      img: "https://covers.openlibrary.org/b/id/7984916-L.jpg",
+      img: "https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg",
       category: "Fantasy",
       description:
         "A thrilling continuation of the wizarding journey. Magic deepens and mysteries grow darker as secrets from the past unfold. Friendship and courage are tested against unseen forces. A world of spells and shadow awaits those who turn the page.",

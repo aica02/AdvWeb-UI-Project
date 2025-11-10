@@ -42,7 +42,7 @@ export default function Header() {
         <div className="header-logo">
           <h1>Logo here</h1>
         </div>
-
+      
         {/* Search Bar */}
         <div className="header-search">
           <div className="search-container">
@@ -89,7 +89,7 @@ export default function Header() {
                       <FaShoppingCart className="dropdown-icon" />
                       <Link to="/#">Cart</Link>
                     </li>
-                    <li onClick={() => {setIsLoggedIn(false); setIsOpen(false); navigate("/")}} style={{ cursor: "pointer" }}>
+                    <li onClick={() => {setIsLoggedIn(false); setIsOpen(false); navigate("/")}}>
                       <FaSignOutAlt className="dropdown-icon"/>
                       <span>Log out</span>
                     </li>
@@ -173,13 +173,13 @@ export default function Header() {
       <nav className="sub-nav">
         <ul>
           <li>
-            <Link to="/#">BEST SELLER</Link>
+            <Link to="/viewAll">BEST SELLER</Link>
           </li>
           <li>
-            <Link to="/#">NEW RELEASES</Link>
+            <Link to="/viewAll">NEW RELEASES</Link>
           </li>
           <li>
-            <Link to="/#">BOOK SALES</Link>
+            <Link to="/viewAll">BOOK SALES</Link>
           </li>
         </ul>
       </nav>
