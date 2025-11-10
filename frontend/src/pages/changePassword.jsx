@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function ChangePassword() {
   const [current, setCurrent] = useState("");
@@ -7,13 +8,29 @@ export default function ChangePassword() {
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
     if (newPass !== confirm) {
       setMessage("Passwords do not match");
       return;
     }
-    setMessage("Password changed successfully! (UI only)");
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/auth/change-password`,
+        { currentPassword: current, newPassword: newPass },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessage("Password changed successfully!");
+      setCurrent("");
+      setNewPass("");
+      setConfirm("");
+    } catch (err) {
+      setMessage(
+        err.response?.data?.message || "Failed to change password"
+      );
+    }
   };
 
   return (

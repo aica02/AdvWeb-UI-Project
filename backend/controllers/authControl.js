@@ -4,6 +4,10 @@ import Joi from "joi";
 import User from "../models/userModel.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import express from "express";
+import { protect } from "../middleware/authMiddlew.js";
+
+const router = express.Router();
 
 export const register = async (req, res) => {
   try {
@@ -73,6 +77,22 @@ export const updateProfile = async (req, res) => {
     const updates = req.body;
     const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true, runValidators: true }).select("-password");
     res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Change user password from user Profile
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Incorrect current password" });
+    user.password = newPassword; // pre save before hash gaya nung sa registration
+    await user.save();
+    res.json({ message: "Password updated successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
