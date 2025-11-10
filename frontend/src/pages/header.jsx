@@ -66,45 +66,32 @@ export default function Header() {
                       <FaUser className="dropdown-icon" />
                       <Link to="/#">Profile</Link>
                     </li>
-                    <li>
+                    <li onClick={() => { navigate("/wishlist")}}>
                       <FaHeart className="dropdown-icon" />
-                      <Link to="/#">Wishlist</Link>
+                      <Link to="/wishlist">Wishlist</Link>
                     </li>
                     <li>
                       <FaShoppingCart className="dropdown-icon" />
                       <Link to="/#">Cart</Link>
                     </li>
-                    <li>
-                      <FaSignOutAlt className="dropdown-icon" />
-                      <span onClick={() => {
-                        setIsLoggedIn(false);
-                        setIsOpen(false);
-                        }} style={{ cursor: "pointer" }}>
-                        Log out
-                      </span>
+                    <li onClick={() => {setIsLoggedIn(false); setIsOpen(false); navigate("/")}} style={{ cursor: "pointer" }}>
+                      <FaSignOutAlt className="dropdown-icon"/>
+                      <span>Log out</span>
                     </li>
                   </>
                 ) : (
                   <>
-                    <li>
+                    <li onClick={() => { setShowLoginModal(true); setIsOpen(false); }}>
                       <FaUserCircle className="dropdown-icon" />
-                      <span
-                        onClick={() => {
-                          setShowLoginModal(true);
-                          setIsOpen(false);
-                        }}
-                        style={{ cursor: "pointer" }}
-                      >
-                        Login / Register
-                      </span>
+                      <span>Login / Register</span>
                     </li>
                     <li>
                       <FaUser className="dropdown-icon" />
                       <Link to="/#">Profile</Link>
                     </li>
-                    <li>
+                    <li onClick={() => { navigate("/wishlist")}}>
                       <FaHeart className="dropdown-icon" />
-                      <Link to="/#">Wishlist</Link>
+                      <Link to="/wishlist">Wishlist</Link>
                     </li>
                     <li>
                       <FaShoppingCart className="dropdown-icon" />
@@ -165,13 +152,13 @@ export default function Header() {
       <nav className="sub-nav">
         <ul>
           <li>
-            <Link to="/bestseller">BEST SELLER</Link>
+            <Link to="/#">BEST SELLER</Link>
           </li>
           <li>
-            <Link to="/newrelease">NEW RELEASES</Link>
+            <Link to="/#">NEW RELEASES</Link>
           </li>
           <li>
-            <Link to="/booksales">BOOK SALES</Link>
+            <Link to="/#">BOOK SALES</Link>
           </li>
         </ul>
       </nav>

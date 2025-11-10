@@ -8,8 +8,13 @@
   --font-body: 'Nunito', sans-serif;
 }
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body{
-  animation: fadeSlideIn 0.8s ease-out;
   font-family: var(--font-body);
 }
 
@@ -17,7 +22,7 @@ body{
 .header {
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 10px 40px;
+  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -52,7 +57,7 @@ body{
   width: 100%;
   border: 1px solid #ddd;
   border-radius: 5px;
-  padding: 13px 36px 13px 16px;
+  padding: 10px 36px 10px 16px;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -294,7 +299,7 @@ body{
 }
 
 .text-content p {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #f0f0f0;
   margin-bottom: 20px;
   line-height: 1.5;
@@ -338,7 +343,7 @@ body{
 }
 
 
-/* best selling books */
+/* best selling and new releases books */
 .best-selling-section, .new-release-section{
   width: 90%;
   margin: 30px auto;
@@ -397,7 +402,9 @@ body{
   background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
+/* .book-card:hover {
+  transform: translateY(-5px);
+} */
 .book-image {
   position: relative;
 }
@@ -471,18 +478,19 @@ body{
 }
 
 .book-details h3 {
-  font-size: 1rem;
+  font-size: 0.9rem;
   margin-top: 10px;
   margin-bottom: 0.4rem;
+  cursor: pointer;
 }
 
 .book-details .author {
   color: #555;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   flex-grow: 1;
 }
 
-.price {
+.book-details .price {
   text-align: right;
   font-weight: bold;
   color: var(--color-secondary);
@@ -589,7 +597,7 @@ body{
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   flex-wrap: nowrap;
 }
@@ -777,6 +785,9 @@ body{
   .side-book {
     display: none;
   }
+  .email-signup .signup-form {
+    flex-wrap: wrap;
+  }
 }
 
 /* Small screens (phones) */
@@ -788,5 +799,9 @@ body{
   .signup-input,
   .signup-button {
     font-size: 0.85rem;
+  }
+
+  .email-signup .signup-form {
+    flex-wrap: wrap;
   }
 }
