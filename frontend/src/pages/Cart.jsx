@@ -43,7 +43,7 @@ function CartPage() {
 
   return (
     <div className="cart-page-wrapper"> {/* ✅ Scoped wrapper added */}
-      
+      <Header/>
       <div className="cart-page">
         {/* Breadcrumb */}
         <div className="item-breadcrumb">
@@ -143,6 +143,8 @@ function CartPage() {
           </div>
         </div>
       </div>
+      <InfoBanner/>
+      <Footer/>
       
     </div>
   );
