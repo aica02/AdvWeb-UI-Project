@@ -1,4 +1,4 @@
-import {createBrowserRouter} from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import AuthPage from "../pages/authpage";
 import Home from "../pages/home";
@@ -9,7 +9,7 @@ import Wishlists from "../pages/wishlist";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App/>,
+    element: <App />,
     children: [
         { path: "/", element: <Home/> },
         { path: "/auth", element: <AuthPage/>},

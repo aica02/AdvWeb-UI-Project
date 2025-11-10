@@ -2,21 +2,36 @@ import { useState } from "react";
 import { FaUser, FaHeart, FaShoppingCart, FaUserCircle, FaBell, FaSignOutAlt} from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../css/loginmodal.css";
+
+const API = import.meta.env.VITE_API_URL;
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
 
-  // Mock login function
-  const handleLogin = (email, password) => {
-    if (email === "user@example.com" && password === "1234") {
+  // Real login function
+  const handleLogin = async (email, password) => {
+    setLoginError("");
+    try {
+      const { data } = await axios.post(`${API}/api/auth/login`, {
+        email,
+        password,
+      });
       setIsLoggedIn(true);
       setShowLoginModal(false);
-    } else {
-      alert("Invalid credentials");
+      setLoginEmail("");
+      setLoginPassword("");
+      localStorage.setItem("token", data.token);
+      navigate("/profile/edit");
+    } catch (err) {
+      setLoginError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
@@ -117,20 +132,26 @@ export default function Header() {
               <h2>Login Form</h2>
               <p>Login here Using Email & Password</p>
 
-              <input id="emailInput" type="email" placeholder="Email" />
-              <input id="passwordInput" type="password" placeholder="Password" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={e => setLoginEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+              />
 
               <button
                 className="modal-btn"
-                onClick={() => {
-                  const email = document.getElementById("emailInput").value;
-                  const password = document.getElementById("passwordInput").value;
-                  handleLogin(email, password);
-                }}
+                onClick={() => handleLogin(loginEmail, loginPassword)}
               >
                 LOGIN
               </button>
-
+              {loginError && <p className="auth-message" style={{color:'red'}}>{loginError}</p>}
               <p className="modal-footer">
                 Not a member?{" "}
                 <span

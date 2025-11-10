@@ -1,14 +1,12 @@
 import express from "express";
 import { validateUserInput } from "../middleware/validateInput.js";
 import Joi from "joi";
+import { register, login, getMe, updateProfile, changePassword } from "../controllers/authControl.js";
+import { protect } from "../middleware/authMiddlew.js";
 
 const router = express.Router();
 
-import {register, login, forgotPassword, resetPassword} from "../controllers/authControl.js";
-
-
 const registerSchema = Joi.object({
-  name: Joi.string().min(2).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 });
@@ -18,10 +16,10 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-
 router.post("/register", register);
 router.post("/login", login);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
+router.get("/me", protect, getMe);
+router.put("/profile", protect, updateProfile);
+router.put("/change-password", protect, changePassword);
 
 export default router;
