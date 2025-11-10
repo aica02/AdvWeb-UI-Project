@@ -13,7 +13,7 @@
 }
 
 .login-modal-content {
-  width:300px;
+  width:350px;
   background:#fff;
   border-radius:10px;
   padding:2rem;
@@ -32,10 +32,11 @@
 .login-modal-content p {
   color:#777;
   margin-bottom:1rem;
+  font-size: 14px;
 }
 
 .login-modal-content input {
-  width: 92%;
+  width: 100%;
   padding:10px;
   border:1px solid #ccc;
   border-radius:6px;
@@ -60,6 +61,7 @@
 .modal-footer {
   text-align:center;
   margin-top:1rem;
+  font-size: 14px;
 }
 
 .signup-now {

@@ -8,14 +8,11 @@ import Footer from './footer'
 const Home = () => {
   return (
     <>
-      <Header/>
       <div>
         <HeroCarousel />
         <BestSellingBooks />
         <NewReleaseBooks />
-        <InfoBanner/>
       </div>
-      <Footer/>
     </>
   );
 };

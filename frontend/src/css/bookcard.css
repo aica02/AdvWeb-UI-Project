@@ -1,0 +1,276 @@
+:root {
+  --color-primary: #035c96;
+  --color-secondary: #01203f;
+  --color-complementary: #ff3131;
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+}
+
+.card-view-book { 
+  padding: 80px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex; 
+  justify-content: center; /* centers horizontally */ 
+  align-items: center; /* centers vertically */
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+.card-view-book::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.2),   /* var(--color-primary) with ~60% opacity */
+      rgba(1, 32, 63, 0.85)    /* var(--color-secondary) darker, ~85% opacity */
+    ),
+    var(--book-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px) brightness(.7);
+  transform: scale(1.1);
+  z-index: 0;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 3rem;
+  margin-top: 1rem;
+}
+
+.breadcrumb-link {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  font-weight: 550;
+}
+
+.breadcrumb-link.active {
+  color: var(--color-complementary);
+  font-weight: 600;
+}
+.breadcrumb-separator {
+  color: rgb(196, 194, 194);
+}
+
+/* Card Layout */
+.card-view-book .card-content {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 7rem; /*bawasan to kapag maglalagay ng responsive*/
+  align-items: center;
+  width: 80%;
+  position: relative;
+  z-index: 1;
+}
+
+.card-view-book .card-content .book-images {
+  min-width: 250px;
+  max-width: 300px;
+  display: flex;
+  align-items: flex-end;
+  gap: .6rem;
+}
+x`
+.card-view-book .card-content .book-images img{
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+.card-view-book .card-content .main-image {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.card-view-book .card-content .thumbnail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.card-view-book .card-content .thumbnail {
+  width: 70px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card-view-book .card-content .thumbnail:hover, .main-image:hover {
+  transform: scale(1.02);
+}
+
+.card-view-book .card-content .book-details {
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+.card-view-book .card-content .wishlist{
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    margin-bottom: 4rem;
+}
+
+.card-view-book .card-content .details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-view-book .card-content h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.card-view-book .card-content .heart-icon:hover {
+  color: var(--color-complementary);
+}
+
+.card-view-book .card-content .author {
+  font-style: italic;
+  margin: 0.5rem 0;
+  color: #fefefe;
+}
+
+.card-view-book .card-content .description {
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+.card-view-book .card-content .rating {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.card-view-book .card-content .star-icon {
+  color: gold;
+}
+
+.card-view-book .card-content .price {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: white;
+}
+
+.card-view-book .card-content .buttons {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.card-view-book .card-content .add-cart,
+.card-view-book .card-content .buy-now {
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-family: var(--font-heading);
+}
+
+.card-view-book .card-content .add-cart {
+  background: #ffffff33;
+  color: white;
+}
+
+.card-view-book .card-content .add-cart:hover {
+  background: white;
+  color: var(--color-secondary);
+}
+
+.card-view-book .card-content .buy-now {
+  background: var(--color-complementary);
+  color: white;
+}
+
+.card-view-book .card-content .buy-now:hover,.add-cart:hover {
+  scale: 1.02;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-view-book .card-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .card-view-book .card-content .buttons {
+    justify-content: center;
+  }
+
+  .card-view-book .card-content .book-images {
+    text-align: center;
+  }
+}
+
+/* Medium screens (tablets) */
+@media (max-width: 768px) {
+  .card-view-book .card-content .book-images{
+    flex-direction: column;
+    align-items: flex-start;
+    
+  }
+  .card-view-book .card-content {
+    gap: 2rem;
+  }
+
+  .card-view-book .card-content .thumbnail-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0rem;
+  }
+  .card-view-book .card-content .buttons{
+    display: flex;
+    align-items: flex-start;
+  }
+  .card-view-book .card-content .buttons {
+    display: flex;
+    align-items: center;
+    margin-left: none;
+  }
+}
+
+/* Small screens (phones) */
+@media (max-width: 480px) {
+  .card-view-book .card-content .book-images{
+    flex-direction: column;
+    align-items: flex-start;
+    
+  }
+  .card-view-book .card-content {
+    gap: 2rem;
+  }
+
+  .card-view-book .card-content .thumbnail-container {
+    display: flex;
+    flex-direction: row;
+    margin-top: 0rem;
+  }
+  .card-view-book .card-content .buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: auto;
+  }
+}
