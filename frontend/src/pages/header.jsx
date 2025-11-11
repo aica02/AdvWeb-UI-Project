@@ -29,7 +29,10 @@ export default function Header() {
       setLoginEmail("");
       setLoginPassword("");
       localStorage.setItem("token", data.token);
-      navigate("/profile/edit");
+     if (redirect) {
+     const role = localStorage.getItem("role");
+     return <navigate to={role === "admin" ? "/admin" : "/profile"} replace />;
+     }
     } catch (err) {
       setLoginError(err.response?.data?.message || "Invalid credentials");
     }
@@ -42,7 +45,7 @@ export default function Header() {
         <div className="header-logo">
           <h1>Logo here</h1>
         </div>
-
+      
         {/* Search Bar */}
         <div className="header-search">
           <div className="search-container">
@@ -81,45 +84,32 @@ export default function Header() {
                       <FaUser className="dropdown-icon" />
                       <Link to="/#">Profile</Link>
                     </li>
-                    <li>
+                    <li onClick={() => { navigate("/wishlist")}}>
                       <FaHeart className="dropdown-icon" />
-                      <Link to="/#">Wishlist</Link>
+                      <Link to="/wishlist">Wishlist</Link>
                     </li>
                     <li>
                       <FaShoppingCart className="dropdown-icon" />
                       <Link to="/#">Cart</Link>
                     </li>
-                    <li>
-                      <FaSignOutAlt className="dropdown-icon" />
-                      <span onClick={() => {
-                        setIsLoggedIn(false);
-                        setIsOpen(false);
-                        }} style={{ cursor: "pointer" }}>
-                        Log out
-                      </span>
+                    <li onClick={() => {setIsLoggedIn(false); setIsOpen(false); navigate("/")}}>
+                      <FaSignOutAlt className="dropdown-icon"/>
+                      <span>Log out</span>
                     </li>
                   </>
                 ) : (
                   <>
-                    <li>
+                    <li onClick={() => { setShowLoginModal(true); setIsOpen(false); }}>
                       <FaUserCircle className="dropdown-icon" />
-                      <span
-                        onClick={() => {
-                          setShowLoginModal(true);
-                          setIsOpen(false);
-                        }}
-                        style={{ cursor: "pointer" }}
-                      >
-                        Login / Register
-                      </span>
+                      <span>Login / Register</span>
                     </li>
                     <li>
                       <FaUser className="dropdown-icon" />
                       <Link to="/#">Profile</Link>
                     </li>
-                    <li>
+                    <li onClick={() => { navigate("/wishlist")}}>
                       <FaHeart className="dropdown-icon" />
-                      <Link to="/#">Wishlist</Link>
+                      <Link to="/wishlist">Wishlist</Link>
                     </li>
                     <li>
                       <FaShoppingCart className="dropdown-icon" />
@@ -186,13 +176,13 @@ export default function Header() {
       <nav className="sub-nav">
         <ul>
           <li>
-            <Link to="/bestseller">BEST SELLER</Link>
+            <Link to="/viewAll">BEST SELLER</Link>
           </li>
           <li>
-            <Link to="/newrelease">NEW RELEASES</Link>
+            <Link to="/viewAll">NEW RELEASES</Link>
           </li>
           <li>
-            <Link to="/booksales">BOOK SALES</Link>
+            <Link to="/viewAll">BOOK SALES</Link>
           </li>
         </ul>
       </nav>

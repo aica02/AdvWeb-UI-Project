@@ -62,7 +62,7 @@ export default function EditProfile() {
   return (
     <div className="profile-container">
       <div className="profile-sidebar">
-        <div className="profile-menu">
+        <div className="edit-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
           <Link to="/auth">Log Out</Link>

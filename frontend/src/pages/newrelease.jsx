@@ -1,10 +1,12 @@
 import React, { useRef, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 
 const NewReleaseBooks = () => {
   const scrollRef = useRef(null);
   const [likedBooks, setLikedBooks] = useState([]);
+  const navigate = useNavigate();
 
   const toggleLike = (bookId) => {
     setLikedBooks((prev) =>
@@ -38,7 +40,7 @@ const NewReleaseBooks = () => {
     <div className="new-release-section">
       <div className="section-header">
         <h2>New Release Books</h2>
-        <a href="#" className="view-all">View All &gt;</a>
+        <a href="viewAll" className="view-all">View All &gt;</a>
       </div>
 
       <div className="carousel-container">
@@ -59,7 +61,10 @@ const NewReleaseBooks = () => {
                 </div>
               </div>
               <div className="book-details">
-                <h3>{book.title}</h3>
+                <h3 onClick={() => {
+                  navigate("/bookCard");
+                }}
+                >{book.title}</h3>
                 <p className="author">{book.author}</p>
                 <p className="price">₱{book.price.toFixed(2)}</p>
                 <button className="add-btn">Add to Cart</button>

@@ -1,11 +1,18 @@
 import express from "express";
-import { validateUserInput } from "../middleware/validateInput.js";
 import Joi from "joi";
-import { register, login, getMe, updateProfile, changePassword } from "../controllers/authControl.js";
+import {
+  register,
+  login,
+  getMe,
+  updateProfile,
+  changePassword,
+} from "../controllers/authControl.js";
 import { protect } from "../middleware/authMiddlew.js";
+import { validateUserInput } from "../middleware/validateInput.js";
 
 const router = express.Router();
 
+// Validation Schemas
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
@@ -16,8 +23,11 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-router.post("/register", register);
-router.post("/login", login);
+// Public Routes
+router.post("/register", validateUserInput(registerSchema), register);
+router.post("/login", validateUserInput(loginSchema), login);
+
+// Protected Routes
 router.get("/me", protect, getMe);
 router.put("/profile", protect, updateProfile);
 router.put("/change-password", protect, changePassword);

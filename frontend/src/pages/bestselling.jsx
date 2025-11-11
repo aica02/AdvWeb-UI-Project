@@ -1,9 +1,11 @@
 import React, { useRef, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
+import { useNavigate } from "react-router-dom";
 
 const BestSellingBooks = () => {
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
   const [likedBooks, setLikedBooks] = useState([]);
 
   const toggleLike = (bookId) => {
@@ -37,7 +39,7 @@ const BestSellingBooks = () => {
     <div className="best-selling-section">
       <div className="section-header">
         <h2>Best Selling Books</h2>
-        <a href="#" className="view-all">View All &gt;</a>
+        <a href="/viewAll" className="view-all">View All &gt;</a>
       </div>
 
       <div className="carousel-container">
@@ -58,7 +60,10 @@ const BestSellingBooks = () => {
                 </div>
               </div>
               <div className="book-details">
-                <h3>{book.title}</h3>
+                <h3 onClick={() => {
+                  navigate("/bookCard");
+                }}
+                >{book.title}</h3>
                 <p className="author">{book.author}</p>
                 <p className="price">₱{book.price.toFixed(2)}</p>
                 <button className="add-btn">Add to Cart</button>
