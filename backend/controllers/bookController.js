@@ -15,8 +15,7 @@ export const postABook = async (req, res) => {
     if (req.file) {
       const ext = path.extname(req.file.originalname);
       const newFilename = `${newBook._id}${ext}`;
-      const uploadsDir = path.join(path.resolve(), "..", "frontend", "uploads");
- // ensure we save inside /uploads
+      const uploadsDir = path.join(path.resolve(), "uploads"); // ensure we save inside /uploads
 
       // make sure uploads folder exists
       if (!fs.existsSync(uploadsDir)) {
@@ -72,8 +71,7 @@ export const updateBook = async (req, res) => {
     if (req.file) {
       const ext = path.extname(req.file.originalname);
       const newFilename = `${req.params.id}${ext}`;
-      const uploadsDir = path.join(path.resolve(), "..", "frontend", "uploads");
-
+      const uploadsDir = path.join(path.resolve(), "uploads");
 
       if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir);

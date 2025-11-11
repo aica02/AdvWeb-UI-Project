@@ -211,7 +211,7 @@ const ViewAll = () => {
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={`/uploads/art1.png`} alt={book.title} />
+                    <img src={`http://localhost:5000/uploads/art1.png`} alt={book.title} />
 
                     <span className="badge">Best Seller</span>
                     <div className="heart-overlay" onClick={() => toggleLike(book._id)}>

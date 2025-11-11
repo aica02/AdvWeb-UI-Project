@@ -4,7 +4,6 @@
   "type": "module",
   "description": "Secure MERN backend with JWT, password hashing, and input validation",
   "main": "server.js",
-  "proxy": "http://localhost:5000",
 
   "scripts": {
     "start": "node server.js",

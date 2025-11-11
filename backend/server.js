@@ -70,7 +70,7 @@ app.use(trackVisit);
 
 
 // Serve static uploads
-app.use("/uploads", express.static(path.join(path.resolve(),  "./frontend/uploads")));
+app.use("/uploads", express.static(path.join(path.resolve(),  "uploads")));
 
 // Start Server 
 const PORT = process.env.PORT || 5000;
