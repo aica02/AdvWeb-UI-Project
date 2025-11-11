@@ -5,16 +5,18 @@ import cors from "cors";
 import helmet from "helmet";
 import xss from "xss";
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoute.js";
 
 dotenv.config();
 const app = express();
 
-// --- Middleware ---
+//  Middleware 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// --- Custom XSS Sanitizer ---
+
+//  Custom XSS Sanitizer 
 app.use((req, res, next) => {
   const sanitizeXSS = (obj) => {
     for (const key in obj) {
@@ -28,7 +30,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Custom MongoDB Sanitizer ---
+//  Custom MongoDB Sanitizer 
 const sanitizeMongo = (obj) => {
   for (const key in obj) {
     if (key.startsWith('$') || key.includes('.')) {
@@ -46,14 +48,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- DB Connection ---
+//  DB Connection 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB error:", err));
 
-// --- Routes ---
+//  Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
-// --- Start Server ---
+// Start Server 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running securely on port ${PORT}`));

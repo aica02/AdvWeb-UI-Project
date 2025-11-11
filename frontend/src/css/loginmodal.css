@@ -1,0 +1,76 @@
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.45);
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-start;
+  padding-top: 60px;
+  z-index:999;
+}
+
+.login-modal-content {
+  width:350px;
+  background:#fff;
+  border-radius:10px;
+  padding:2rem;
+  box-shadow:0 8px 25px rgba(0,0,0,.25);
+  animation: pop .35s ease;
+  font-family: var(--font-body);
+  margin-right: 2%;
+}
+
+.login-modal-content h2 {
+  font-family: var(--font-heading);
+  color: var(--color-secondary);
+  margin-bottom:.4rem;
+}
+
+.login-modal-content p {
+  color:#777;
+  margin-bottom:1rem;
+  font-size: 14px;
+}
+
+.login-modal-content input {
+  width: 100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  margin-bottom:.9rem;
+}
+
+.modal-btn {
+  width:100%;
+  padding:11px;
+  background: var(--color-primary);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.modal-btn:hover {
+  background: var(--color-secondary);
+}
+
+.modal-footer {
+  text-align:center;
+  margin-top:1rem;
+  font-size: 14px;
+}
+
+.signup-now {
+  color: var(--color-complementary);
+  font-weight:600;
+  cursor:pointer;
+}
+
+@keyframes pop {
+  from {transform:translateY(-10px); opacity:0;}
+  to {transform:translateY(0); opacity:1;}
+}

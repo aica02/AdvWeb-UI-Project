@@ -4,22 +4,15 @@ import BestSellingBooks from './bestselling';
 import NewReleaseBooks from './newrelease';
 import InfoBanner from './services';
 import Header from './header'
-import Cart from '../pages/Cart';
 import Footer from './footer'
-import CartPage from './Cart';
-
 const Home = () => {
   return (
     <>
-      <Header/>
       <div>
         <HeroCarousel />
         <BestSellingBooks />
         <NewReleaseBooks />
-        <InfoBanner/>
       </div>
-      <InfoBanner/>
-      <Footer/>
     </>
   );
 };
