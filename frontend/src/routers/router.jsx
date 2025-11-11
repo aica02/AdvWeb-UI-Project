@@ -15,16 +15,16 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { path: "/", element: <Home /> },
-      { path: "/auth", element: <AuthPage /> },
-      { path: "/bookCard", element: <BookCard /> },
-      { path: "/viewAll", element: <ViewAll /> },
-      { path: "/wishlist", element: <Wishlists /> },
-      { path: "/profile", element: <Profile /> }, 
-      { path: "/profile/edit", element: <EditProfile /> }, 
-      { path: "/profile/change-password", element: <ChangePassword /> },
-      { path: "/orders", element: <Orders /> }, 
-    ],
+        { path: "/", element: <Home/> },
+        { path: "/auth", element: <AuthPage/>},
+        { path: "/bookCard", element: <BookCard/>},
+        { path: "/viewAll", element: <ViewAll/>},
+        { path: "/wishlist", element: <Wishlists/>},
+        { path: "/profile", element: <Profile /> }, 
+        { path: "/profile/edit", element: <EditProfile /> }, 
+        { path: "/profile/change-password", element: <ChangePassword /> },
+        { path: "/orders", element: <Orders /> }
+    ]
   },
 ]);
 

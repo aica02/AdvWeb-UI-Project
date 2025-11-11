@@ -9,18 +9,18 @@
 }
 
 /* Sidebar */
-.profile-sidebar {
+.profile-container .profile-sidebar {
   width: 250px;
   margin-right: 40px;
 }
 
-.profile-menu {
+.edit-profile-menu {
   border: 1px solid #ddd;
   display: flex;
   flex-direction: column;
 }
 
-.profile-menu a {
+.edit-profile-menu .profile-menu a {
   padding: 15px 20px;
   font-weight: 500;
   color: #000;
@@ -31,7 +31,7 @@
   align-items: center;
 }
 
-.profile-menu a:hover {
+.edit-profile-menu a:hover {
   background-color: #f7f7f7;
 }
 
