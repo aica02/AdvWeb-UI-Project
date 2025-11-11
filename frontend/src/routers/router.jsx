@@ -17,11 +17,15 @@ import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
 import DashboardSection from "../admin/dashboard.jsx";
 import AdminAccount from "../admin/admin.jsx";
 
+import AddBooksSection from "../admin/addBook.jsx";
+import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     children: [
+      // User pages
       { path: "/", element: <Home /> },
       { path: "/auth", element: <AuthPage /> },
       { path: "/bookCard", element: <BookCard /> },
@@ -32,25 +36,26 @@ const router = createBrowserRouter([
       { path: "/profile/change-password", element: <ChangePassword /> },
       { path: "/orders", element: <Orders /> },
 
-      // Admin Routes
-      {
-        path: "/admin/dashboard",
-        element: (
-          <ProtectedAdminRoute>
-            <DashboardSection />
-          </ProtectedAdminRoute>
-        ),
-      },
-      {
-        path: "/admin",
-        element: (
-          <ProtectedAdminRoute>
-            <AdminAccount />
-          </ProtectedAdminRoute>
-        ),
-      },
+// Admin Routes
+{
+  path: "/admin",
+  element: (
+    <ProtectedAdminRoute>
+      <AdminAccount />
+    </ProtectedAdminRoute>
+  ),
+  children: [
+    { path: "dashboard", element: <DashboardSection /> },
+    { path: "addbook", element: <AddBooksSection /> },
+    { path: "editdeletebook", element: <EditDeleteBooksSection /> },
+    { path: "", element: <DashboardSection /> }, // default
+  ],
+}
+
+
     ],
   },
 ]);
+
 
 export default router;

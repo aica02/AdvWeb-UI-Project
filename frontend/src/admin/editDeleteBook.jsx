@@ -1,17 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "../css/admin.css";
 
+const API = import.meta.env.VITE_API_URL;
+
 const EditDeleteBooksSection = () => {
-  const books = [
-    { id: 1, title: "Hello World", category: "Coding", price: 150 },
-    { id: 2, title: "CSS Coding", category: "Coding", price: 151 },
-    { id: 3, title: "HTML Coding Skills", category: "Coding", price: 155 },
-    { id: 4, title: "Full Course MERN", category: "Coding", price: 350 },
-    { id: 5, title: "ABAKADA", category: "Children", price: 450 },
-    { id: 6, title: "Harry Potter and the Sorcerer’s Stone", category: "Fantasy", price: 850 },
-    { id: 7, title: "Harry Potter and the Goblet of Fire", category: "Fantasy", price: 880 },
-    { id: 8, title: "Harry Potter and the Half Blood Prince", category: "Fantasy", price: 900 },
-  ];
+  const [books, setBooks] = useState([]);
+  const [sortBy, setSortBy] = useState("Price");
+
+  const fetchBooks = async () => {
+    try {
+      const { data } = await axios.get(`${API}/admin/books`);
+      setBooks(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this book?")) return;
+    try {
+      await axios.delete(`${API}/admin/books/${id}`);
+      fetchBooks();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+ const sortedBooks = [...books].sort((a, b) => {
+  if (sortBy === "Price") {
+    const priceA = a.newPrice ?? a.oldPrice;
+    const priceB = b.newPrice ?? b.oldPrice;
+    return priceA - priceB;
+  }
+  if (sortBy === "Title") return a.title.localeCompare(b.title);
+  if (sortBy === "Category") return a.category.localeCompare(b.category);
+  return 0;
+});
+
 
   return (
     <section className="bookCollection-overview">
@@ -23,7 +53,12 @@ const EditDeleteBooksSection = () => {
           <h3>All Books</h3>
           <div className="sort-container">
             <label htmlFor="sort">Sort by</label>
-            <select id="sort" className="sort-select">
+            <select
+              id="sort"
+              className="sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
               <option>Price</option>
               <option>Title</option>
               <option>Category</option>
@@ -42,22 +77,26 @@ const EditDeleteBooksSection = () => {
             </tr>
           </thead>
           <tbody>
-            {books.map((book) => (
-              <tr key={book.id}>
-                <td>{book.id}</td>
-                <td>{book.title}</td>
-                <td>{book.category}</td>
-                <td>₱{book.price.toFixed(2)}</td>
-                <td>
-                  <span className="edit-text">Edit</span>
-                  <button className="delete-btn">Delete</button>
-                </td>
-              </tr>
-            ))}
+            {sortedBooks.map(({ _id, title, category, oldPrice, newPrice }, index) => (
+  <tr key={_id}>
+    <td>{index + 1}</td>
+    <td>{title}</td>
+    <td>{category}</td>
+    <td>₱{(newPrice ?? oldPrice).toFixed(2)}</td>
+    <td>
+      <span className="edit-text">Edit</span>
+      <button className="delete-btn" onClick={() => handleDelete(_id)}>
+        Delete
+      </button>
+    </td>
+  </tr>
+))}
+
           </tbody>
         </table>
       </div>
     </section>
   );
 };
+
 export default EditDeleteBooksSection;
