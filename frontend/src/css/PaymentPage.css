@@ -6,8 +6,7 @@
   --font-body: 'Nunito', sans-serif;
 }
 
-<<<<<<< Updated upstream
-=======
+
 .payment-page .item-breadcrumb {
   padding: 0.59rem 0 0 3rem;
   background-color: white   ;
@@ -22,7 +21,6 @@
   color: var(--color-muted);
 }
 
->>>>>>> Stashed changes
 .payment-page .content-wrapper {
   max-width: 1850px;
   width: 100%;

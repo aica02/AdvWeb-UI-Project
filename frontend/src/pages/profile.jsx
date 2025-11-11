@@ -87,7 +87,7 @@ export default function Profile() {
               </div>
             </div>
           </div>
-          <div style={{ marginTop: 20 }}>
+          <div style={{ marginTop: 5, marginLeft:35}}>
             <Link to="/profile/edit"><button className="profile-btn">Edit Profile</button></Link>
             <Link to="/profile/change-password"><button className="profile-btn">Change Password</button></Link>
           </div>

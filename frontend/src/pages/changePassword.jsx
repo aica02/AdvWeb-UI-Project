@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import "../css/changepass.css";
 import axios from "axios";
 
 export default function ChangePassword() {
@@ -36,7 +37,7 @@ export default function ChangePassword() {
   return (
     <div className="profile-container">
       <div className="profile-sidebar">
-        <div className="profile-menu">
+        <div className="changepass-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
           <Link to="/auth">Log Out</Link>

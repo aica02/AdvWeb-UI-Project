@@ -1,125 +1,126 @@
-
+/* -------- Layout -------- */
 .profile-container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 60px 100px;
+  padding: 60px 80px;
   background-color: #fff;
   font-family: "Poppins", sans-serif;
-  color: #333;
-  min-height: 80vh;
 }
 
-/* Sidebar */
+/* -------- Sidebar (your styles) -------- */
 .profile-sidebar {
-  width: 250px;
+  width: 280px;
   margin-right: 30px;
 }
-
 .info-profile-menu {
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
   background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-.info-profile-menu .profile-menu a {
+.info-profile-menu a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 18px;
+  padding: 14px 18px;
   border-bottom: 1px solid #eee;
   color: #333;
   text-decoration: none;
   font-size: 15px;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  transition: all 0.25s ease;
 }
 
-.profile-menu a:hover {
-  background-color: #f5f5f5;
+.info-profile-menu a:hover {
+  background-color: #1e355b;
+  color: #fff;
+  padding-left: 22px;
 }
 
-.profile-menu a:last-child {
+.info-profile-menu a:hover::after {
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.info-profile-menu a::after {
+  content: "›";
+  font-size: 18px;
+  font-weight: bold;
+  color: #999;
+  transition: 0.2s ease;
+}
+
+.info-profile-menu a:last-child {
   border-bottom: none;
 }
 
-/* Main content */
-.profile-content {
-  flex: 1;
+.edit-profile-menu a.active {
+  background-color: #1e355b;
+  color: #fff;
 }
 
+.info-profile-menu:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* -------- Main Card -------- */
 .profile-card {
-  background-color: #fff;
+  background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  width: 1300px;
 }
 
-/* Header of info section */
+/* Card header */
 .profile-card h2 {
-  background-color: #1e355b;
-  color: white;
+  background: #1e355b;
+  color: #fff;
   padding: 14px 18px;
-  font-size: 17px;
   margin: 0;
+  font-size: 18px;
 }
 
-/* Info Grid */
-.profile-section {
-  padding: 20px 30px;
+/* Section title */
+.section-title {
+  font-weight: bold;
+  padding: 16px 18px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
 }
 
+/* -------- Grid Table -------- */
 .profile-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px 60px;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
 }
 
 .profile-info-grid div {
-  font-size: 15px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #eee;
 }
 
-.profile-info-grid strong {
-  color: #555;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 4px;
+/* Full row (Street) */
+.full-width {
+  grid-column: 1 / 3;
 }
 
-.profile-info-grid br + span {
-  color: #222;
+/* -------- Buttons -------- */
+.profile-buttons {
+  padding: 16px 20px;
 }
 
-/* Buttons */
 .profile-btn {
-  background-color: #1e355b;
-  color: #fff;
+  background: #1e355b;
+  color: white;
+  padding: 10px 16px;
+  margin-right: 10px;
   border: none;
   border-radius: 4px;
-  padding: 10px 18px;
-  font-size: 14px;
   cursor: pointer;
-  margin-right: 8px;
-  transition: 0.3s ease;
 }
-
 .profile-btn:hover {
-  background-color: #15294a;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-  .profile-container {
-    flex-direction: column;
-    padding: 40px 20px;
-  }
-
-  .profile-sidebar {
-    width: 100%;
-    margin-bottom: 30px;
-  }
-
-  .profile-info-grid {
-    grid-template-columns: 1fr;
-  }
+  background: #15294a;
 }
