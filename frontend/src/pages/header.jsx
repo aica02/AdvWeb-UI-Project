@@ -29,7 +29,10 @@ export default function Header() {
       setLoginEmail("");
       setLoginPassword("");
       localStorage.setItem("token", data.token);
-      navigate("/profile/edit");
+     if (redirect) {
+     const role = localStorage.getItem("role");
+     return <navigate to={role === "admin" ? "/admin" : "/profile"} replace />;
+     }
     } catch (err) {
       setLoginError(err.response?.data?.message || "Invalid credentials");
     }

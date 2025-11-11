@@ -22,20 +22,22 @@ const AuthPage = () => {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    try {
-      const { data } = await axios.post(`${API}/api/auth/login`, {
-        email: form.email,
-        password: form.password,
-      });
-      setMessage("Logged in successfully!");
-      localStorage.setItem("token", data.token);
-      setTimeout(() => setRedirect(true), 500); 
-    } catch (err) {
-      setMessage(err.response?.data?.message || "Login failed");
-    }
-  };
+  e.preventDefault();
+  setMessage("");
+  try {
+    const { data } = await axios.post(`${API}/api/auth/login`, {
+      email: form.email,
+      password: form.password,
+    });
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role); // <-- store role
+    setMessage("Logged in successfully!");
+    setTimeout(() => setRedirect(true), 500); 
+  } catch (err) {
+    setMessage(err.response?.data?.message || "Login failed");
+  }
+};
+
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -56,7 +58,10 @@ const AuthPage = () => {
     }
   };
 
-  if (redirect) return <Navigate to="/profile" replace />;
+  if (redirect) {
+  const role = localStorage.getItem("role");
+  return <Navigate to={role === "admin" ? "/admin" : "/profile"} replace />;
+  }
 
   return (
     <div className={`auth-container ${isLogin ? "login-active" : "signup-active"}`}>
