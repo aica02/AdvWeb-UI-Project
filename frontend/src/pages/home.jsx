@@ -6,6 +6,8 @@ import InfoBanner from './services';
 import Header from './header'
 import Cart from '../pages/Cart';
 import Footer from './footer'
+import CartPage from './Cart';
+
 const Home = () => {
   return (
     <>

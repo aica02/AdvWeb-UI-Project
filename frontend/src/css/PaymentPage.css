@@ -6,6 +6,23 @@
   --font-body: 'Nunito', sans-serif;
 }
 
+<<<<<<< Updated upstream
+=======
+.payment-page .item-breadcrumb {
+  padding: 0.59rem 0 0 3rem;
+  background-color: white   ;
+}
+
+
+.payment-page .breadcrumb-separator {
+  margin: 0 6px;
+}
+
+.payment-page .breadcrumb-current {
+  color: var(--color-muted);
+}
+
+>>>>>>> Stashed changes
 .payment-page .content-wrapper {
   max-width: 1850px;
   width: 100%;

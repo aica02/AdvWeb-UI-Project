@@ -60,6 +60,7 @@ function PaymentPage() {
 
   return (
     <>
+<<<<<<< Updated upstream
     <Header/>
         {/* ✅ Scoped wrapper */}
         <div className="payment-page">
@@ -72,6 +73,29 @@ function PaymentPage() {
               <div className="info-container">
                 <div className="info-header">Information</div>
                 
+=======
+    {/* ✅ Scoped wrapper */}
+    <div className="payment-page">
+        {/* Breadcrumb */}
+        <div className="item-breadcrumb">
+            <span className="breadcrumb-home">Home</span>
+            <span className="breadcrumb-separator">/</span>
+            <span className="breadcrumb-Cart">Cart</span>
+            <span className="breadcrumb-separator">/</span>
+            <span className="breadcrumb-current">Shipping Details</span>
+        </div>
+
+        <div className="content-wrapper">
+            <div className="left-section">
+                {/* Shipping Details */}
+                <section className="shipping-section">
+            <h1 className="section-title">Shipping Details</h1>
+              
+            <div className="info-container">
+                <div className="info-header">
+                    Information
+                </div>
+>>>>>>> Stashed changes
                 <div className="info-content">
                   {shippingFields.map((field, idx) => (
                     <div key={idx} className="info-item">
@@ -82,11 +106,19 @@ function PaymentPage() {
                 </div>
 
                 <div className="info-actions">
+<<<<<<< Updated upstream
                   <button onClick={handleEditShipping} className="edit-button">
                     Edit
                   </button>
                 </div>
               </div>
+=======
+                    <button onClick={handleEditShipping} className="edit-button">
+                        Edit
+                    </button>
+                </div>
+            </div>
+>>>>>>> Stashed changes
             </section>
 
             {/* Payment Method */}
@@ -216,8 +248,11 @@ function PaymentPage() {
         </div>
       </div>
 
+<<<<<<< Updated upstream
       <InfoBanner/>
       <Footer/>
+=======
+>>>>>>> Stashed changes
     </>
   );
 }

@@ -1,6 +1,9 @@
+<<<<<<< Updated upstream
 /* =========================
    GLOBAL VARIABLES
    ========================= */
+=======
+>>>>>>> Stashed changes
 :root {
   --color-primary: #035c96;
   --color-secondary: #01203f;
@@ -13,9 +16,27 @@
   --font-body: 'Nunito', sans-serif;
 }
 
+<<<<<<< Updated upstream
 /* =========================
    CART PAGE BASE
    ========================= */
+=======
+/*Breadcrumb*/
+.cart-page-wrapper .item-breadcrumb {
+    padding: 0.59rem 0 0 3rem;
+    background-color: white;
+}
+
+.cart-page-wrapper .breadcrumb-separator {
+  margin: 0 6px;
+}
+
+.cart-page-wrapper .breadcrumb-current {
+  color: var(--color-muted);
+}
+
+/*Cart Page Base*/
+>>>>>>> Stashed changes
 .cart-page {
   font-family: var(--font-body);
   background-color: var(--color-light);
@@ -25,6 +46,7 @@
   flex-direction: column;
   min-height: 100vh;
   gap: 1rem;
+<<<<<<< Updated upstream
   padding: 2rem;
 }
 
@@ -53,6 +75,15 @@
    ========================= */
 .cart-page .cart-container {
   flex: 1;
+=======
+}
+
+/*
+-Container
+-Title  */
+.cart-page .cart-container {
+  flex: 2;
+>>>>>>> Stashed changes
   max-width: 2000px;
   margin: 0 5rem;
   padding: 3rem 2rem;
@@ -66,9 +97,13 @@
   margin-bottom: 1rem;
 }
 
+<<<<<<< Updated upstream
 /* =========================
    LAYOUT
    ========================= */
+=======
+/* LAYOUT */
+>>>>>>> Stashed changes
 .cart-page .cart-content {
   display: grid;
   grid-template-columns: 1fr 500px;
@@ -76,18 +111,26 @@
   align-items: flex-start;
 }
 
+<<<<<<< Updated upstream
 /* =========================
    ITEMS SECTION
    ========================= */
+=======
+/* ITEMS SECTION */
+>>>>>>> Stashed changes
 .cart-page .cart-items-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
+<<<<<<< Updated upstream
 /* =========================
    CART ITEM
    ========================= */
+=======
+/* CART ITEM */
+>>>>>>> Stashed changes
 .cart-page .cart-item {
   display: flex;
   gap: 1.5rem;
@@ -233,9 +276,13 @@
   font-size: 1.1rem;
 }
 
+<<<<<<< Updated upstream
 /* =========================
    ORDER SUMMARY
    ========================= */
+=======
+/* ORDER SUMMARY */
+>>>>>>> Stashed changes
 .cart-page .order-summary {
   width: 500px;
   background-color: var(--color-light);
@@ -306,9 +353,13 @@
   box-shadow: 0 6px 18px rgba(3, 92, 150, 0.3);
 }
 
+<<<<<<< Updated upstream
 /* =========================
    RESPONSIVE DESIGN
    ========================= */
+=======
+/* RESPONSIVE DESIGN */
+>>>>>>> Stashed changes
 @media (max-width: 992px) {
   .cart-page .cart-content {
     grid-template-columns: 1fr;

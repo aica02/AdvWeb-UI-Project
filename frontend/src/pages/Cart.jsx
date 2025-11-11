@@ -43,15 +43,24 @@ function CartPage() {
 
   return (
     <div className="cart-page-wrapper"> {/* ✅ Scoped wrapper added */}
+<<<<<<< Updated upstream
       <Header/>
       <div className="cart-page">
         {/* Breadcrumb */}
+=======
+    {/* Breadcrumb */}
+>>>>>>> Stashed changes
         <div className="item-breadcrumb">
           <span className="breadcrumb-home">Home</span>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-current">Cart</span>
         </div>
+<<<<<<< Updated upstream
 
+=======
+      <div className="cart-page">
+    
+>>>>>>> Stashed changes
         {/* Cart Container */}
         <div className="cart-container">
           <h1 className="cart-title">Your Shopping Cart</h1>
@@ -143,11 +152,19 @@ function CartPage() {
           </div>
         </div>
       </div>
+<<<<<<< Updated upstream
       <InfoBanner/>
       <Footer/>
+=======
+      
+>>>>>>> Stashed changes
       
     </div>
   );
 }
 
+<<<<<<< Updated upstream
 export default CartPage;
+=======
+export default CartPage;
+>>>>>>> Stashed changes
