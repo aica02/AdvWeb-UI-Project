@@ -211,7 +211,8 @@ const ViewAll = () => {
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={`https://covers.openlibrary.org/b/id/10521276-L.jpg`} alt={book.title}  />
+                    <img src={`/uploads/art1.png`} alt={book.title} />
+
                     <span className="badge">Best Seller</span>
                     <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
                       {likedBooks.includes(book._id) ? (
