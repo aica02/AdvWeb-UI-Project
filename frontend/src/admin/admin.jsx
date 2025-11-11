@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FaUser,
   FaBookOpen,
@@ -9,26 +9,14 @@ import {
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "../css/admin.css";
-import DashboardSection from "./dashboard";
-import AddBooksSection from "./addBook";
-import EditDeleteBooksSection from "./editDeleteBook";
-
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const AdminAccount = () => {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "dashboard":
-        return <DashboardSection/>;
-      case "addbooks":
-        return <AddBooksSection/>;
-      case "editbooks":
-        return <EditDeleteBooksSection/>;
-      default:
-        return <DashboardSection />;
-    }
-  };
+  // Check if a route is active
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="dashboard-container">
@@ -37,20 +25,22 @@ const AdminAccount = () => {
         <div className="logo">L</div>
         <nav className="nav-links">
           <button
-            className={`nav-item ${activeSection === "dashboard" ? "active" : ""}`}
-            onClick={() => setActiveSection("dashboard")}
+            className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`}
+            onClick={() => navigate("/admin/dashboard")}
           >
             <MdDashboard />
           </button>
+
           <button
-            className={`nav-item ${activeSection === "addbooks" ? "active" : ""}`}
-            onClick={() => setActiveSection("addbooks")}
+            className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`}
+            onClick={() => navigate("/admin/addbook")}
           >
             <FaBookOpen />
           </button>
+
           <button
-            className={`nav-item ${activeSection === "editbooks" ? "active" : ""}`}
-            onClick={() => setActiveSection("editbooks")}
+            className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`}
+            onClick={() => navigate("/admin/editdeletebook")}
           >
             <FaClock />
           </button>
@@ -67,13 +57,13 @@ const AdminAccount = () => {
 
           <div className="header-right">
             <div className="user-info-icon">
-                <div className="user-info">
+              <div className="user-info">
                 <p className="username">Manlapig, Angelo R.</p>
                 <span className="role">Admin</span>
-                </div>
-                <div className="user-avatar">
+              </div>
+              <div className="user-avatar">
                 <FaUser />
-                </div>
+              </div>
             </div>
             <hr className="wall" />
 
@@ -88,8 +78,10 @@ const AdminAccount = () => {
           </div>
         </header>
 
-        {/* Dynamically Loaded Section */}
-        <div className="dashboard-section">{renderSection()}</div>
+        {/* Render nested routes */}
+        <div className="dashboard-section">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

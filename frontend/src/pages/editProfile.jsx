@@ -37,7 +37,6 @@ export default function EditProfile() {
       }
     };
     fetchUser();
-    // eslint-disable-next-line
   }, []);
 
   const handleChange = e => {

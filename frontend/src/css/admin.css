@@ -299,6 +299,16 @@
    font-size: 14px; 
    color: var(--color-secondary);
 }
+.add-books-container .add-book-form,
+.add-books-container .additional-info {
+  flex: 1;
+  min-width: 380px;
+  max-width: 500px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
 
 .add-books-container .form-group input,
 .add-books-container .form-group textarea,
