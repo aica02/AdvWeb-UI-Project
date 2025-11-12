@@ -13,7 +13,7 @@ function App() {
     <>
       <ScrollToTop/>
       <Header/>
-      <Outlet/>
+      <Outlet />
       <InfoBanner/>
       <Footer/>
     </>

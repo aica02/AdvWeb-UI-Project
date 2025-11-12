@@ -11,6 +11,8 @@ import Profile from "../pages/profile.jsx";
 import EditProfile from "../pages/editProfile.jsx";
 import ChangePassword from "../pages/changePassword.jsx";
 import Orders from "../pages/orders.jsx";
+import Cart from "../pages/cart.jsx";
+import Payment from "../pages/payment.jsx";
 
 // Admin
 import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
@@ -31,10 +33,12 @@ const router = createBrowserRouter([
       { path: "/bookCard", element: <BookCard /> },
       { path: "/viewAll", element: <ViewAll /> },
       { path: "/wishlist", element: <Wishlists /> },
+      { path: "/cart", element: <Cart /> },
       { path: "/profile", element: <Profile /> },
       { path: "/profile/edit", element: <EditProfile /> },
       { path: "/profile/change-password", element: <ChangePassword /> },
       { path: "/orders", element: <Orders /> },
+      { path: "/payment", element: <Payment />},
 
 // Admin Routes
 {

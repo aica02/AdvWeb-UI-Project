@@ -16,6 +16,10 @@ export default function Header() {
   const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
 
+const handleCartClick = () => {
+    navigate("/cart");
+  }
+
   // Real login function
   const handleLogin = async (email, password) => {
     setLoginError("");
@@ -89,9 +93,9 @@ export default function Header() {
                       <FaHeart className="dropdown-icon" />
                       <Link to="/wishlist">Wishlist</Link>
                     </li>
-                    <li>
+                    <li >
                       <FaShoppingCart className="dropdown-icon" />
-                      <Link to="/#">Cart</Link>
+                      <Link to="/cart">Cart</Link>
                     </li>
                     <li onClick={() => {setIsLoggedIn(false); setIsOpen(false); navigate("/")}}>
                       <FaSignOutAlt className="dropdown-icon"/>
@@ -112,7 +116,7 @@ export default function Header() {
                       <FaHeart className="dropdown-icon" />
                       <Link to="/wishlist">Wishlist</Link>
                     </li>
-                    <li>
+                    <li onClick={handleCartClick}>
                       <FaShoppingCart className="dropdown-icon" />
                       <Link to="/#">Cart</Link>
                     </li>
