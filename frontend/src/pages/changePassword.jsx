@@ -40,7 +40,6 @@ export default function ChangePassword() {
         <div className="changepass-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
-          <Link to="/auth">Log Out</Link>
         </div>
       </div>
       <div className="profile-content">

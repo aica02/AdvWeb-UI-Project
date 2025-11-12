@@ -1,60 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../css/cart.css';
 
-function Cart() {
-  const [cartItems, setCartItems] = useState([
-    { id: 1, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 342, quantity: 1, image: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=200&h=280&fit=crop" },
-    { id: 2, title: "Harry Potter and the Goblet of Fire", author: "J.K. Rowling", price: 395, quantity: 1, image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=280&fit=crop" }
-  ]);
+const API = import.meta.env.VITE_API_URL;
 
+function Cart() {
+  const [cartItems, setCartItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
   const [shipping] = useState(100);
   const [total, setTotal] = useState(0);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
+  // Fetch pending cart from backend
   useEffect(() => {
-    const sub = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    setSubtotal(sub);
-    setTotal(sub + shipping);
-  }, [cartItems, shipping]);
+    const fetchCart = async () => {
+      if (!token) return;
 
-  const updateQuantity = (id, change) => {
-    setCartItems(cartItems.map(item => {
-      if (item.id === id) {
-        const newQty = Math.max(1, item.quantity + change);
-        return { ...item, quantity: newQty };
+      try {
+        const { data } = await axios.get(`${API}/cart/pending`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const items = data.books.map(item => ({
+          bookId: item.book._id,  // use bookId instead of id
+          title: item.book.title,
+          author: item.book.author,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.book.image || "http://localhost:5000/uploads/default.png"
+        }));
+
+        setCartItems(items);
+        setSubtotal(data.totalAmount || 0);
+        setTotal((data.totalAmount || 0) + shipping);
+      } catch (err) {
+        console.error("Error fetching cart:", err);
       }
-      return item;
-    }));
+    };
+    fetchCart();
+  }, [token, shipping]);
+
+  // Update quantity in backend
+const updateQuantity = async (bookId, change) => {
+  const item = cartItems.find(i => i.bookId === bookId); // Fix this if necessary
+  if (!item) return;
+
+  const newQty = Math.max(1, item.quantity + change);
+
+  try {
+    await axios.patch(`${API}/cart/update`, {
+      bookId: bookId,  // Ensure you're passing the correct bookId
+      quantity: newQty
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const updatedItems = cartItems.map(i =>
+      i.bookId === bookId ? { ...i, quantity: newQty } : i
+    );
+
+    const newSubtotal = updatedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+    setCartItems(updatedItems);
+    setSubtotal(newSubtotal);
+    setTotal(newSubtotal + shipping);
+  } catch (err) {
+    console.error("Error updating quantity:", err);
+  }
+};
+
+
+  // Remove item from cart
+  const removeItem = async (bookId) => {
+    try {
+      await axios.delete(`${API}/cart/remove/${bookId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const updatedItems = cartItems.filter(item => item.bookId !== bookId);
+      const newSubtotal = updatedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+
+      setCartItems(updatedItems);
+      setSubtotal(newSubtotal);
+      setTotal(newSubtotal + shipping);
+    } catch (err) {
+      console.error("Error removing item:", err);
+    }
   };
 
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
-
+  // Proceed to checkout
   const handleProceedToCheckout = () => {
     navigate('/payment');
   };
 
   return (
-    <div className="cart-page-wrapper"> 
-      
+    <div className="cart-page-wrapper">
       <div className="cart-page">
-        
         <div className="item-breadcrumb">
           <span className="breadcrumb-home">Home</span>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-current">Cart</span>
         </div>
 
-        {/* Cart Container */}
         <div className="cart-container">
           <h1 className="cart-title">Your Shopping Cart</h1>
           <div className="cart-content">
 
-            {/* Cart Items */}
             <section className="cart-items-section" aria-label="Shopping cart items">
               {cartItems.length === 0 ? (
                 <div className="empty-cart">
@@ -62,7 +115,7 @@ function Cart() {
                 </div>
               ) : (
                 cartItems.map(item => (
-                  <article key={item.id} className="cart-item">
+                  <article key={item.bookId} className="cart-item">
                     <div className="item-image">
                       <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" />
                     </div>
@@ -74,7 +127,7 @@ function Cart() {
                       <div className="quantity-control" role="group" aria-label="Quantity controls">
                         <button
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.id, -1)}
+                          onClick={() => updateQuantity(item.bookId, -1)}
                           aria-label="Decrease quantity"
                           disabled={item.quantity <= 1}
                         >
@@ -83,7 +136,7 @@ function Cart() {
                         <span className="qty-display" aria-label={`Quantity: ${item.quantity}`}> {item.quantity} </span>
                         <button
                           className="qty-btn"
-                          onClick={() => updateQuantity(item.id, 1)}
+                          onClick={() => updateQuantity(item.bookId, 1)}
                           aria-label="Increase quantity"
                         >
                           +
@@ -94,7 +147,7 @@ function Cart() {
                     <div className="item-actions">
                       <button
                         className="delete-btn"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.bookId)} // Use bookId
                         aria-label={`Remove ${item.title} from cart`}
                       >
                         <RiDeleteBin6Line />
@@ -108,7 +161,6 @@ function Cart() {
               )}
             </section>
 
-            {/* Order Summary */}
             <aside className="order-summary" aria-label="Order summary">
               <h2 className="summary-title">Order Summary</h2>
 
@@ -140,7 +192,6 @@ function Cart() {
           </div>
         </div>
       </div>
-      
     </div>
   );
 }

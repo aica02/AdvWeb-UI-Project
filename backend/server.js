@@ -8,8 +8,10 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
 import bookRoutes from "./routes/bookRoute.js";
 import { trackVisit } from "./middleware/visitMiddlew.js";
+import cartRoute from "./routes/cartRoute.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import ordersRouter from "./routes/bookRoute.js";
 
 
 dotenv.config();
@@ -66,7 +68,12 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/admin/books", bookRoutes);
+app.use("/cart", cartRoute);
+app.use("/api/orders", ordersRouter);
 app.use(trackVisit);
+
+
+
 
 
 // Serve static uploads

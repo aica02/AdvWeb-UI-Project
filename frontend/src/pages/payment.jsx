@@ -1,218 +1,355 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { IoCashOutline } from "react-icons/io5";
 import { FaCreditCard } from "react-icons/fa";
 import { BsBank } from "react-icons/bs";
-import '../css/PaymentPage.css';
+import "../css/PaymentPage.css";
+import { useNavigate } from "react-router-dom";
+
+const API = import.meta.env.VITE_API_URL;
 
 function Payment() {
-  const [cartItems, setCartItems] = useState([
-    { id: 1, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 342, quantity: 1, image: "https://images.unsplash.com/photo-1621351183012-e2f9972dd9bf?w=200&h=280&fit=crop"},
-    { id: 2, title: "Harry Potter and the Goblet of Fire", author: "J.K. Rowling", price: 395, quantity: 1, image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=280&fit=crop"}
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+  const [user, setUser] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [cardInfo, setCardInfo] = useState({ cardNumber: "", expiry: "", cvc: "" });
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
-  const [user] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    phoneNumber: '09123456789',
-    province: 'Metro Manila',
-    city: 'Quezon City',
-    barangay: 'San Isidro',
-    street: '123 Mabini Street',
-    postalCode: '38102'
-  });
-
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [cardInfo, setCardInfo] = useState({
-    cardNumber: '',
-    expiry: '',
-    cvc: ''
-  });
-
-  const [couponCode, setCouponCode] = useState('');
+  const token = localStorage.getItem("token");
   const shipping = 100;
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const total = subtotal + shipping;
 
-  const handleCheckout = () => alert('Proceeding to checkout...');
-  const handleCardChange = (e) => setCardInfo({ ...cardInfo, [e.target.name]: e.target.value });
-  const handleApplyCoupon = () => alert(`Applying coupon: ${couponCode}`);
-  const handleEditShipping = () => alert('Edit shipping information');
+  // 🧠 Fetch user info
+  const fetchUser = async () => {
+    try {
+      const { data } = await axios.get(`${API}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(data.user);
+    } catch (err) {
+      console.error("Failed to fetch user info:", err);
+    }
+  };
+  // 🧠 Fetch cart info (Pending cart from database)
+  const fetchCart = async () => {
+    try {
+      const res = await axios.get(`${API}/cart/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCartItems(res.data.books || []);
+    } catch (err) {
+      console.error("Error fetching cart:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const shippingFields = [
-    { label: 'First Name', value: user.firstName },
-    { label: 'Last Name', value: user.lastName },
-    { label: 'Phone Number', value: user.phoneNumber },
-    { label: 'Province', value: user.province },
-    { label: 'City/Municipality', value: user.city },
-    { label: 'Barangay', value: user.barangay },
-    { label: 'Street', value: user.street },
-    { label: 'Postal Code', value: user.postalCode }
-  ];
+  useEffect(() => {
+    if (!token) return;
+    fetchUser();
+    fetchCart();
+  }, [token]);
+
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = Math.max(subtotal + shipping - discount, 0);
+  const formatCurrency = (n) => n.toFixed(2);
+
+  // 🧩 Card Validation
+  const validateCard = () => {
+    const { cardNumber, expiry, cvc } = cardInfo;
+    const cardRegex = /^\d{16}$/;
+    const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    const cvcRegex = /^\d{3,4}$/;
+
+    if (!cardRegex.test(cardNumber.replace(/\s+/g, ""))) {
+      setErrorMessage("Invalid card number. Must be 16 digits.");
+      return false;
+    }
+    if (!expiryRegex.test(expiry)) {
+      setErrorMessage("Invalid expiry date. Format MM/YY.");
+      return false;
+    }
+    if (!cvcRegex.test(cvc)) {
+      setErrorMessage("Invalid CVC. Must be 3 or 4 digits.");
+      return false;
+    }
+    setErrorMessage("");
+    return true;
+  };
+
+  // 🧩 Shipping completeness check
+  const shippingFields = user
+    ? [
+        user.firstName,
+        user.lastName,
+        user.phone,
+        user.province,
+        user.city,
+        user.barangay,
+        user.street,
+        user.postalCode,
+      ]
+    : [];
+
+  const isShippingComplete = shippingFields.every((f) => f && f.trim() !== "");
+
+  // 🧩 Edit Info redirect
+  const handleEditShipping = () => {
+    window.location.href = "http://localhost:5173/profile/edit";
+  };
+
+  // 🧩 Apply Coupon
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    try {
+      const res = await axios.post(
+        `${API}/apply-coupon`,
+        { code: couponCode },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setDiscount(res.data.discount);
+        alert(`Coupon applied! Discount: ₱${res.data.discount}`);
+      } else {
+        setDiscount(0);
+        alert("Invalid coupon code.");
+      }
+    } catch (err) {
+      console.error("Error applying coupon:", err);
+      alert("Failed to apply coupon.");
+    }
+  };
+
+  
+  //  PLACE ORDER
+const handleCheckout = async () => {
+  if (!paymentMethod) return alert("Select a payment method");
+
+  // If payment method is card, validate card details
+  if (paymentMethod === "card" && !validateCard()) {
+    return; // Don't proceed if card details are invalid
+  }
+
+  if (!isShippingComplete) {
+    return alert("Please complete your shipping details.");
+  }
+
+  try {
+    // Send status "pending" along with the order details
+    const { data } = await axios.post(
+      `${API}/cart/checkout`,
+      {
+        paymentMethod,
+        cardInfo, // Pass cardInfo if payment method is card
+        status: "pending", // Explicitly set order status to "pending"
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (data.message) {
+      alert(`Order placed! Total: ₱${formatCurrency(total)}`);
+      navigate("/orders"); // Navigate to Orders page after placing the order
+    } else {
+      alert("Failed to place order. Try again.");
+    }
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert(err.response?.data?.message || "Checkout failed");
+  }
+};
+
+
 
   const paymentMethods = [
-    { id: 'card', icon: <FaCreditCard />, label: 'Card' },
-    { id: 'bank', icon: <BsBank />, label: 'Bank' },
-    { id: 'cod', icon: <IoCashOutline />, label: 'Cash On Delivery' }
+    { id: "card", icon: <FaCreditCard />, label: "Card" },
+    { id: "bank", icon: <BsBank />, label: "Bank" },
+    { id: "cod", icon: <IoCashOutline />, label: "Cash On Delivery" },
   ];
 
+
+
   return (
-    <>
-        <div className="payment-page">
-            <div className="content-wrapper">
-                <div className="left-section">
-                    {/* Shipping Details */}
-                    <section className="shipping-section">
-              <h1 className="section-title">Shipping Details</h1>
-              
+    <div className="payment-page">
+      <div className="content-wrapper">
+        {/* LEFT SIDE */}
+        <div className="left-section">
+          <section className="shipping-section">
+            <h1 className="section-title">Shipping Details</h1>
+
+            {user ? (
               <div className="info-container">
                 <div className="info-header">Information</div>
-                
                 <div className="info-content">
-                  {shippingFields.map((field, idx) => (
-                    <div key={idx} className="info-item">
-                      <span className="info-label">{field.label}</span>
-                      <span className="info-value">{field.value}</span>
+                  {[{ label: "First Name", value: user.firstName },
+                    { label: "Last Name", value: user.lastName },
+                    { label: "Phone", value: user.phone },
+                    { label: "Province", value: user.province },
+                    { label: "City/Municipality", value: user.city },
+                    { label: "Barangay", value: user.barangay },
+                    { label: "Street", value: user.street },
+                    { label: "Postal Code", value: user.postalCode },
+                  ].map((f, i) => (
+                    <div key={i} className="info-item">
+                      <span className="info-label">{f.label}</span>
+                      <span className="info-value">{f.value}</span>
                     </div>
                   ))}
                 </div>
-
                 <div className="info-actions">
                   <button onClick={handleEditShipping} className="edit-button">
                     Edit
                   </button>
                 </div>
               </div>
-            </section>
+            ) : (
+              <p>Please log in to view your shipping information.</p>
+            )}
+          </section>
 
-            {/* Payment Method */}
-            <section className="payment-section">
-              <h2 className="payment-title">
-                Payment Method <span className="required">*</span>
-              </h2>
-              
-              <div className="payment-methods">
-                {paymentMethods.map(method => (
-                  <button 
-                    key={method.id}
-                    onClick={() => setPaymentMethod(method.id)}
-                    className={`payment-method ${paymentMethod === method.id ? 'active' : ''}`}
-                  >
-                    <span className="payment-icon">{method.icon}</span>
-                    <span>{method.label}</span>
-                  </button>
-                ))}
-              </div>
+          {/* PAYMENT METHOD */}
+          <section className="payment-section">
+            <h2 className="payment-title">
+              Payment Method <span className="required">*</span>
+            </h2>
+            <div className="payment-methods">
+              {paymentMethods.map((method) => (
+                <button
+                  key={method.id}
+                  onClick={() => setPaymentMethod(method.id)}
+                  className={`payment-method ${paymentMethod === method.id ? "active" : ""}`}
+                >
+                  <span className="payment-icon">{method.icon}</span>
+                  <span>{method.label}</span>
+                </button>
+              ))}
+            </div>
 
-              {paymentMethod === 'card' && (
-                <div className="card-form">
+            {paymentMethod === "card" && (
+              <div className="card-form">
+                {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+                <label className="form-field">
+                  <span className="form-label">
+                    Card Number <span className="required">*</span>
+                  </span>
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    placeholder="Enter here..."
+                    value={cardInfo.cardNumber}
+                    onChange={(e) => setCardInfo({ ...cardInfo, cardNumber: e.target.value })}
+                    maxLength="19"
+                    className="form-input"
+                  />
+                </label>
+                <div className="form-row">
                   <label className="form-field">
                     <span className="form-label">
-                      Card Number <span className="required">*</span>
+                      Expiry <span className="required">*</span>
                     </span>
                     <input
                       type="text"
-                      name="cardNumber"
-                      placeholder="Enter here..."
-                      value={cardInfo.cardNumber}
-                      onChange={handleCardChange}
-                      maxLength="19"
+                      name="expiry"
+                      placeholder="MM / YY"
+                      value={cardInfo.expiry}
+                      onChange={(e) => setCardInfo({ ...cardInfo, expiry: e.target.value })}
+                      maxLength="7"
                       className="form-input"
                     />
                   </label>
-                  
-                  <div className="form-row">
-                    <label className="form-field">
-                      <span className="form-label">Expiry <span className="required">*</span></span>
-                      <input
-                        type="text"
-                        name="expiry"
-                        placeholder="MM / YY"
-                        value={cardInfo.expiry}
-                        onChange={handleCardChange}
-                        maxLength="7"
-                        className="form-input"
-                      />
-                    </label>
-                    
-                    <label className="form-field">
-                      <span className="form-label">CVC <span className="required">*</span></span>
-                      <input
-                        type="text"
-                        name="cvc"
-                        placeholder="CVC"
-                        value={cardInfo.cvc}
-                        onChange={handleCardChange}
-                        maxLength="4"
-                        className="form-input"
-                      />
-                    </label>
-                  </div>
-
-                  <p className="form-disclaimer">
-                    By providing your card information, you allow Logo Here to charge your 
-                    card for future payments in accordance with their terms.
-                  </p>
+                  <label className="form-field">
+                    <span className="form-label">
+                      CVC <span className="required">*</span>
+                    </span>
+                    <input
+                      type="text"
+                      name="cvc"
+                      placeholder="CVC"
+                      value={cardInfo.cvc}
+                      onChange={(e) => setCardInfo({ ...cardInfo, cvc: e.target.value })}
+                      maxLength="4"
+                      className="form-input"
+                    />
+                  </label>
                 </div>
-              )}
-            </section>
-          </div>
+                <p className="form-disclaimer">
+                  By providing your card information, you allow this store to charge your card for future payments.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
 
-          {/* Order Summary */}
-          <aside className="order-summary">
-            <h2 className="summary-title">Order Summary</h2>
-            
-            {cartItems.map(item => (
+        {/* RIGHT SIDE */}
+        <aside className="order-summary">
+          <h2 className="summary-title">Order Summary</h2>
+          {cartItems.length === 0 ? (
+            <p>Your cart is empty.</p>
+          ) : (
+            cartItems.map((item) => (
               <article key={item.id} className="cart-item">
-                <img src={item.image} alt={item.title} className="item-image" />
+                <img
+                  src={item.image || "https://dummyimage.com/200x280/cccccc/000000&text=No+Image"}
+                  alt={item.title}
+                  loading="lazy"
+                />
                 <div className="item-details">
                   <h3 className="item-title">{item.title}</h3>
                   <p className="item-author">{item.author}</p>
                   <p className="item-quantity">Quantity: {item.quantity}</p>
-                  <p className="item-price">₱{item.price * item.quantity}</p>
+                  <p className="item-price">₱{formatCurrency(item.price * item.quantity)}</p>
                 </div>
               </article>
-            ))}
+            ))
+          )}
 
-            <div className="coupon-section">
-              <input
-                type="text"
-                placeholder="Coupon Code"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                className="coupon-input"
-              />
-              <button onClick={handleApplyCoupon} className="coupon-button">Apply</button>
-            </div>
-
-            <div className="pricing-details">
-              <div className="pricing-row">
-                <span className="pricing-label">Subtotal</span>
-                <span className="pricing-value">₱ {subtotal}</span>
-              </div>
-              <div className="pricing-row">
-                <span className="pricing-label">Shipping</span>
-                <span className="pricing-value">₱ {shipping}</span>
-              </div>
-              <hr className="pricing-divider" />
-              <div className="pricing-row total">
-                <span className="pricing-label">Total</span>
-                <span className="pricing-value">₱ {total}</span>
-              </div>
-            </div>
-
-            <button 
-              onClick={handleCheckout}
-              disabled={cartItems.length === 0}
-              className={`checkout-button ${cartItems.length === 0 ? 'disabled' : ''}`}
-            >
-              Place Order
+          <div className="coupon-section">
+            <input
+              type="text"
+              placeholder="Coupon Code"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              className="coupon-input"
+            />
+            <button onClick={handleApplyCoupon} className="coupon-button">
+              Apply
             </button>
-          </aside>
-        </div>
-      </div>
+          </div>
 
-    </>
+          <div className="pricing-details">
+            <div className="pricing-row">
+              <span className="pricing-label">Subtotal</span>
+              <span className="pricing-value">₱ {formatCurrency(subtotal)}</span>
+            </div>
+            <div className="pricing-row">
+              <span className="pricing-label">Shipping</span>
+              <span className="pricing-value">₱ {formatCurrency(shipping)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="pricing-row">
+                <span className="pricing-label">Discount</span>
+                <span className="pricing-value">-₱ {formatCurrency(discount)}</span>
+              </div>
+            )}
+            <hr className="pricing-divider" />
+            <div className="pricing-row total">
+              <span className="pricing-label">Total</span>
+              <span className="pricing-value">₱ {formatCurrency(total)}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleCheckout}
+            disabled={cartItems.length === 0 || !isShippingComplete}
+            className={`checkout-button ${cartItems.length === 0 || !isShippingComplete ? "disabled" : ""}`}
+          >
+            Place Order
+          </button>
+        </aside>
+      </div>
+    </div>
   );
 }
 

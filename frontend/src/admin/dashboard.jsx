@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
-  FaUser, FaBookOpen, FaBook, FaChartLine, FaBox, 
-  FaClock, FaSyncAlt, FaMoneyBillWave 
-} from "react-icons/fa";
+import { FaUser, FaBookOpen, FaBook, FaChartLine, FaBox, FaClock, FaSyncAlt, FaMoneyBillWave } from "react-icons/fa";
 import "../css/admin.css";
 import { useNavigate } from "react-router-dom";
 

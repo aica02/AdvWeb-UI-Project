@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  FaUser,
-  FaBookOpen,
-  FaClock,
-  FaBell,
-  FaSignOutAlt,
-  FaSearch,
-} from "react-icons/fa";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "../css/admin.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";

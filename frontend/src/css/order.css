@@ -169,6 +169,19 @@
   min-width: 90px;
   text-align: right;
 }
+.complete-order-btn {
+  background-color: #28a745; /* Green color for complete button */
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.complete-order-btn:hover {
+  background-color: #218838; /* Darker green on hover */
+}
 
 /* EMPTY MESSAGE */
 .orders-list .empty {

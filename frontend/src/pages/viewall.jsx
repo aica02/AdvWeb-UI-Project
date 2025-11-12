@@ -4,24 +4,28 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 const ViewAll = () => {
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [likedBooks, setLikedBooks] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
 
-  // filter states
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedAges, setSelectedAges] = useState([]);
-  const [onSale, setOnSale] = useState(""); // "yes" | "no" | "all"
+  const [onSale, setOnSale] = useState("");
 
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
-  // Fetch all books
+  // --- Fetch all books ---
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/admin/books");
+        const res = await axios.get(`${API}/admin/books`);
         setBooks(res.data);
         setFilteredBooks(res.data);
       } catch (err) {
@@ -31,65 +35,124 @@ const ViewAll = () => {
     fetchBooks();
   }, []);
 
-  // Handle checkbox toggles
+  // --- Fetch current cart ---
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!token) return;
+
+      try {
+        const res = await axios.get(`${API}/cart/pending`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const items = res.data.books.map((item) => ({
+          id: item.book._id,
+          title: item.book.title,
+          author: item.book.author,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.book.image || "http://localhost:5000/uploads/default.png",
+        }));
+
+        setCart(items);
+        setTotal(res.data.totalAmount || 0);
+      } catch (err) {
+        console.error("Error fetching cart:", err);
+      }
+    };
+    fetchCart();
+  }, [token]);
+
+  // --- Filter toggle ---
   const toggleFilter = (value, setter) => {
     setter((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value]
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
 
-  // Apply filters realtme
+  // --- Apply filters ---
   useEffect(() => {
     let filtered = books;
 
-    // Category filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((book) =>
-        selectedCategories.includes(book.category)
-      );
+      filtered = filtered.filter((book) => selectedCategories.includes(book.category));
     }
 
-    // Language filter
     if (selectedLanguages.length > 0) {
       filtered = filtered.filter((book) =>
         book.bookLanguage?.some((lang) => selectedLanguages.includes(lang))
       );
     }
 
-    // Recommended Age filter
     if (selectedAges.length > 0) {
       filtered = filtered.filter((book) =>
         book.recommendedAge?.some((age) => selectedAges.includes(age))
       );
     }
 
-    // On Sale filter
     if (onSale === "yes") {
       filtered = filtered.filter(
-        (book) =>
-          book.newPrice &&
-          book.newPrice < book.oldPrice &&
-          book.newPrice !== 0
+        (book) => book.newPrice && book.newPrice < book.oldPrice && book.newPrice !== 0
       );
     } else if (onSale === "no") {
       filtered = filtered.filter(
-        (book) =>
-          !book.newPrice ||
-          book.newPrice >= book.oldPrice
+        (book) => !book.newPrice || book.newPrice >= book.oldPrice
       );
     }
 
     setFilteredBooks(filtered);
   }, [selectedCategories, selectedLanguages, selectedAges, onSale, books]);
 
+  // --- Toggle like ---
   const toggleLike = (bookId) => {
     setLikedBooks((prev) =>
-      prev.includes(bookId)
-        ? prev.filter((id) => id !== bookId)
-        : [...prev, bookId]
+      prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
     );
+  };
+
+  // --- Add to cart ---
+  const addToCart = async (book) => {
+    if (!token) {
+      alert("Please log in to add books to your cart.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/cart/add`,
+        {
+          bookId: book._id,
+          price: book.newPrice ?? book.oldPrice,
+          quantity: 1,
+          title: book.title,
+          author: book.author,
+          image: book.image || "",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh cart
+      const cartRes = await axios.get(`${API}/cart/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const items = cartRes.data.books.map((item) => ({
+        id: item.book._id,
+        title: item.book.title,
+        author: item.book.author,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.book.image || "http://localhost:5000/uploads/default.png",
+      }));
+
+      setCart(items);
+      setTotal(cartRes.data.totalAmount || 0);
+
+      alert(`${book.title} has been added to your cart!`);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      alert(err.response?.data?.message || "Server error: Could not add to cart");
+    }
   };
 
   return (
@@ -97,12 +160,12 @@ const ViewAll = () => {
       <nav className="breadcrumb">
         <Link to="/#" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link className="breadcrumb-link active">Best Sellers</Link>
+        <span className="breadcrumb-link active">Best Sellers</span>
       </nav>
 
       <div className="viewall-container">
+        {/* --- Sidebar Filters --- */}
         <aside className="sidebar">
-          {/* --- CATEGORY FILTER --- */}
           <hr className="line-before-filters" />
           <h3>Categories</h3>
           <ul className="filter-list">
@@ -119,7 +182,6 @@ const ViewAll = () => {
             ))}
           </ul>
 
-          {/* --- LANGUAGE FILTER --- */}
           <hr className="line-before-filters" />
           <h3>Book Language</h3>
           <ul className="filter-list">
@@ -136,7 +198,6 @@ const ViewAll = () => {
             ))}
           </ul>
 
-          {/* --- AGE FILTER --- */}
           <hr className="line-before-filters" />
           <h3>Recommended Age</h3>
           <ul className="filter-list">
@@ -153,44 +214,25 @@ const ViewAll = () => {
             ))}
           </ul>
 
-          {/* --- SALE FILTER --- */}
           <hr className="line-before-filters" />
           <h3>On Sale</h3>
           <ul className="filter-list">
             <li>
-              <input
-                type="radio"
-                name="sales"
-                id="yes"
-                checked={onSale === "yes"}
-                onChange={() => setOnSale("yes")}
-              />
+              <input type="radio" name="sales" id="yes" checked={onSale === "yes"} onChange={() => setOnSale("yes")} />
               <label htmlFor="yes">Yes</label>
             </li>
             <li>
-              <input
-                type="radio"
-                name="sales"
-                id="no"
-                checked={onSale === "no"}
-                onChange={() => setOnSale("no")}
-              />
+              <input type="radio" name="sales" id="no" checked={onSale === "no"} onChange={() => setOnSale("no")} />
               <label htmlFor="no">No</label>
             </li>
             <li>
-              <input
-                type="radio"
-                name="sales"
-                id="all"
-                checked={onSale === ""}
-                onChange={() => setOnSale("")}
-              />
+              <input type="radio" name="sales" id="all" checked={onSale === ""} onChange={() => setOnSale("")} />
               <label htmlFor="all">All Books</label>
             </li>
           </ul>
         </aside>
 
-        {/* --- MAIN CONTENT --- */}
+        {/* --- Main Content --- */}
         <section className="main-content">
           <div className="view-all-header">
             <h2>Best Sellers</h2>
@@ -211,30 +253,18 @@ const ViewAll = () => {
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={`http://localhost:5000/uploads/art1.png`} alt={book.title} />
-
+                    <img src={book.image || `http://localhost:5000/uploads/art1.png`} alt={book.title} />
                     <span className="badge">Best Seller</span>
                     <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
-                      {likedBooks.includes(book._id) ? (
-                        <FaHeart className="heart-icon filled" />
-                      ) : (
-                        <FaRegHeart className="heart-icon" />
-                      )}
+                      {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
                     </div>
                   </div>
 
                   <div className="book-info">
-                    <p
-                      className="book-title"
-                      onClick={() => navigate("/bookCard")}
-                    >
-                      {book.title}
-                    </p>
+                    <p className="book-title" onClick={() => navigate("/bookCard")}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    <p className="book-price">
-                      ₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}
-                    </p>
-                    <button className="add-to-cart">Add to Cart</button>
+                    <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                    <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
                   </div>
                 </div>
               ))
