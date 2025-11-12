@@ -127,7 +127,7 @@ export default function EditProfile() {
                 </div>
               </div>
             </div>
-            <button className="profile-btn" style={{ marginTop: 24, width: 160 }}>Save Profile</button>
+            <button className="profile-btn" style={{ marginTop: 24, marginLeft:20, width: 160 }}>Save Profile</button>
             {message && <p style={{ color: message.includes('updated') ? 'green' : 'red', marginTop: 10 }}>{message}</p>}
           </form>
         </div>

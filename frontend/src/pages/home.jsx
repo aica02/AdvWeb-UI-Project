@@ -5,6 +5,7 @@ import NewReleaseBooks from './newrelease';
 import InfoBanner from './services';
 import Header from './header'
 import Footer from './footer'
+import Profile from './profile'
 const Home = () => {
   return (
     <>
