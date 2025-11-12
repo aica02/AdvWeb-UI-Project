@@ -20,6 +20,7 @@ export default function Header() {
   const handleLogin = async (email, password) => {
     setLoginError("");
     try {
+      console.log("API URL is:", API);
       const { data } = await axios.post(`${API}/api/auth/login`, {
         email,
         password,

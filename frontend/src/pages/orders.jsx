@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";  
+import "../css/order.css";
 
 export default function Orders() {
   const [tab, setTab] = useState("pending");
   return (
-    <div className="profile-container">
+      <div className="profile-container">
       <div className="profile-sidebar">
-        <div className="profile-menu">
+        <div className="order-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
           <Link to="/auth">Log Out</Link>
@@ -39,5 +40,6 @@ export default function Orders() {
         </div>
       </div>
     </div>
+    
   );
 }
