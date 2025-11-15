@@ -105,125 +105,126 @@ const AddBooksSection = () => {
 
       <div className="add-books-container">
         <div className="add-book-form">
-          <h3 className="form-header">Add New Book</h3>
           <form className="book-form" onSubmit={handleSubmit}>
-
+            <div className="book-info">
             {/* Title */}
-            <div className="form-group">
-              <label>Title<span className="asterisk">*</span></label>
-              <input
-                name="title"
-                type="text"
-                placeholder="Enter book title"
-                value={form.title}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            {/* Author */}
-            <div className="form-group">
-              <label>Author<span className="asterisk">*</span></label>
-              <input
-                name="author"
-                type="text"
-                placeholder="Enter book author"
-                value={form.author}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label>Description<span className="asterisk">*</span></label>
-              <textarea
-                name="description"
-                placeholder="Enter book description"
-                value={form.description}
-                onChange={handleChange}
-                required
-              ></textarea>
-            </div>
-
-            {/* Category */}
-            <div className="form-group">
-              <label>Category<span className="asterisk">*</span></label>
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Choose a category</option>
-                <option value="Fiction">Fiction</option>
-                <option value="Non-Fiction">Non-Fiction</option>
-                <option value="Romance">Romance</option>
-                <option value="Thriller">Thriller</option>
-                <option value="Coding">Coding</option>
-              </select>
-            </div>
-
-            {/* Trending */}
-            <div className="form-checkbox">
-              <input
-                type="checkbox"
-                name="trending"
-                checked={form.trending}
-                onChange={handleChange}
-              />
-              <label>Trending</label>
-            </div>
-
-            {/* Old Price */}
-            <div className="form-group">
-              <label>Price<span className="asterisk">*</span></label>
-              <input
-                name="oldPrice"
-                type="number"
-                placeholder="Enter price"
-                value={form.oldPrice}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            {/* On Sale */}
-            <div className="form-checkbox">
-              <input
-                type="checkbox"
-                name="onSale"
-                checked={form.onSale}
-                onChange={handleChange}
-              />
-              <label>On Sale</label>
-            </div>
-
-            {/* New Price */}
-            {form.onSale && (
+            <h3 className="form-header">Add New Book</h3>
               <div className="form-group">
-                <label>New Price<span className="asterisk">*</span></label>
+                <label>Title<span className="asterisk">*</span></label>
                 <input
-                  name="newPrice"
-                  type="number"
-                  placeholder="Enter new price"
-                  value={form.newPrice}
+                  name="title"
+                  type="text"
+                  placeholder="Enter book title"
+                  value={form.title}
                   onChange={handleChange}
-                  required={form.onSale}
+                  required
                 />
               </div>
-            )}
 
-            {/* Cover Image */}
-            <div className="form-group">
-              <label>Cover Image<span className="asterisk">*</span></label>
-              <input
-                type="file"
-                name="coverImage"
-                onChange={handleChange}
-                accept="image/*"
-                required
-              />
+              {/* Author */}
+              <div className="form-group">
+                <label>Author<span className="asterisk">*</span></label>
+                <input
+                  name="author"
+                  type="text"
+                  placeholder="Enter book author"
+                  value={form.author}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="form-group">
+                <label>Description<span className="asterisk">*</span></label>
+                <textarea
+                  name="description"
+                  placeholder="Enter book description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                ></textarea>
+              </div>
+
+              {/* Category */}
+              <div className="form-group">
+                <label>Category<span className="asterisk">*</span></label>
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Choose a category</option>
+                  <option value="Fiction">Fiction</option>
+                  <option value="Non-Fiction">Non-Fiction</option>
+                  <option value="Romance">Romance</option>
+                  <option value="Thriller">Thriller</option>
+                  <option value="Coding">Coding</option>
+                </select>
+              </div>
+
+              {/* Trending */}
+              <div className="form-checkbox">
+                <input
+                  type="checkbox"
+                  name="trending"
+                  checked={form.trending}
+                  onChange={handleChange}
+                />
+                <label>Trending</label>
+              </div>
+
+              {/* Old Price */}
+              <div className="form-group">
+                <label>Price<span className="asterisk">*</span></label>
+                <input
+                  name="oldPrice"
+                  type="number"
+                  placeholder="Enter price"
+                  value={form.oldPrice}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* On Sale */}
+              <div className="form-checkbox">
+                <input
+                  type="checkbox"
+                  name="onSale"
+                  checked={form.onSale}
+                  onChange={handleChange}
+                />
+                <label>On Sale</label>
+              </div>
+
+              {/* New Price */}
+              {form.onSale && (
+                <div className="form-group">
+                  <label>New Price<span className="asterisk">*</span></label>
+                  <input
+                    name="newPrice"
+                    type="number"
+                    placeholder="Enter new price"
+                    value={form.newPrice}
+                    onChange={handleChange}
+                    required={form.onSale}
+                  />
+                </div>
+              )}
+
+              {/* Cover Image */}
+              <div className="form-group">
+                <label>Cover Image<span className="asterisk">*</span></label>
+                <input
+                  type="file"
+                  name="coverImage"
+                  onChange={handleChange}
+                  accept="image/*"
+                  required
+                />
+              </div>
             </div>
 
             {/* Additional Info */}

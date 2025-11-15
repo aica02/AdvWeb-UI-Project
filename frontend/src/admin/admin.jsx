@@ -1,6 +1,7 @@
 import React from "react";
 import {
   FaUser,
+  FaUserMinus,
   FaBookOpen,
   FaClock,
   FaBell,
@@ -44,6 +45,14 @@ const AdminAccount = () => {
           >
             <FaClock />
           </button>
+
+          <button
+            className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`}
+            onClick={() => navigate("/admin/useraccountsdelete")}
+          >
+            <FaUserMinus />
+          </button>
+          
         </nav>
       </aside>
 
@@ -66,11 +75,6 @@ const AdminAccount = () => {
               </div>
             </div>
             <hr className="wall" />
-
-            <div className="notifications">
-              <FaBell className="icon" />
-              <span className="badge">2</span>
-            </div>
 
             <button className="logout-btn">
               <FaSignOutAlt />

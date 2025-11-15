@@ -32,3 +32,43 @@ export const getAdminStats = async (req, res) => {
     res.status(500).json({ message: "Failed to load dashboard stats" });
   }
 };
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find(
+      { role: { $ne: "admin" } },
+      "firstName lastName email role"
+    );
+
+    res.json({ users });
+  } catch (err) {
+    console.error("Fetch Users Error:", err);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
+
+export const getBookSales = async (req, res) => {
+  try {
+    const booksSold = await Order.aggregate([
+      { $unwind: "$books" }, // each book in order
+      { $group: { 
+          _id: "$books.book", 
+          totalSold: { $sum: "$books.quantity" } 
+      }},
+      { $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: "bookInfo"
+      }},
+      { $unwind: "$bookInfo" },
+      { $project: { _id: 0, title: "$bookInfo.title", totalSold: 1 } },
+      { $sort: { totalSold: -1 } } // highest sold first
+    ]);
+
+    res.json({ booksSold });
+  } catch (err) {
+    console.error("Error fetching book sales:", err);
+    res.status(500).json({ message: "Failed to fetch book sales" });
+  }
+};

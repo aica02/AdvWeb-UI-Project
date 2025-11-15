@@ -9,11 +9,12 @@ import Profile from './profile'
 const Home = () => {
   return (
     <>
-      <div>
+        <Header/>
         <HeroCarousel />
         <BestSellingBooks />
         <NewReleaseBooks />
-      </div>
+        <InfoBanner/>
+        <Footer/>
     </>
   );
 };

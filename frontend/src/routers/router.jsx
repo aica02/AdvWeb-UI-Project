@@ -19,6 +19,7 @@ import AdminAccount from "../admin/admin.jsx";
 
 import AddBooksSection from "../admin/addBook.jsx";
 import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
+import UserAccounts from "../admin/userAccounts.jsx";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
     { path: "dashboard", element: <DashboardSection /> },
     { path: "addbook", element: <AddBooksSection /> },
     { path: "editdeletebook", element: <EditDeleteBooksSection /> },
+    { path: "useraccountsdelete", element: <UserAccounts /> },
     { path: "", element: <DashboardSection /> }, // default
   ],
 }
