@@ -1,30 +1,116 @@
-import React, { useState, useRef} from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import axios from "axios";
 import "../css/bookcard.css";
+import Header from './header';
+import Footer from './footer';
+
+const API = import.meta.env.VITE_API_URL;
 
 const BookCard = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [book, setBook] = useState(null);
+    const [relatedBooks, setRelatedBooks] = useState([]);
     const [likedBooks, setLikedBooks] = useState([]);
+    const [loading, setLoading] = useState(true);
     const scrollRef = useRef(null);
+    const token = localStorage.getItem("token");
 
-    const toggleLike = (bookId) => {
-        setLikedBooks((prev) =>
-        prev.includes(bookId)
-            ? prev.filter((id) => id !== bookId)
-            : [...prev, bookId]
-        );
+    const getImageUrl = (img, fallback = "https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg") => {
+      if (!img) return fallback;
+      if (img.startsWith("http")) return img;
+      if (img.startsWith("/")) return `${API}${img}`;
+      if (img.startsWith("uploads")) return `${API}/${img}`;
+      return `${API}/uploads/${img}`;
     };
 
-    const books = [
-      { id: 1, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-      { id: 2, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/10521273-L.jpg" },
-      { id: 3, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984915-L.jpg" },
-      { id: 4, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/8228696-L.jpg" },
-      { id: 5, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984914-L.jpg" },
-      { id: 6, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/8228695-L.jpg" },
-      { id: 1, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-      { id: 2, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/10521273-L.jpg" }
-    ];
+    // Fetch single book details
+    useEffect(() => {
+      const fetchBook = async () => {
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+        try {
+          const res = await axios.get(`${API}/api/books/${id}`);
+          setBook(res.data);
+        } catch (err) {
+          console.error("Error fetching book:", err);
+        }
+      };
+      fetchBook();
+    }, [id]);
+
+    // Fetch related books (same category)
+    useEffect(() => {
+      const fetchRelated = async () => {
+        if (!book) return;
+        try {
+          const res = await axios.get(`${API}/api/books`);
+          const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+          const related = data
+            .filter((b) => b.category === book.category && b._id !== book._id)
+            .slice(0, 8);
+          setRelatedBooks(related);
+        } catch (err) {
+          console.error("Error fetching related books:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchRelated();
+    }, [book]);
+
+    const toggleLike = async (bookId) => {
+        const inWishlist = likedBooks.includes(bookId);
+        
+        try {
+          if (inWishlist) {
+            await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+          } else {
+            await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+          }
+          
+          setLikedBooks((prev) =>
+            prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+          );
+        } catch (err) {
+          console.error('Error toggling wishlist', err);
+          if (!token) alert('Please log in to add items to wishlist');
+        }
+    };
+
+    const addToCart = async (selectedBook) => {
+      if (!token) {
+        alert("Please log in to add books to your cart.");
+        return;
+      }
+
+      try {
+        const payload = {
+          bookId: selectedBook._id || selectedBook.id,
+          price: selectedBook.newPrice ?? selectedBook.oldPrice,
+          quantity: 1,
+          title: selectedBook.title,
+          author: selectedBook.author,
+          image: getImageUrl(selectedBook.coverImage || selectedBook.image, `${API}/uploads/default.png`),
+        };
+
+        console.log("Add to cart payload:", payload);
+
+        await axios.post(`${API}/api/cart/add`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        alert(`${selectedBook.title} has been added to your cart!`);
+        window.dispatchEvent(new Event("cartUpdated"));
+      } catch (err) {
+        console.error("Error adding to cart:", err);
+        alert(err.response?.data?.message || "Could not add to cart");
+      }
+    };
 
     const scroll = (direction) => {
       if (scrollRef.current) {
@@ -34,56 +120,61 @@ const BookCard = () => {
       }
     };
 
+    if (loading) return <div className="loading">Loading book details...</div>;
+    if (!book) return <div className="error">Book not found.</div>;
+
   return (
     <>
+    <Header />
     <nav className="breadcrumb">
-        <Link to="/#" className="breadcrumb-link">Home</Link>
+        <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link to="/#" className="breadcrumb-link">Fantasy</Link>
+        <Link to="/viewAll" className="breadcrumb-link">{book.category}</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link className="breadcrumb-link active">
-          Descriptions
-        </Link>
+        <span className="breadcrumb-link active">
+          {book.title}
+        </span>
     </nav>
-    <div className="card-view-book" style={{ "--book-bg": `url('https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg')` }} >
+    <div className="card-view-book" style={{ "--book-bg": `url('${getImageUrl(book.coverImage || book.image)}')` }} >
       <div className="card-content">
         <div className="book-images">
-          <img
-            src="https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg"
-            alt="Harry Potter Book"
+            <img
+            src={getImageUrl(book.coverImage || book.image)}
+            alt={book.title}
             className="main-image"
+            style={{ maxWidth: '100%', height: 'auto' }}
           />
           <div className="thumbnail-container">
             <img
-              src="https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg"
+              src={getImageUrl(book.coverImage || book.image)}
               alt="Thumbnail 1"
               className="thumbnail"
+              style={{ maxWidth: '100%', height: 'auto' }}
             />
-            <img
-              src="https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg"
+              <img
+              src={getImageUrl(book.coverImage || book.image)}
               alt="Thumbnail 2"
               className="thumbnail"
+              style={{ maxWidth: '100%', height: 'auto' }}
             />
           </div>
         </div>
 
         <div className="book-details">
-            <div className="wishlist" onClick={() => toggleLike(books.id)} >
-                {likedBooks.includes(books.id) ? (
+            <div className="wishlist" onClick={() => toggleLike(book._id)} >
+                {likedBooks.includes(book._id) ? (
                     <FaHeart className="heart-icon filled" />
                   ) : (
                     <FaRegHeart className="heart-icon" />
                   )}
             </div>
             <div className="details-header">
-                <h2>Harry Potter and the Chamber of Secrets</h2>
+                <h2>{book.title}</h2>
             </div>
 
-            <p className="author">J.K. Rowling</p>
+            <p className="author">{book.author}</p>
             <p className="description">
-                Step beyond the world you know. Discover realms filled with magic,
-                mystery, and ancient legends. Every page is a portal — dare to
-                enter...
+                {book.description}
             </p>
 
             <div className="rating">
@@ -93,11 +184,11 @@ const BookCard = () => {
                 <span>5 Ratings</span>
             </div>
 
-            <div className="price">₱675.00</div>
+            <div className="price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</div>
 
             <div className="buttons">
-                <button className="add-cart">Add to Cart</button>
-                <button className="buy-now">Buy Now</button>
+                <button className="add-cart" onClick={() => addToCart(book)}>Add to Cart</button>
+                <button className="buy-now" onClick={() => navigate("/payment")}>Buy Now</button>
             </div>
         </div>
       </div>
@@ -112,32 +203,37 @@ const BookCard = () => {
       <div className="carousel-container">
         <button className="scroll-btn left" onClick={() => scroll("left")}>❮</button>
         <div className="books-carousel" ref={scrollRef}>
-          {books.map((book) => (
-            <div key={book.id} className="book-card">
-              <div className="book-image">
-                <img src={book.img} alt={book.title} />
-                <span className="genre-tag">Fantasy</span>
-                <div className="heart-overlay" onClick={() => toggleLike(book.id)}>
-                  {likedBooks.includes(book.id) ? (
-                    <FaHeart className="heart-icon filled" />
-                  ) : (
-                    <FaRegHeart className="heart-icon" />
-                  )}
+          {relatedBooks.length > 0 ? (
+            relatedBooks.map((relBook) => (
+              <div key={relBook._id} className="book-card">
+                <div className="book-image">
+                  <img src={getImageUrl(relBook.coverImage || relBook.image)} alt={relBook.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                  <span className="genre-tag">{relBook.category}</span>
+                  <div className="heart-overlay" onClick={() => toggleLike(relBook._id)}>
+                    {likedBooks.includes(relBook._id) ? (
+                      <FaHeart className="heart-icon filled" />
+                    ) : (
+                      <FaRegHeart className="heart-icon" />
+                    )}
+                  </div>
+                </div>
+                <div className="book-details">
+                  <h3 onClick={() => navigate(`/bookCard/${relBook._id}`)}>{relBook.title}</h3>
+                  <p className="author">{relBook.author}</p>
+                  <p className="price">₱{(relBook.newPrice ?? relBook.oldPrice)?.toFixed(2)}</p>
+                  <button className="add-btn" onClick={() => addToCart(relBook)}>Add to Cart</button>
                 </div>
               </div>
-              <div className="book-details">
-                <h3>{book.title}</h3>
-                <p className="author">{book.author}</p>
-                <p className="price">₱{book.price.toFixed(2)}</p>
-                <button className="add-btn">Add to Cart</button>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No related books found.</p>
+          )}
         </div>
 
         <button className="scroll-btn right" onClick={() => scroll("right")}>❯</button>
       </div>
-    </div>            
+    </div>
+    <Footer />            
     </>
   );
 };

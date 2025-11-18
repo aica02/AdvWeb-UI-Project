@@ -70,7 +70,9 @@ const AddBooksSection = () => {
       }
     }
 
-    const response = await axios.post(`${API}/admin/books`, formDataToSend, {
+    console.log("FormData entries before send:", Array.from(formDataToSend.entries()));
+
+    const response = await axios.post(`${API}/api/books`, formDataToSend, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -93,7 +95,8 @@ const AddBooksSection = () => {
     });
 
   } catch (err) {
-    console.error(err.response?.data || err);
+    console.error("Error response:", err.response?.data || err);
+    console.error("Full error:", err);
     alert("Error adding book: " + (err.response?.data?.message || err.message));
   }
 };

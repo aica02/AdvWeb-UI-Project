@@ -5,31 +5,72 @@ import Visit from "../models/visitModel.js";
 
 export const getAdminStats = async (req, res) => {
   try {
+    // total products
     const productCount = await Book.countDocuments();
-    const totalUsers = await User.countDocuments();
-    const totalOrders = await Order.countDocuments();
-    const totalSalesAgg = await Order.aggregate([
-      { $match: { status: "Completed" } },
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+
+    // total sales and total orders (accepts different field names)
+    const salesAgg = await Order.aggregate([
+      {
+        $match: {
+          status: { $in: ["Complete", "complete", "Completed"] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: {
+            $sum: {
+              $ifNull: ["$totalAmount", "$totalPrice", "$total", 0]
+            }
+          },
+          totalOrders: { $sum: 1 }
+        }
+      }
     ]);
-    const totalSales = totalSalesAgg[0]?.total || 0;
-    const trendingBooks = await Book.countDocuments({ trending: true });
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayVisitsDoc = await Visit.findOne({ date: today });
-    const websiteVisits = todayVisitsDoc?.count || 0;
+
+    const totalSales = (salesAgg[0] && salesAgg[0].totalSales) || 0;
+    const totalOrders = (salesAgg[0] && salesAgg[0].totalOrders) || 0;
+
+    // trending / best selling books (top 5 by quantity)
+    const trendingAgg = await Order.aggregate([
+      { $match: { status: { $in: ["Complete", "complete", "Completed"] } } },
+      { $unwind: "$books" },
+      { $group: { _id: "$books.book", totalSold: { $sum: "$books.quantity" } } },
+      { $sort: { totalSold: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: "book"
+        }
+      },
+      { $unwind: { path: "$book", preserveNullAndEmptyArrays: true } },
+      { $project: { _id: 0, bookId: "$book._id", title: "$book.title", totalSold: 1 } }
+    ]);
+
+    // website visits today (if Visit model exists)
+    let visitsToday = 0;
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      visitsToday = await Visit.countDocuments({ date: { $gte: startOfDay } });
+    } catch (e) {
+      visitsToday = 0;
+    }
 
     res.json({
       productCount,
-      totalUsers,
-      totalOrders,
       totalSales,
-      trendingBooks,
-      websiteVisits,
+      totalOrders,
+      trendingBooks: trendingAgg.length,
+      websiteVisits: visitsToday,
+      bestSelling: trendingAgg
     });
   } catch (err) {
-    console.error("Dashboard Error:", err);
-    res.status(500).json({ message: "Failed to load dashboard stats" });
+    console.error("getDashboardStats error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

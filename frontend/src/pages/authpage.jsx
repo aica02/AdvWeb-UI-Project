@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import "../css/authpage.css"
 import { Navigate } from "react-router-dom";
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -66,6 +69,9 @@ const AuthPage = () => {
   }
 
   return (
+    <>
+    <Header />
+    
     <div className={`auth-container ${isLogin ? "login-active" : "signup-active"}`}>
       <div className="auth-box">
         <div className="auth-image-side">
@@ -126,6 +132,9 @@ const AuthPage = () => {
         </div>
       </div>
     </div>
+    <InfoBanner />
+    <Footer />
+    </>
   );
 };
 

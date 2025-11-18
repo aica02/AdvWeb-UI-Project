@@ -1,240 +1,123 @@
 import React, { useState, useEffect } from "react";
-import "../css/viewall.css";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import "../css/wishlists.css";
+import { FaTrash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
+import axios from 'axios';
 
-const ViewAll = () => {
+const API = import.meta.env.VITE_API_URL;
+
+const Wishlists = () => {
   const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [likedBooks, setLikedBooks] = useState([]);
-
-  // filter states
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedLanguages, setSelectedLanguages] = useState([]);
-  const [selectedAges, setSelectedAges] = useState([]);
-  const [onSale, setOnSale] = useState(""); // "yes" | "no" | "all"
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
-  // Fetch all books
+  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith('http')) return img;
+    if (img.startsWith('/')) return `${API}${img}`;
+    if (img.startsWith('uploads')) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
+  };
+
+  const fetchWishlist = async () => {
+    if (!token) {
+      setBooks([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/api/wishlist`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = Array.isArray(res.data) ? res.data : [];
+      setBooks(data);
+    } catch (err) {
+      console.error('Error fetching wishlist', err);
+      setError('Failed to load wishlist');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/admin/books");
-        setBooks(res.data);
-        setFilteredBooks(res.data);
-      } catch (err) {
-        console.error("Error fetching books:", err);
-      }
-    };
-    fetchBooks();
+    fetchWishlist();
   }, []);
 
-  // Handle checkbox toggles
-  const toggleFilter = (value, setter) => {
-    setter((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value]
-    );
+  const removeFromWishlist = async (bookId) => {
+    try {
+      await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setBooks((prev) => prev.filter((b) => b._id !== bookId));
+    } catch (err) {
+      console.error('Error removing from wishlist', err);
+      alert('Unable to remove item');
+    }
   };
 
-  // Apply filters realtme
-  useEffect(() => {
-    let filtered = books;
-
-    // Category filter
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((book) =>
-        selectedCategories.includes(book.category)
-      );
+  const addToCart = async (book) => {
+    if (!token) {
+      alert('Please log in to add books to your cart.');
+      return;
     }
 
-    // Language filter
-    if (selectedLanguages.length > 0) {
-      filtered = filtered.filter((book) =>
-        book.bookLanguage?.some((lang) => selectedLanguages.includes(lang))
-      );
+    try {
+      const payload = {
+        bookId: book._id,
+        price: book.newPrice ?? book.oldPrice,
+        quantity: 1,
+        title: book.title,
+        author: book.author,
+        image: getImageUrl(book.coverImage || book.image, `${API}/uploads/default.png`),
+      };
+
+      await axios.post(`${API}/api/cart/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      window.dispatchEvent(new Event('cartUpdated'));
+      alert(`${book.title} added to cart`);
+    } catch (err) {
+      console.error('Error adding to cart from wishlist', err);
+      alert(err.response?.data?.message || 'Could not add to cart');
     }
-
-    // Recommended Age filter
-    if (selectedAges.length > 0) {
-      filtered = filtered.filter((book) =>
-        book.recommendedAge?.some((age) => selectedAges.includes(age))
-      );
-    }
-
-    // On Sale filter
-    if (onSale === "yes") {
-      filtered = filtered.filter(
-        (book) =>
-          book.newPrice &&
-          book.newPrice < book.oldPrice &&
-          book.newPrice !== 0
-      );
-    } else if (onSale === "no") {
-      filtered = filtered.filter(
-        (book) =>
-          !book.newPrice ||
-          book.newPrice >= book.oldPrice
-      );
-    }
-
-    setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, onSale, books]);
-
-  const toggleLike = (bookId) => {
-    setLikedBooks((prev) =>
-      prev.includes(bookId)
-        ? prev.filter((id) => id !== bookId)
-        : [...prev, bookId]
-    );
   };
+
+  if (loading) return <div className="loading">Loading wishlist...</div>;
 
   return (
     <>
+      <Header />
       <nav className="breadcrumb">
-        <Link to="/#" className="breadcrumb-link">Home</Link>
+        <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link className="breadcrumb-link active">Best Sellers</Link>
+        <span className="breadcrumb-link active">Wishlist</span>
       </nav>
 
-      <div className="viewall-container">
-        <aside className="sidebar">
-          {/* --- CATEGORY FILTER --- */}
-          <hr className="line-before-filters" />
-          <h3>Categories</h3>
-          <ul className="filter-list">
-            {["Fiction", "Non-Fiction", "Humanities", "Romance", "Thriller", "Coding"].map((cat) => (
-              <li key={cat}>
-                <input
-                  type="checkbox"
-                  id={cat.toLowerCase()}
-                  checked={selectedCategories.includes(cat)}
-                  onChange={() => toggleFilter(cat, setSelectedCategories)}
-                />
-                <label htmlFor={cat.toLowerCase()}>{cat}</label>
-              </li>
-            ))}
-          </ul>
-
-          {/* --- LANGUAGE FILTER --- */}
-          <hr className="line-before-filters" />
-          <h3>Book Language</h3>
-          <ul className="filter-list">
-            {["English", "Tagalog"].map((lang) => (
-              <li key={lang}>
-                <input
-                  type="checkbox"
-                  id={lang.toLowerCase()}
-                  checked={selectedLanguages.includes(lang)}
-                  onChange={() => toggleFilter(lang, setSelectedLanguages)}
-                />
-                <label htmlFor={lang.toLowerCase()}>{lang}</label>
-              </li>
-            ))}
-          </ul>
-
-          {/* --- AGE FILTER --- */}
-          <hr className="line-before-filters" />
-          <h3>Recommended Age</h3>
-          <ul className="filter-list">
-            {["19+ Years", "12–18 Years", "8–11 Years", "3–7 Years"].map((age) => (
-              <li key={age}>
-                <input
-                  type="checkbox"
-                  id={age}
-                  checked={selectedAges.includes(age)}
-                  onChange={() => toggleFilter(age, setSelectedAges)}
-                />
-                <label htmlFor={age}>{age}</label>
-              </li>
-            ))}
-          </ul>
-
-          {/* --- SALE FILTER --- */}
-          <hr className="line-before-filters" />
-          <h3>On Sale</h3>
-          <ul className="filter-list">
-            <li>
-              <input
-                type="radio"
-                name="sales"
-                id="yes"
-                checked={onSale === "yes"}
-                onChange={() => setOnSale("yes")}
-              />
-              <label htmlFor="yes">Yes</label>
-            </li>
-            <li>
-              <input
-                type="radio"
-                name="sales"
-                id="no"
-                checked={onSale === "no"}
-                onChange={() => setOnSale("no")}
-              />
-              <label htmlFor="no">No</label>
-            </li>
-            <li>
-              <input
-                type="radio"
-                name="sales"
-                id="all"
-                checked={onSale === ""}
-                onChange={() => setOnSale("")}
-              />
-              <label htmlFor="all">All Books</label>
-            </li>
-          </ul>
-        </aside>
-
-        {/* --- MAIN CONTENT --- */}
+      <div className="wishlist-container">
         <section className="main-content">
           <div className="view-all-header">
-            <h2>Best Sellers</h2>
-            <div className="sort-section">
-              <label htmlFor="sort">SORT BY</label>
-              <select id="sort">
-                <option value="in-stock">In Stock</option>
-                <option value="highest-price">Highest-Lowest Price</option>
-                <option value="lowest-price">Lowest-Highest Price</option>
-              </select>
-            </div>
+            <h2>Your Wishlist</h2>
           </div>
 
+          {error && <div className="error-message">{error}</div>}
+
           <div className="book-grid">
-            {filteredBooks.length === 0 ? (
-              <p>No books found.</p>
+            {books.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#888' }}>Your wishlist is empty.</div>
             ) : (
-              filteredBooks.map((book) => (
+              books.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={`http://localhost:5000/uploads/art1.png`} alt={book.title} />
-
-                    <span className="badge">Best Seller</span>
-                    <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
-                      {likedBooks.includes(book._id) ? (
-                        <FaHeart className="heart-icon filled" />
-                      ) : (
-                        <FaRegHeart className="heart-icon" />
-                      )}
-                    </div>
+                    <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <span className="trash-badge" onClick={() => removeFromWishlist(book._id)} style={{ cursor: 'pointer' }}><FaTrash/></span>
                   </div>
 
                   <div className="book-info">
-                    <p
-                      className="book-title"
-                      onClick={() => navigate("/bookCard")}
-                    >
-                      {book.title}
-                    </p>
+                    <p className="book-title" onClick={() => navigate(`/bookCard/${book._id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    <p className="book-price">
-                      ₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}
-                    </p>
-                    <button className="add-to-cart">Add to Cart</button>
+                    <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                    <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
                   </div>
                 </div>
               ))
@@ -242,8 +125,11 @@ const ViewAll = () => {
           </div>
         </section>
       </div>
+
+      <InfoBanner />
+      <Footer />
     </>
   );
 };
 
-export default ViewAll;
+export default Wishlists;

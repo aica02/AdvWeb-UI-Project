@@ -7,6 +7,8 @@ import xss from "xss";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
 import bookRoutes from "./routes/bookRoute.js";
+import cartRoutes from "./routes/cartRoute.js";
+import wishlistRoutes from "./routes/wishlistRoute.js";
 import { trackVisit } from "./middleware/visitMiddlew.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -65,7 +67,9 @@ mongoose.connect(process.env.MONGO_URI)
 //  Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/admin/books", bookRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use(trackVisit);
 
 

@@ -12,14 +12,15 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
 
-    // Attach full user info (optional)
-    const user = await User.findById(decoded.id).select("-password");
+      const user = await User.findById(decoded.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    req.user.role = user.role;
+    req.user = user; // assign full user object
+
 
     next();
-  } catch {
-    res.status(403).json({ message: "Invalid or expired token" });
+  } catch (err) {
+  console.error("Token verification failed:", err.message);
+  res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
