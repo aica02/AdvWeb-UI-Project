@@ -23,7 +23,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: { type: String, default: "Card" },
   totalAmount: { type: Number, required: true },
-  status: { type: String, default: "Pending" }, // Pending, Completed, Cancelled
+  status: { type: String, default: "Pending", enum: ["Pending", "Complete", "Cancelled"] },
   createdAt: { type: Date, default: Date.now },
 });
 

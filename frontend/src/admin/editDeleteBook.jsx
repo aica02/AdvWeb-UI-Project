@@ -10,7 +10,7 @@ const EditDeleteBooksSection = () => {
 
   const fetchBooks = async () => {
     try {
-      const { data } = await axios.get(`${API}/admin/books`);
+      const { data } = await axios.get(`${API}/api/books`);
       setBooks(data);
     } catch (err) {
       console.error(err);
@@ -24,7 +24,7 @@ const EditDeleteBooksSection = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this book?")) return;
     try {
-      await axios.delete(`${API}/admin/books/${id}`);
+      await axios.delete(`${API}/api/books/${id}`);
       fetchBooks();
     } catch (err) {
       console.error(err);

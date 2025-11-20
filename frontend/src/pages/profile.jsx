@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/profileInfo.css";
-
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
 const API = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
@@ -34,11 +36,15 @@ export default function Profile() {
   if (!user) return <div>Loading...</div>;
 
   return (
+    <>
+    <Header/>
+
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="info-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
+
         </div>
       </div>
       <div className="profile-content">
@@ -94,5 +100,7 @@ export default function Profile() {
         </div>
       </div>
     </div>
+    <Footer/>
+    </>
   );
 }

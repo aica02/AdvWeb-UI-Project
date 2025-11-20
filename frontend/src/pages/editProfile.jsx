@@ -65,6 +65,7 @@ export default function EditProfile() {
         <div className="edit-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
+
         </div>
       </div>
       <div className="profile-content">

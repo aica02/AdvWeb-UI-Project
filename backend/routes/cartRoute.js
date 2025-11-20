@@ -111,13 +111,11 @@ router.post("/checkout", protect, async (req, res) => {
   const userId = req.user._id;
 
   try {
-    // Step 1: Find the user's pending order
     const order = await Order.findOne({ user: userId, status: "Pending" });
     if (!order || order.books.length === 0) {
       return res.status(400).json({ message: "Your cart is empty." });
     }
 
-    // Step 2: Get user shipping info
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
@@ -132,9 +130,8 @@ router.post("/checkout", protect, async (req, res) => {
       postalCode: user.postalCode,
     };
 
-    // Step 3: Calculate the total amount (including shipping)
     const subtotal = order.books.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shippingFee = 100; // Assuming a fixed shipping fee
+    const shippingFee = 100; 
     order.shippingInfo = shippingInfo;
     order.totalAmount = subtotal + shippingFee;
     order.paymentMethod = req.body.paymentMethod || "Card";
@@ -143,11 +140,9 @@ router.post("/checkout", protect, async (req, res) => {
     // Save the order with updated details
     await order.save();
 
-    // Step 4: Clear the cart (remove all items from the user's cart)
     user.cart = []; // Clear the user's cart
-    await user.save(); // Save the updated user (with an empty cart)
+    await user.save(); 
 
-    // Step 5: Return the response
     res.status(200).json({ message: "Order placed successfully!", order });
 
   } catch (err) {
@@ -222,5 +217,20 @@ router.patch("/update", protect, async (req, res) => {
 router.get("/orders/pending", protect, getPendingOrders); // Fetch pending orders
 router.get("/orders/complete", protect, getCompletedOrders); // Fetch completed orders
 
+
+// Get all completed orders for logged-in user
+router.get("/all-orders", protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const orders = await Order.find({ user: userId, status: "Complete" })
+      .populate("books.book")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export default router;

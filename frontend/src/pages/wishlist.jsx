@@ -1,75 +1,133 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../css/wishlists.css";
-import { FaTrash} from "react-icons/fa"
+import { FaTrash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
+import axios from 'axios';
+
+const API = import.meta.env.VITE_API_URL;
 
 const Wishlists = () => {
-  const books = [
-    { id: 1, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/10521276-L.jpg" },
-    { id: 2, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984916-L.jpg" },
-    { id: 3, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/10521273-L.jpg" },
-    { id: 4, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984915-L.jpg" },
-    { id: 5, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/8228696-L.jpg" },
-    { id: 6, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/7984914-L.jpg" },
-    { id: 7, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/8318815-L.jpg" },
-    { id: 8, title: "Harry Potter and the Prisoner of Azkaban", author: "J.K. Rowling", price: 675, img: "https://covers.openlibrary.org/b/id/8228695-L.jpg" },
-  ];
-
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [likedBooks, setLikedBooks] = useState([]);
+  const token = localStorage.getItem('token');
 
-  const toggleLike = (bookId) => {
-    setLikedBooks((prev) =>
-      prev.includes(bookId)
-        ? prev.filter((id) => id !== bookId)
-        : [...prev, bookId]
-    );
+  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith('http')) return img;
+    if (img.startsWith('/')) return `${API}${img}`;
+    if (img.startsWith('uploads')) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
   };
+
+  const fetchWishlist = async () => {
+    if (!token) {
+      setBooks([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/api/wishlist`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = Array.isArray(res.data) ? res.data : [];
+      setBooks(data);
+    } catch (err) {
+      console.error('Error fetching wishlist', err);
+      setError('Failed to load wishlist');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []);
+
+  const removeFromWishlist = async (bookId) => {
+    try {
+      await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setBooks((prev) => prev.filter((b) => b._id !== bookId));
+    } catch (err) {
+      console.error('Error removing from wishlist', err);
+      alert('Unable to remove item');
+    }
+  };
+
+  const addToCart = async (book) => {
+    if (!token) {
+      alert('Please log in to add books to your cart.');
+      return;
+    }
+
+    try {
+      const payload = {
+        bookId: book._id,
+        price: book.newPrice ?? book.oldPrice,
+        quantity: 1,
+        title: book.title,
+        author: book.author,
+        image: getImageUrl(book.coverImage || book.image, `${API}/uploads/default.png`),
+      };
+
+      await axios.post(`${API}/api/cart/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      window.dispatchEvent(new Event('cartUpdated'));
+      alert(`${book.title} added to cart`);
+    } catch (err) {
+      console.error('Error adding to cart from wishlist', err);
+      alert(err.response?.data?.message || 'Could not add to cart');
+    }
+  };
+
+  if (loading) return <div className="loading">Loading wishlist...</div>;
 
   return (
     <>
-        <nav className="breadcrumb">
-            <Link to="/" className="breadcrumb-link">Home</Link>
-            <span className="breadcrumb-separator">/</span>
-            <Link className="breadcrumb-link active">
-                Wishlist
-            </Link>
-        </nav>
-        <div className="wishlist-container">
-        <section className="main-content">
-            <div className="view-all-header">
-            <h2>Your Wishlists</h2>
-            <div className="sort-section">
-                <label htmlFor="sort">SORT BY</label>
-                <select id="sort">
-                <option value="in-stock">In Stock</option>
-                <option value="in-stock">Highest-Lowest Price</option>
-                <option value="in-stock">Lowest-Highest Price</option>
-                </select>
-            </div>
-            </div>
+      <Header />
+      <nav className="breadcrumb">
+        <Link to="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-link active">Wishlist</span>
+      </nav>
 
-            <div className="book-grid">
-            {books.map((book, index) => (
-                <div className="book-card" key={index}>
-                <div className="book-image">
-                    <img src={book.img} alt={book.title} />
-                    <span className="trash-badge"><FaTrash/></span>
-                </div>
-                <div className="book-info">
-                    <p className="book-title" onClick={() => {
-                         navigate("/bookCard");
-                    }}
-                    >{book.title}</p>
+      <div className="wishlist-container">
+        <section className="main-content">
+          <div className="view-all-header">
+            <h2>Your Wishlist</h2>
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <div className="book-grid">
+            {books.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#888' }}>Your wishlist is empty.</div>
+            ) : (
+              books.map((book) => (
+                <div className="book-card" key={book._id}>
+                  <div className="book-image">
+                    <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <span className="trash-badge" onClick={() => removeFromWishlist(book._id)} style={{ cursor: 'pointer' }}><FaTrash/></span>
+                  </div>
+
+                  <div className="book-info">
+                    <p className="book-title" onClick={() => navigate(`/bookCard/${book._id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    <p className="book-price">₱{book.price.toFixed(2)}</p>
-                    <button className="add-to-cart">Add to Cart</button>
+                    <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                    <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
+                  </div>
                 </div>
-                </div>
-            ))}
-            </div>
+              ))
+            )}
+          </div>
         </section>
-        </div>
+      </div>
+
+      <InfoBanner />
+      <Footer />
     </>
   );
 };

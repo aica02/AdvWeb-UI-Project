@@ -1,4 +1,3 @@
-// routers/router.jsx
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App.jsx";
 
@@ -15,12 +14,18 @@ import Orders from "../pages/orders.jsx";
 import Cart from "../pages/cart.jsx";
 import Payment from "../pages/payment.jsx";
 
-// Admin pages
+import BestSellingBooks from "../pages/bestselling.jsx";
+import NewReleaseBooks from "../pages/newrelease.jsx";
+//import BookSales from "../pages/booksales.jsx";
+// Admin
 import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
 import DashboardSection from "../admin/dashboard.jsx";
 import AdminAccount from "../admin/admin.jsx";
 import AddBooksSection from "../admin/addBook.jsx";
 import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
+import UserAccounts from "../admin/userAccounts.jsx";
+import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
+
 
 // User protection
 import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
@@ -33,9 +38,11 @@ const router = createBrowserRouter([
       // Public routes
       { path: "/", element: <Home /> },
       { path: "/auth", element: <AuthPage /> },
-      { path: "/bookCard", element: <BookCard /> },
+      { path: "/bookCard/:id", element: <BookCard /> },
       { path: "/viewAll", element: <ViewAll /> },
-
+      { path: "/bestSelling", element: <BestSellingBooks /> },
+      { path: "/newReleases", element: <NewReleaseBooks /> },
+      
       // User protected routes
       {path: "/wishlist",element: (<ProtectedUserRoute> <Wishlists /></ProtectedUserRoute>),},
       {path: "/cart",element: (<ProtectedUserRoute> <Cart /></ProtectedUserRoute>),},
@@ -57,6 +64,7 @@ const router = createBrowserRouter([
           { path: "dashboard", element: <DashboardSection /> },
           { path: "addbook", element: <AddBooksSection /> },
           { path: "editdeletebook", element: <EditDeleteBooksSection /> },
+          { path: "useraccountsdelete", element: <UserAccounts /> },
           { path: "", element: <DashboardSection /> }, // default
         ],
       },
@@ -66,5 +74,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+
 
 export default router;

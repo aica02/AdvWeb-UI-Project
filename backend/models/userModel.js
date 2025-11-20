@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema(
     barangay: { type: String },
     street: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    // ✅ Removed cart array since pending orders handle the cart
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
+ 
   },
   { timestamps: true }
 );

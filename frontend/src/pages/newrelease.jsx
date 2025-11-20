@@ -1,81 +1,311 @@
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
+import "../css/viewall.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import "../App.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
+
+const API = import.meta.env.VITE_API_URL;
 
 const NewReleaseBooks = () => {
-  const scrollRef = useRef(null);
+  const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
   const [likedBooks, setLikedBooks] = useState([]);
-  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
+  const [total, setTotal] = useState(0);
 
-  const toggleLike = (bookId) => {
-    setLikedBooks((prev) =>
-      prev.includes(bookId)
-        ? prev.filter((id) => id !== bookId)
-        : [...prev, bookId]
+  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith("http")) return img;
+    if (img.startsWith("/")) return `${API}${img}`;
+    if (img.startsWith("uploads")) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
+  };
+
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
+  const [selectedAges, setSelectedAges] = useState([]);
+  const [onSale, setOnSale] = useState("");
+
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  // --- Fetch all books ---
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const res = await axios.get(`${API}/api/books`);
+        const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+        setBooks(data);
+        setFilteredBooks(data);
+      } catch (err) {
+        console.error("Error fetching books:", err);
+      }
+    };
+    fetchBooks();
+  }, []);
+
+  // --- Fetch current cart ---
+   useEffect(() => {
+    const fetchNew = async () => {
+      try {
+        const res = await axios.get(`${API}/api/books`);
+        const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+
+        const now = new Date();
+        const NEW_DAYS = 90;
+
+        const newBooks = data.filter((b) => {
+          if (b.isNew === true) return true;
+          const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt;
+          if (!dateStr) return false;
+          const d = new Date(dateStr);
+          if (isNaN(d)) return false;
+          const days = (now - d) / (1000 * 60 * 60 * 24);
+          return days <= NEW_DAYS;
+        }).slice(0, 8);
+
+        setBooks(newBooks);
+      } catch (err) {
+        console.error("Error fetching new releases:", err);
+      }
+    };
+
+    fetchNew();
+  }, []);
+
+
+  // --- Filter toggle ---
+  const toggleFilter = (value, setter) => {
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
 
-  const books = [
-    { id: 1, title: "Harry Potter and the Cursed Child", author: "J.K. Rowling", price: 850, img: "https://covers.openlibrary.org/b/id/11153283-L.jpg" },
-    { id: 2, title: "The Ballad of Songbirds and Snakes", author: "Suzanne Collins", price: 720, img: "https://covers.openlibrary.org/b/id/10548559-L.jpg" },
-    { id: 3, title: "Fourth Wing", author: "Rebecca Yarros", price: 899, img: "https://covers.openlibrary.org/b/id/13196929-L.jpg" },
-    { id: 4, title: "The Fragile Threads of Power", author: "V.E. Schwab", price: 770, img: "https://covers.openlibrary.org/b/id/14462777-L.jpg" },
-    { id: 5, title: "Iron Flame", author: "Rebecca Yarros", price: 930, img: "https://covers.openlibrary.org/b/id/14693222-L.jpg" },
-    { id: 6, title: "House of Flame and Shadow", author: "Sarah J. Maas", price: 950, img: "https://covers.openlibrary.org/b/id/14693224-L.jpg" },
-    { id: 7, title: "Powerless", author: "Lauren Roberts", price: 820, img: "https://covers.openlibrary.org/b/id/14462779-L.jpg" },
-    { id: 8, title: "Empire of the Damned", author: "Jay Kristoff", price: 940, img: "https://covers.openlibrary.org/b/id/14693225-L.jpg" },
-  ];
+  // --- Apply filters ---
+  useEffect(() => {
+    let filtered = books;
 
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollAmount =
-        direction === "left" ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-      scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" });
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((book) => selectedCategories.includes(book.category));
+    }
+
+    if (selectedLanguages.length > 0) {
+      filtered = filtered.filter((book) =>
+        book.bookLanguage?.some((lang) => selectedLanguages.includes(lang))
+      );
+    }
+
+    if (selectedAges.length > 0) {
+      filtered = filtered.filter((book) =>
+        book.recommendedAge?.some((age) => selectedAges.includes(age))
+      );
+    }
+
+    if (onSale === "yes") {
+      filtered = filtered.filter(
+        (book) => book.newPrice && book.newPrice < book.oldPrice && book.newPrice !== 0
+      );
+    } else if (onSale === "no") {
+      filtered = filtered.filter(
+        (book) => !book.newPrice || book.newPrice >= book.oldPrice
+      );
+    }
+
+    setFilteredBooks(filtered);
+  }, [selectedCategories, selectedLanguages, selectedAges, onSale, books]);
+
+  // --- Toggle like (wishlist) ---
+  const toggleLike = async (bookId) => {
+    const inWishlist = likedBooks.includes(bookId);
+    
+    try {
+      if (inWishlist) {
+        await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+      } else {
+        await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+      }
+      
+      setLikedBooks((prev) =>
+        prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+      );
+    } catch (err) {
+      console.error('Error toggling wishlist', err);
+      if (!token) alert('Please log in to add items to wishlist');
+    }
+  };
+
+  // --- Add to cart ---
+  const addToCart = async (book) => {
+    if (!token) {
+      alert("Please log in to add books to your cart.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${API}/api/cart/add`,
+        {
+          bookId: book._id,
+          price: book.newPrice ?? book.oldPrice,
+          quantity: 1,
+          title: book.title,
+          author: book.author,
+          image: getImageUrl(book.image || "", `${API}/uploads/default.png`),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Refresh cart
+      const cartRes = await axios.get(`${API}/api/cart/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const items = cartRes.data.books.map((item) => ({
+        id: item.book._id,
+        title: item.book.title,
+        author: item.book.author,
+        price: item.price,
+        quantity: item.quantity,
+        image: getImageUrl(item.book.image || "", `${API}/uploads/default.png`),
+      }));
+
+      setCart(items);
+      setTotal(cartRes.data.totalAmount || 0);
+
+      alert(`${book.title} has been added to your cart!`);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      alert(err.response?.data?.message || "Server error: Could not add to cart");
     }
   };
 
   return (
-    <div className="new-release-section">
-      <div className="section-header">
-        <h2>New Release Books</h2>
-        <a href="viewAll" className="view-all">View All &gt;</a>
-      </div>
+    <>
+    <Header/>
+      <>
+      <nav className="breadcrumb">
+        <Link to="/#" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-link active">New Released Books</span>
+      </nav>
 
-      <div className="carousel-container">
-        <button className="scroll-btn left" onClick={() => scroll("left")}>❮</button>
+      <div className="viewall-container">
+        {/* --- Sidebar Filters --- */}
+        <aside className="sidebar">
+          <hr className="line-before-filters" />
+          <h3>Categories</h3>
+          <ul className="filter-list">
+            {["Fiction", "Non-Fiction", "Humanities", "Romance", "Thriller", "Coding"].map((cat) => (
+              <li key={cat}>
+                <input
+                  type="checkbox"
+                  id={cat.toLowerCase()}
+                  checked={selectedCategories.includes(cat)}
+                  onChange={() => toggleFilter(cat, setSelectedCategories)}
+                />
+                <label htmlFor={cat.toLowerCase()}>{cat}</label>
+              </li>
+            ))}
+          </ul>
 
-        <div className="books-carousel" ref={scrollRef}>
-          {books.map((book) => (
-            <div key={book.id} className="book-card">
-              <div className="book-image">
-                <img src={book.img} alt={book.title} />
-                <span className="genre-tag">New</span>
-                <div className="heart-overlay" onClick={() => toggleLike(book.id)}>
-                  {likedBooks.includes(book.id) ? (
-                    <FaHeart className="heart-icon filled" />
-                  ) : (
-                    <FaRegHeart className="heart-icon" />
-                  )}
-                </div>
-              </div>
-              <div className="book-details">
-                <h3 onClick={() => {
-                  navigate("/bookCard");
-                }}
-                >{book.title}</h3>
-                <p className="author">{book.author}</p>
-                <p className="price">₱{book.price.toFixed(2)}</p>
-                <button className="add-btn">Add to Cart</button>
-              </div>
+          <hr className="line-before-filters" />
+          <h3>Book Language</h3>
+          <ul className="filter-list">
+            {["English", "Tagalog"].map((lang) => (
+              <li key={lang}>
+                <input
+                  type="checkbox"
+                  id={lang.toLowerCase()}
+                  checked={selectedLanguages.includes(lang)}
+                  onChange={() => toggleFilter(lang, setSelectedLanguages)}
+                />
+                <label htmlFor={lang.toLowerCase()}>{lang}</label>
+              </li>
+            ))}
+          </ul>
+
+          <hr className="line-before-filters" />
+          <h3>Recommended Age</h3>
+          <ul className="filter-list">
+            {["19+ Years", "12–18 Years", "8–11 Years", "3–7 Years"].map((age) => (
+              <li key={age}>
+                <input
+                  type="checkbox"
+                  id={age}
+                  checked={selectedAges.includes(age)}
+                  onChange={() => toggleFilter(age, setSelectedAges)}
+                />
+                <label htmlFor={age}>{age}</label>
+              </li>
+            ))}
+          </ul>
+
+          <hr className="line-before-filters" />
+          <h3>On Sale</h3>
+          <ul className="filter-list">
+            <li>
+              <input type="radio" name="sales" id="yes" checked={onSale === "yes"} onChange={() => setOnSale("yes")} />
+              <label htmlFor="yes">Yes</label>
+            </li>
+            <li>
+              <input type="radio" name="sales" id="no" checked={onSale === "no"} onChange={() => setOnSale("no")} />
+              <label htmlFor="no">No</label>
+            </li>
+            <li>
+              <input type="radio" name="sales" id="all" checked={onSale === ""} onChange={() => setOnSale("")} />
+              <label htmlFor="all">All Books</label>
+            </li>
+          </ul>
+        </aside>
+
+        {/* --- Main Content --- */}
+        <section className="main-content">
+          <div className="view-all-header">
+            <h2>New Released Books</h2>
+            <div className="sort-section">
+              <label htmlFor="sort">SORT BY</label>
+              <select id="sort">
+                <option value="in-stock">In Stock</option>
+                <option value="highest-price">Highest-Lowest Price</option>
+                <option value="lowest-price">Lowest-Highest Price</option>
+              </select>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <button className="scroll-btn right" onClick={() => scroll("right")}>❯</button>
+          <div className="book-grid">
+            {filteredBooks.length === 0 ? (
+              <p>No books found.</p>
+            ) : (
+              filteredBooks.map((book) => (
+                <div className="book-card" key={book._id}>
+                  <div className="book-image">
+                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <span className="badge">Best Seller</span>
+                    <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
+                      {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                    </div>
+                  </div>
+
+                  <div className="book-info">
+                    <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
+                    <p className="book-author">{book.author}</p>
+                    <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                    <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
-    </div>
+      </>
+      
+    <InfoBanner/>
+      <Footer/>
+    </>
   );
 };
 

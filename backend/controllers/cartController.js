@@ -65,11 +65,14 @@ export const getPendingOrders = async (req, res) => {
   }
 };
 
+// ...existing code...
+
 // Endpoint to get completed orders
 export const getCompletedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id, status: "Completed" })
-      .populate("books.book"); // Populate the 'book' reference correctly
+    const orders = await Order.find({ user: req.user._id, status: "Complete" })
+      .populate("books.book")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (err) {
@@ -78,6 +81,7 @@ export const getCompletedOrders = async (req, res) => {
   }
 };
 
+// ...existing code...
 
 export const updateCart = async (req, res) => {
   try {
@@ -111,3 +115,4 @@ export const updateCart = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+

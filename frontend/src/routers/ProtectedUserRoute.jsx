@@ -10,6 +10,5 @@ export function ProtectedUserRoute({ children }) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Render the protected content
   return <>{children}</>;
 }

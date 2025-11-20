@@ -5,6 +5,9 @@ import { FaCreditCard } from "react-icons/fa";
 import { BsBank } from "react-icons/bs";
 import "../css/PaymentPage.css";
 import { useNavigate } from "react-router-dom";
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -36,7 +39,7 @@ function Payment() {
   // 🧠 Fetch cart info (Pending cart from database)
   const fetchCart = async () => {
     try {
-      const res = await axios.get(`${API}/cart/pending`, {
+      const res = await axios.get(`${API}/api/cart/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCartItems(res.data.books || []);
@@ -123,7 +126,7 @@ function Payment() {
     }
   };
 
-  
+
   //  PLACE ORDER
 const handleCheckout = async () => {
   if (!paymentMethod) return alert("Select a payment method");
@@ -140,7 +143,7 @@ const handleCheckout = async () => {
   try {
     // Send status "pending" along with the order details
     const { data } = await axios.post(
-      `${API}/cart/checkout`,
+      `${API}/api/cart/checkout`,
       {
         paymentMethod,
         cardInfo, // Pass cardInfo if payment method is card
@@ -172,6 +175,9 @@ const handleCheckout = async () => {
 
 
   return (
+    <> 
+    <Header/>
+    
     <div className="payment-page">
       <div className="content-wrapper">
         {/* LEFT SIDE */}
@@ -290,11 +296,7 @@ const handleCheckout = async () => {
           ) : (
             cartItems.map((item) => (
               <article key={item.id} className="cart-item">
-                <img
-                  src={item.image || "https://dummyimage.com/200x280/cccccc/000000&text=No+Image"}
-                  alt={item.title}
-                  loading="lazy"
-                />
+                
                 <div className="item-details">
                   <h3 className="item-title">{item.title}</h3>
                   <p className="item-author">{item.author}</p>
@@ -350,6 +352,9 @@ const handleCheckout = async () => {
         </aside>
       </div>
     </div>
+    <InfoBanner/>
+    <Footer/>
+    </>
   );
 }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch} from "react-icons/fa";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "../css/admin.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -7,6 +7,12 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 const AdminAccount = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleLogout = () => {
+    // Clear auth token and navigate to auth page
+    localStorage.removeItem("token");
+    navigate("/auth");
+  };
 
   // Check if a route is active
   const isActive = (path) => location.pathname === path;
@@ -37,6 +43,14 @@ const AdminAccount = () => {
           >
             <FaClock />
           </button>
+
+          <button
+            className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`}
+            onClick={() => navigate("/admin/useraccountsdelete")}
+          >
+            <FaUserMinus />
+          </button>
+          
         </nav>
       </aside>
 
@@ -60,12 +74,7 @@ const AdminAccount = () => {
             </div>
             <hr className="wall" />
 
-            <div className="notifications">
-              <FaBell className="icon" />
-              <span className="badge">2</span>
-            </div>
-
-            <button className="logout-btn">
+            <button className="logout-btn" onClick={handleLogout} aria-label="Logout">
               <FaSignOutAlt />
             </button>
           </div>

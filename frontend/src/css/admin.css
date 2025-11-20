@@ -254,27 +254,30 @@
 
 /* Add Books */
 .add-books-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1.5rem;
-  flex-wrap: wrap;
   margin-top: 1rem;
 }
 
 .asterisk{
     color: var(--color-complementary);
 }
-.add-books-container .add-book-form,
-.add-books-container .additional-info{
+
+.add-books-container .add-book-form .book-form{
+  display: flex;
+  justify-content: center;
+  gap: 1rem ;
+}
+
+.add-books-container .additional-info, .add-books-container .book-info{
   flex: 1;
-  max-width: 400px;        /* ✅ limit the width */
+  max-width: 450px;        /* ✅ limit the width */
   background-color: white;
   border-radius: 6px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   min-width: 280px;
+  height: fit-content;
 }
+
 .add-books-container .form-header {
   background-color: var(--color-secondary);
   color: white;
@@ -298,16 +301,6 @@
 .add-books-container .form-checkbox label{
    font-size: 14px; 
    color: var(--color-secondary);
-}
-.add-books-container .add-book-form,
-.add-books-container .additional-info {
-  flex: 1;
-  min-width: 380px;
-  max-width: 500px;
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
 }
 
 .add-books-container .form-group input,
@@ -439,6 +432,68 @@
 .delete-btn:hover {
   background-color: var(--color-secondary);
 }
+
+
+/* user table container dashboard */
+.main-content .dashboard-overview .user-table-title {
+  font-family: var(--font-heading);
+  color: white;
+  margin-top: 30px;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden; 
+  margin-bottom: 0;
+  padding: 1rem;
+  background-color: var(--color-secondary);
+}
+
+.main-content .dashboard-overview .user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  font-family: var(--font-body);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+}
+
+.main-content .dashboard-overview .user-table th {
+  background-color: #f7f7f7;
+  color: var(--color-secondary);
+  padding: 12px;
+  font-family: var(--font-heading);
+}
+
+.main-content .dashboard-overview .user-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ccc;
+}
+
+.main-content .dashboard-overview .user-table th, td{
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+.main-content .dashboard-overview .delete-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  cursor: pointer;
+   transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.main-content .dashboard-overview .delete-btn:hover {
+  background-color: var(--color-secondary);
+  scale: 1.02;
+}
+
+
+.loading-dashboard{
+  display: flex;
+  justify-content: center;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

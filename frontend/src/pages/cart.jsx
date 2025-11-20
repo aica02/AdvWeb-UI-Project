@@ -3,6 +3,9 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/cart.css';
+import Header from './header';
+import Footer from './footer';
+import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -14,23 +17,31 @@ function Cart() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith("http")) return img;
+    if (img.startsWith("/")) return `${API}${img}`;
+    if (img.startsWith("uploads")) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
+  };
+
   // Fetch pending cart from backend
   useEffect(() => {
     const fetchCart = async () => {
       if (!token) return;
 
       try {
-        const { data } = await axios.get(`${API}/cart/pending`, {
+        const { data } = await axios.get(`${API}/api/cart/pending`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
         const items = data.books.map(item => ({
-          bookId: item.book._id,  // use bookId instead of id
+          bookId: item.book._id,  
           title: item.book.title,
           author: item.book.author,
           price: item.price,
           quantity: item.quantity,
-          image: item.book.image || "http://localhost:5000/uploads/default.png"
+          image: getImageUrl(item.book.coverImage || item.book.image, `${API}/uploads/default.png`)
         }));
 
         setCartItems(items);
@@ -51,7 +62,7 @@ const updateQuantity = async (bookId, change) => {
   const newQty = Math.max(1, item.quantity + change);
 
   try {
-    await axios.patch(`${API}/cart/update`, {
+    await axios.patch(`${API}/api/cart/update`, {
       bookId: bookId,  // Ensure you're passing the correct bookId
       quantity: newQty
     }, {
@@ -75,7 +86,7 @@ const updateQuantity = async (bookId, change) => {
   // Remove item from cart
   const removeItem = async (bookId) => {
     try {
-      await axios.delete(`${API}/cart/remove/${bookId}`, {
+      await axios.delete(`${API}/api/cart/remove/${bookId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -97,6 +108,7 @@ const updateQuantity = async (bookId, change) => {
 
   return (
     <div className="cart-page-wrapper">
+      <Header/>
       <div className="cart-page">
         <div className="item-breadcrumb">
           <span className="breadcrumb-home">Home</span>
@@ -117,7 +129,7 @@ const updateQuantity = async (bookId, change) => {
                 cartItems.map(item => (
                   <article key={item.bookId} className="cart-item">
                     <div className="item-image">
-                      <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" />
+                      <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" style={{ maxWidth: '100%', height: 'auto' }} />
                     </div>
 
                     <div className="item-details">
