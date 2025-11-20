@@ -25,7 +25,7 @@ function Payment() {
   const token = localStorage.getItem("token");
   const shipping = 100;
 
-  // 🧠 Fetch user info
+  //  Fetch user info
   const fetchUser = async () => {
     try {
       const { data } = await axios.get(`${API}/api/auth/me`, {
@@ -36,13 +36,29 @@ function Payment() {
       console.error("Failed to fetch user info:", err);
     }
   };
-  // 🧠 Fetch cart info (Pending cart from database)
+  //  Fetch cart info (Pending cart from database)
   const fetchCart = async () => {
     try {
+      const localSelected = localStorage.getItem('selectedCartItems');
+      if (localSelected) {
+        const items = JSON.parse(localSelected);
+        setCartItems(items);
+        setLoading(false);
+        return;
+      }
       const res = await axios.get(`${API}/api/cart/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCartItems(res.data.books || []);
+      const raw = res.data.books || [];
+      const mapped = raw.map(b => ({
+        id: b.book?._id || b.bookId || b._id,
+        title: b.book?.title || b.title || "",
+        author: b.book?.author || b.author || "",
+        price: b.price || (b.book?.newPrice ?? b.book?.oldPrice) || 0,
+        quantity: b.quantity || 1,
+        image: b.book?.coverImage || b.book?.image || null
+      }));
+      setCartItems(mapped);
     } catch (err) {
       console.error("Error fetching cart:", err);
     } finally {
@@ -60,7 +76,7 @@ function Payment() {
   const total = Math.max(subtotal + shipping - discount, 0);
   const formatCurrency = (n) => n.toFixed(2);
 
-  // 🧩 Card Validation
+  // Card Validation
   const validateCard = () => {
     const { cardNumber, expiry, cvc } = cardInfo;
     const cardRegex = /^\d{16}$/;
@@ -83,7 +99,7 @@ function Payment() {
     return true;
   };
 
-  // 🧩 Shipping completeness check
+  // Shipping completeness check
   const shippingFields = user
     ? [
         user.firstName,
@@ -99,12 +115,12 @@ function Payment() {
 
   const isShippingComplete = shippingFields.every((f) => f && f.trim() !== "");
 
-  // 🧩 Edit Info redirect
+  // Edit Info redirect
   const handleEditShipping = () => {
     window.location.href = "http://localhost:5173/profile/edit";
   };
 
-  // 🧩 Apply Coupon
+  // Apply Coupon
   const handleApplyCoupon = async () => {
     if (!couponCode) return;
     try {
@@ -127,42 +143,54 @@ function Payment() {
   };
 
 
-  //  PLACE ORDER
-const handleCheckout = async () => {
-  if (!paymentMethod) return alert("Select a payment method");
+  const handleCheckout = async () => {
+    if (!paymentMethod) return alert("Select a payment method");
 
-  // If payment method is card, validate card details
-  if (paymentMethod === "card" && !validateCard()) {
-    return; // Don't proceed if card details are invalid
-  }
-
-  if (!isShippingComplete) {
-    return alert("Please complete your shipping details.");
-  }
-
-  try {
-    // Send status "pending" along with the order details
-    const { data } = await axios.post(
-      `${API}/api/cart/checkout`,
-      {
-        paymentMethod,
-        cardInfo, // Pass cardInfo if payment method is card
-        status: "pending", // Explicitly set order status to "pending"
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    if (data.message) {
-      alert(`Order placed! Total: ₱${formatCurrency(total)}`);
-      navigate("/orders"); // Navigate to Orders page after placing the order
-    } else {
-      alert("Failed to place order. Try again.");
+    if (paymentMethod === "card" && !validateCard()) {
+      return;
     }
-  } catch (err) {
-    console.error("Checkout error:", err);
-    alert(err.response?.data?.message || "Checkout failed");
-  }
-};
+
+    if (!isShippingComplete) {
+      return alert("Please complete your shipping details.");
+    }
+
+    try {
+      const selectedBookIds = JSON.parse(localStorage.getItem("selectedBookIds"));
+      if (!selectedBookIds || selectedBookIds.length === 0) {
+        alert("No items selected for checkout.");
+        return;
+      }
+
+      const checkoutData = {
+        paymentMethod,
+        status: "Pending",
+        selectedBookIds,
+      };
+
+      if (paymentMethod === "card") {
+        checkoutData.cardInfo = cardInfo;
+      }
+
+      const { data } = await axios.post(
+        `${API}/api/cart/checkout`,
+        checkoutData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.message || data.order) {
+        alert(`Order placed successfully! Your order ID: ${data.order?._id || "N/A"}`);
+        localStorage.removeItem("selectedBookIds");
+        localStorage.removeItem("selectedCartItems");
+        window.dispatchEvent(new Event("cartUpdated"));
+        navigate("/orders");
+      } else {
+        alert("Failed to place order. Try again.");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert(err.response?.data?.message || "Checkout failed");
+    }
+  };
 
 
 

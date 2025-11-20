@@ -8,7 +8,7 @@ const AddBooksSection = () => {
     title: "",
     author: "",
     description: "",
-    category: "",
+    category: [],
     trending: false,
     onSale: false,
     oldPrice: "",
@@ -16,6 +16,7 @@ const AddBooksSection = () => {
     coverImage: null,
     recommendedAge: [],
     bookLanguage: [],
+    stock: 0,
   });
 
   const handleChange = (e) => {
@@ -30,7 +31,6 @@ const AddBooksSection = () => {
           ...(name === "onSale" && !checked ? { newPrice: "" } : {}),
         }));
       } else {
-        // Multi-checkbox (arrays)
         setForm((prev) => ({
           ...prev,
           [name]: checked
@@ -56,25 +56,37 @@ const AddBooksSection = () => {
       const value = form[key];
 
       if (key === "recommendedAge" || key === "bookLanguage") {
-        // Append each array value
+        value.forEach((val) => formDataToSend.append(key, val));
+      } else if (key === "category") {
         value.forEach((val) => formDataToSend.append(key, val));
       } else if (key === "coverImage") {
-        // Append file if exists
         if (value) formDataToSend.append("coverImage", value);
       } else if (key === "newPrice") {
-        // Append newPrice only if onSale
         if (form.onSale) formDataToSend.append("newPrice", value);
       } else {
-        // Append other simple fields
         formDataToSend.append(key, value);
       }
     }
 
+    // Get token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No authentication token found. Please log in again.");
+      return;
+    }
+
     console.log("FormData entries before send:", Array.from(formDataToSend.entries()));
 
-    const response = await axios.post(`${API}/api/books`, formDataToSend, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await axios.post(
+      `${API}/api/books`,
+      formDataToSend,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     console.log("Added book:", response.data);
     alert("Book added successfully!");
@@ -84,7 +96,7 @@ const AddBooksSection = () => {
       title: "",
       author: "",
       description: "",
-      category: "",
+      category: [],
       trending: false,
       onSale: false,
       oldPrice: "",
@@ -92,6 +104,7 @@ const AddBooksSection = () => {
       coverImage: null,
       recommendedAge: [],
       bookLanguage: [],
+      stock: 0,
     });
 
   } catch (err) {
@@ -149,22 +162,29 @@ const AddBooksSection = () => {
                 ></textarea>
               </div>
 
-              {/* Category */}
+              {/* Category - allow multiple */}
               <div className="form-group">
                 <label>Category<span className="asterisk">*</span></label>
-                <select
-                  name="category"
-                  value={form.category}
+                <div>
+                  {["Fiction","Non-Fiction","Romance","Thriller","Coding"].map(cat => (
+                    <label key={cat} style={{display:'inline-block', marginRight:12}}>
+                      <input type="checkbox" name="category" value={cat} checked={form.category.includes(cat)} onChange={handleChange} /> {cat}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stock */}
+              <div className="form-group">
+                <label>Stock<span className="asterisk">*</span></label>
+                <input
+                  name="stock"
+                  type="number"
+                  placeholder="Enter stock quantity"
+                  value={form.stock}
                   onChange={handleChange}
                   required
-                >
-                  <option value="">Choose a category</option>
-                  <option value="Fiction">Fiction</option>
-                  <option value="Non-Fiction">Non-Fiction</option>
-                  <option value="Romance">Romance</option>
-                  <option value="Thriller">Thriller</option>
-                  <option value="Coding">Coding</option>
-                </select>
+                />
               </div>
 
               {/* Trending */}

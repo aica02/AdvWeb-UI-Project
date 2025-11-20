@@ -36,6 +36,7 @@ const Wishlists = () => {
       const res = await axios.get(`${API}/api/wishlist`, { headers: { Authorization: `Bearer ${token}` } });
       const data = Array.isArray(res.data) ? res.data : [];
       setBooks(data);
+      setError("");
     } catch (err) {
       console.error('Error fetching wishlist', err);
       setError('Failed to load wishlist');
@@ -63,6 +64,7 @@ const Wishlists = () => {
       alert('Please log in to add books to your cart.');
       return;
     }
+    if ((book.stock ?? 0) <= 0) return;
 
     try {
       const payload = {
@@ -117,7 +119,18 @@ const Wishlists = () => {
                     <p className="book-title" onClick={() => navigate(`/bookCard/${book._id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
                     <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                    <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
+
+                    <button
+                      className="add-to-cart"
+                      onClick={() => addToCart(book)}
+                      disabled={(book.stock ?? 0) <= 0}
+                      style={(book.stock ?? 0) <= 0
+                        ? { background: "#ccc", color: "#888", cursor: "not-allowed" }
+                        : { background: "#035c96", color: "#fff", cursor: "pointer" }
+                      }
+                    >
+                      {(book.stock ?? 0) <= 0 ? "Out of Stock" : "Add to Cart"}
+                    </button>
                   </div>
                 </div>
               ))

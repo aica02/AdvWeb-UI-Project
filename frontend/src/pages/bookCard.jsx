@@ -1,239 +1,198 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import Header from "./header";
+import Footer from "./footer";
+import { useCart } from "../context/cartContext";
 import axios from "axios";
 import "../css/bookcard.css";
-import Header from './header';
-import Footer from './footer';
 
 const API = import.meta.env.VITE_API_URL;
 
 const BookCard = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [book, setBook] = useState(null);
-    const [relatedBooks, setRelatedBooks] = useState([]);
-    const [likedBooks, setLikedBooks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const scrollRef = useRef(null);
-    const token = localStorage.getItem("token");
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const scrollRef = useRef(null);
+  const { cartItems, setCartItems, fetchCart } = useCart();
 
-    const getImageUrl = (img, fallback = "https://m.media-amazon.com/images/I/91HHqVTAJQL.jpg") => {
-      if (!img) return fallback;
-      if (img.startsWith("http")) return img;
-      if (img.startsWith("/")) return `${API}${img}`;
-      if (img.startsWith("uploads")) return `${API}/${img}`;
-      return `${API}/uploads/${img}`;
-    };
+  const [book, setBook] = useState(null);
+  const [relatedBooks, setRelatedBooks] = useState([]);
+  const [likedBooks, setLikedBooks] = useState([]);
 
-    // Fetch single book details
-    useEffect(() => {
-      const fetchBook = async () => {
-        if (!id) {
-          setLoading(false);
-          return;
-        }
-        try {
-          const res = await axios.get(`${API}/api/books/${id}`);
-          setBook(res.data);
-        } catch (err) {
-          console.error("Error fetching book:", err);
-        }
-      };
-      fetchBook();
-    }, [id]);
-
-    // Fetch related books (same category)
-    useEffect(() => {
-      const fetchRelated = async () => {
-        if (!book) return;
-        try {
-          const res = await axios.get(`${API}/api/books`);
-          const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
-          const related = data
-            .filter((b) => b.category === book.category && b._id !== book._id)
-            .slice(0, 8);
-          setRelatedBooks(related);
-        } catch (err) {
-          console.error("Error fetching related books:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchRelated();
-    }, [book]);
-
-    const toggleLike = async (bookId) => {
-        const inWishlist = likedBooks.includes(bookId);
-        
-        try {
-          if (inWishlist) {
-            await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
-          } else {
-            await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
-          }
-          
-          setLikedBooks((prev) =>
-            prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
-          );
-        } catch (err) {
-          console.error('Error toggling wishlist', err);
-          if (!token) alert('Please log in to add items to wishlist');
-        }
-    };
-
-    const addToCart = async (selectedBook) => {
-      if (!token) {
-        alert("Please log in to add books to your cart.");
-        return;
-      }
-
+  // Fetch single book
+  useEffect(() => {
+    const fetchBook = async () => {
       try {
-        const payload = {
-          bookId: selectedBook._id || selectedBook.id,
-          price: selectedBook.newPrice ?? selectedBook.oldPrice,
-          quantity: 1,
-          title: selectedBook.title,
-          author: selectedBook.author,
-          image: getImageUrl(selectedBook.coverImage || selectedBook.image, `${API}/uploads/default.png`),
-        };
+        const { data } = await axios.get(`${API}/api/books/${id}`);
+        setBook(data);
 
-        console.log("Add to cart payload:", payload);
-
-        await axios.post(`${API}/api/cart/add`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        alert(`${selectedBook.title} has been added to your cart!`);
-        window.dispatchEvent(new Event("cartUpdated"));
+        // Fetch related books by category
+        const { data: allBooks } = await axios.get(`${API}/api/books`);
+        const related = allBooks.filter(
+          (b) =>
+            b._id !== data._id &&
+            b.category.some((cat) => data.category.includes(cat))
+        );
+        setRelatedBooks(related);
       } catch (err) {
-        console.error("Error adding to cart:", err);
-        alert(err.response?.data?.message || "Could not add to cart");
+        console.error(err);
       }
     };
+    fetchBook();
+  }, [id]);
 
-    const scroll = (direction) => {
-      if (scrollRef.current) {
-        const { scrollLeft, clientWidth } = scrollRef.current;
-        const scrollAmount = direction === "left" ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-        scrollRef.current.scrollTo({ left: scrollAmount, behavior: "smooth" });
-      }
-    };
+  const getImageUrl = (filename) => {
+    if (!filename) return "/placeholder.jpg";
+    return `${API}/uploads/${filename}`;
+  };
 
-    if (loading) return <div className="loading">Loading book details...</div>;
-    if (!book) return <div className="error">Book not found.</div>;
+  const addToCart = async (bookToAdd) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API}/api/cart/add`,
+        { bookId: bookToAdd._id, quantity: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchCart();
+    } catch (err) {
+      console.error("Failed to add to cart", err);
+    }
+  };
+
+  const toggleLike = (bookId) => {
+    setLikedBooks((prev) =>
+      prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+    );
+  };
+
+  const scroll = (direction) => {
+    if (!scrollRef.current) return;
+    const scrollAmount = 300;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  if (!book) return <p>Loading book...</p>;
 
   return (
     <>
-    <Header />
-    <nav className="breadcrumb">
+      <Header />
+      <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link to="/viewAll" className="breadcrumb-link">{book.category}</Link>
+        <Link to="/viewAll" className="breadcrumb-link">{book.category.join(", ")}</Link>
         <span className="breadcrumb-separator">/</span>
-        <span className="breadcrumb-link active">
-          {book.title}
-        </span>
-    </nav>
-    <div className="card-view-book" style={{ "--book-bg": `url('${getImageUrl(book.coverImage || book.image)}')` }} >
-      <div className="card-content">
-        <div className="book-images">
-            <img
-            src={getImageUrl(book.coverImage || book.image)}
-            alt={book.title}
-            className="main-image"
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
-          <div className="thumbnail-container">
-            <img
-              src={getImageUrl(book.coverImage || book.image)}
-              alt="Thumbnail 1"
-              className="thumbnail"
-              style={{ maxWidth: '100%', height: 'auto' }}
-            />
-              <img
-              src={getImageUrl(book.coverImage || book.image)}
-              alt="Thumbnail 2"
-              className="thumbnail"
-              style={{ maxWidth: '100%', height: 'auto' }}
-            />
+        <span className="breadcrumb-link active">{book.title}</span>
+      </nav>
+
+      <div className="card-view-book" style={{ "--book-bg": `url('${getImageUrl(book.coverImage)}')` }}>
+        <div className="card-content">
+          <div className="book-images">
+            <img src={getImageUrl(book.coverImage)} alt={book.title} className="main-image" />
           </div>
-        </div>
 
-        <div className="book-details">
-            <div className="wishlist" onClick={() => toggleLike(book._id)} >
-                {likedBooks.includes(book._id) ? (
-                    <FaHeart className="heart-icon filled" />
-                  ) : (
-                    <FaRegHeart className="heart-icon" />
-                  )}
-            </div>
-            <div className="details-header">
-                <h2>{book.title}</h2>
+          <div className="book-details">
+            <div className="wishlist" onClick={() => toggleLike(book._id)}>
+              {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
             </div>
 
+            <h2>{book.title}</h2>
             <p className="author">{book.author}</p>
-            <p className="description">
-                {book.description}
-            </p>
+            <p className="description">{book.description}</p>
 
             <div className="rating">
-                {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="star-icon" />
-                ))}
-                <span>5 Ratings</span>
+              {[...Array(5)].map((_, i) => <FaStar key={i} className="star-icon" />)}
+              <span>5 Ratings</span>
             </div>
 
-            <div className="price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</div>
+            <div className="sold-count">Book Sold: {book.bookSold || 0}</div>
 
-            <div className="buttons">
-                <button className="add-cart" onClick={() => addToCart(book)}>Add to Cart</button>
-                <button className="buy-now" onClick={() => navigate("/payment")}>Buy Now</button>
+            <div className="price">
+              {book.onSale ? (
+                <>
+                  <span style={{ textDecoration: 'line-through', color: 'gray', fontSize: '13px', marginRight: 8 }}>
+                    ₱{Number(book.oldPrice).toFixed(2)}
+                  </span>
+                  <span style={{ color: '#035c96', fontWeight: 600 }}>
+                    ₱{Number(book.newPrice).toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <span style={{ color: '#035c96', fontWeight: 600 }}>
+                  ₱{Number(book.oldPrice).toFixed(2)}
+                </span>
+              )}
             </div>
+
+            <button
+              className="add-cart"
+              onClick={() => addToCart(book)}
+              disabled={book.stock === 0}
+              style={book.stock === 0 ? { background: '#ccc', color: '#888', cursor: 'not-allowed' } : {}}
+            >
+              {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div className="best-selling-section">
-      <div className="section-header">
-        <h2>Related Books</h2>
-        <a href="#" className="view-all">View All &gt;</a>
-      </div>
+      {/* Related Books */}
+      <div className="best-selling-section">
+        <div className="section-header">
+          <h2>Related Books</h2>
+        </div>
 
-      <div className="carousel-container">
-        <button className="scroll-btn left" onClick={() => scroll("left")}>❮</button>
-        <div className="books-carousel" ref={scrollRef}>
-          {relatedBooks.length > 0 ? (
-            relatedBooks.map((relBook) => (
+        <div className="carousel-container">
+          <button className="scroll-btn left" onClick={() => scroll("left")}>❮</button>
+          <div className="books-carousel" ref={scrollRef}>
+            {relatedBooks.length > 0 ? relatedBooks.map((relBook) => (
               <div key={relBook._id} className="book-card">
                 <div className="book-image">
-                  <img src={getImageUrl(relBook.coverImage || relBook.image)} alt={relBook.title} style={{ maxWidth: '100%', height: 'auto' }} />
-                  <span className="genre-tag">{relBook.category}</span>
+                  <img src={getImageUrl(relBook.coverImage)} alt={relBook.title} />
+                  <span className="genre-tag">{relBook.category.join(", ")}</span>
                   <div className="heart-overlay" onClick={() => toggleLike(relBook._id)}>
-                    {likedBooks.includes(relBook._id) ? (
-                      <FaHeart className="heart-icon filled" />
-                    ) : (
-                      <FaRegHeart className="heart-icon" />
-                    )}
+                    {likedBooks.includes(relBook._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
                   </div>
                 </div>
                 <div className="book-details">
                   <h3 onClick={() => navigate(`/bookCard/${relBook._id}`)}>{relBook.title}</h3>
                   <p className="author">{relBook.author}</p>
-                  <p className="price">₱{(relBook.newPrice ?? relBook.oldPrice)?.toFixed(2)}</p>
-                  <button className="add-btn" onClick={() => addToCart(relBook)}>Add to Cart</button>
+                  <p className="price">
+                    {relBook.onSale ? (
+                      <>
+                        <span style={{ textDecoration: 'line-through', color: 'gray', fontSize: '13px', marginRight: 8 }}>
+                          ₱{Number(relBook.oldPrice).toFixed(2)}
+                        </span>
+                        <span style={{ color: '#035c96', fontWeight: 600 }}>
+                          ₱{Number(relBook.newPrice).toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ color: '#035c96', fontWeight: 600 }}>
+                        ₱{Number(relBook.oldPrice).toFixed(2)}
+                      </span>
+                    )}
+                  </p>
+                  <button
+                    className="add-btn"
+                    onClick={() => addToCart(relBook)}
+                    disabled={relBook.stock === 0}
+                    style={relBook.stock === 0 ? { background: '#ccc', color: '#888', cursor: 'not-allowed' } : {}}
+                  >
+                    {relBook.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  </button>
                 </div>
               </div>
-            ))
-          ) : (
-            <p>No related books found.</p>
-          )}
+            )) : <p>No related books found.</p>}
+          </div>
+          <button className="scroll-btn right" onClick={() => scroll("right")}>❯</button>
         </div>
-
-        <button className="scroll-btn right" onClick={() => scroll("right")}>❯</button>
       </div>
-    </div>
-    <Footer />            
+
+      <Footer />
     </>
   );
 };

@@ -68,9 +68,6 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================
-   MAIN CARD
-============================================ */
 .profile-content {
   flex: 1;
 }
@@ -92,9 +89,6 @@
   font-weight: 600;
 }
 
-/* ============================================
-   TABS
-============================================ */
 .orders-tabs {
   display: flex;
   border-bottom: 1px solid #c7c7c7;
@@ -120,9 +114,6 @@
   background: #5dade2;
 }
 
-/* ============================================
-   ORDER LIST
-============================================ */
 .orders-list {
   padding: 25px 28px;
 }
@@ -169,17 +160,55 @@
   min-width: 90px;
   text-align: right;
 }
+.complete-order-btn {
+  background-color: #28a745; /* Green color for complete button */
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
 
+.complete-order-btn:hover {
+  background-color: #218838; /* Darker green on hover */
+}
 /* EMPTY MESSAGE */
 .orders-list .empty {
   text-align: center;
   color: #999;
   padding: 40px 0;
 }
+.order-item-detail {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+}
 
-/* ============================================
-   RESPONSIVE
-============================================ */
+/* ensure image stays fixed size */
+.order-item-media {
+  flex: 0 0 auto;
+}
+
+/* allow details to grow and occupy remaining space */
+.order-item-info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* push price to the far right */
+.order-item-price {
+  margin-left: auto;
+  text-align: right;
+  min-width: 100px;
+  font-weight: 700;
+}
 @media (max-width: 768px) {
   .profile-container {
     flex-direction: column;

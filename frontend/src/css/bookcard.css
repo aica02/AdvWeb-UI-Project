@@ -163,6 +163,13 @@
   color: gold;
 }
 
+.card-view-book .card-content .sold-count {
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+}
+
 .card-view-book .card-content .price {
   font-size: 1.8rem;
   font-weight: bold;

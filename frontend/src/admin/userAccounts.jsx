@@ -35,7 +35,7 @@ const UserAccounts = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this account?")) return;
+    if (!window.confirm("Do you really want to delete this user?")) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -72,15 +72,15 @@ const UserAccounts = () => {
           {users.length > 0 ? (
             users.map((user, index) => (
               <tr key={user._id}>
-                <td>{index + 1}</td>
-                <td>{user.firstName} {user.lastName}</td>
-                <td>{user.email}</td>
-                <td>
-                  <button className="delete-btn" onClick={() => handleDelete(user._id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
+                  <td>{index + 1}</td>
+                  <td>{user.firstName} {user.lastName}</td>
+                  <td>{user.email} <div style={{fontSize: '0.85rem', color:'#666'}}>Orders: {user.totalOrders ?? 0}</div></td>
+                  <td>
+                    <button className="delete-btn" onClick={() => handleDelete(user._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
             ))
           ) : (
             <tr>
