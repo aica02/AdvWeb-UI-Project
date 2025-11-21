@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUser, FaHeart, FaShoppingCart, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../css/loginmodal.css";
 
@@ -21,7 +21,47 @@ export default function Header() {
   const [newCount, setNewCount] = useState(0);
   const [saleCount, setSaleCount] = useState(0);
 
+  // search
+  const [searchTerm, setSearchTerm] = useState("");
+  // autocomplete results
+  const [autoResults, setAutoResults] = useState([]);
+  const [showAuto, setShowAuto] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // keep header input synced with `search` query param (so back/forward preserves the term)
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(location.search).get("search") || "";
+      setSearchTerm(q);
+    } catch (e) {
+      // ignore
+    }
+  }, [location.search]);
+
+  // simple autocomplete fetch
+  useEffect(() => {
+    const q = searchTerm.trim();
+    if (!q) {
+      setAutoResults([]);
+      setShowAuto(false);
+      return;
+    }
+
+    const delay = setTimeout(async () => {
+      try {
+        const res = await axios.get(`${API}/api/books/search?q=${encodeURIComponent(q)}`);
+        setAutoResults(Array.isArray(res.data) ? res.data : (res.data?.books || []));
+        setShowAuto(true);
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 200); 
+
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
+
 
   useEffect(() => {
     const syncLoginState = () => setIsLoggedIn(!!localStorage.getItem("token"));
@@ -146,8 +186,44 @@ export default function Header() {
 
         <div className="header-search">
           <div className="search-container">
-            <input type="text" placeholder="Search Books" className="search-input" />
-            <FiSearch className="search-icon" size={18} />
+            <input 
+            type="text" 
+            placeholder="Search Books" 
+            className="search-input" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const q = (searchTerm || "").trim();
+                if (q) navigate(`/viewAll?search=${encodeURIComponent(q)}`);
+                setShowAuto(false);
+              }
+            }}/>
+            <FiSearch 
+            className="search-icon" 
+            size={18} 
+            role="button"
+            onClick={() => {
+              const q = (searchTerm || "").trim();
+              if (q) navigate(`/viewAll?search=${encodeURIComponent(q)}`);
+              setShowAuto(false);
+            }}/>
+
+            {showAuto && autoResults.length > 0 && (
+              <ul className="auto-dropdown">
+                {autoResults.map((b) => (
+                  <li 
+                    key={b._id}
+                    onClick={() => {
+                      navigate(`/viewAll?search=${encodeURIComponent(b.title)}`);
+                      setShowAuto(false);
+                    }}
+                  >
+                    {b.title}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
