@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import "../css/order.css";
+import "../css/profile.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -67,7 +67,6 @@ export default function Orders() {
 
   useEffect(() => {
     fetchOrders();
-    
     // Set interval to check and enable buttons after 1 minute
     const interval = setInterval(() => {
       setEnabledReceiveButtons((prev) => {
@@ -140,13 +139,20 @@ const handleCancelOrder = async (orderId) => {
 
   return (
     <>
+    <nav className="breadcrumb">
+      <Link to="/" className="breadcrumb-link">Home</Link>
+      <span className="breadcrumb-separator">/</span>
+      <span className="breadcrumb-link active">My Order</span>
+    </nav>
+    
     <div className="profile-container">
       <div className="profile-sidebar">
-        <div className="order-profile-menu">
+        <div className="info-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
         </div>
       </div>
+
       <div className="profile-content">
         <div className="profile-card">
           <h2>MY ORDERS</h2>
@@ -155,61 +161,65 @@ const handleCancelOrder = async (orderId) => {
 
           <div className="orders-list">
             {orders.length === 0 ? (
-              <div style={{ textAlign: "center", color: "#888" }}>
-                No orders found.
-              </div>
+              <div style={{ textAlign: "center", color: "#888" }}>No orders found.</div>
             ) : (
               orders.map((order) => (
                 <div key={order._id} className="order-item">
                   <div className="order-header">
-                    <h3>Order #{order._id}</h3>
-                    <p>Status: <span style={{ color: order.status === "Complete" ? "green" : "orange", fontWeight: "bold" }}>{order.status || "Pending"}</span></p>
+                    <h3 className="order-orderID">Order ID: {order._id}</h3>
+                    <p>
+                      Status:{" "}
+                      <span
+                        style={{
+                          color:
+                            order.status === "Complete"
+                              ? "green"
+                              : order.status === "Cancelled"
+                              ? "red"
+                              : "orange",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {order.status || "Pending"}
+                      </span>
+                    </p>
+
                   </div>
 
                   {order.books && order.books.length > 0 ? (
-  order.books.map((item, idx) => (
-    <div key={`${order._id}-${idx}`} className="order-item-detail">
-      <div className="order-item-media">
-        <img
-          src={item.image || "https://dummyimage.com/200x280/cccccc/000000&text=No+Image"}
-          alt={item.title || "No Title"}
-          loading="lazy"
-          style={{ maxWidth: '100%', height: 'auto' }}
-        />
-      </div>
+                    order.books.map((item, idx) => (
+                      <div key={`${order._id}-${idx}`} className="order-item-detail">
+                        <div className="order-item-media">
+                          <img
+                            src={item.image || "https://dummyimage.com/200x280/cccccc/000000&text=No+Image"}
+                            alt={item.title || "No Title"}
+                            loading="lazy"
+                          />
+                        </div>
 
-      <div className="order-item-info">
-        <div className="order-item-title"><strong>{item.title || "No Title"}</strong></div>
-        <div className="order-item-author">{item.author || "No Author"}</div>
-        <div className="order-item-qty">Quantity: {item.quantity}</div>
-      </div>
+                        <div className="order-item-info">
+                          <div className="order-item-title"><strong>{item.title || "No Title"}</strong></div>
+                          <div className="order-item-author">{item.author || "No Author"}</div>
+                          <div className="order-item-qty">Quantity: {item.quantity}</div>
+                        </div>
 
-      <div className="order-item-price">
-        ₱{formatCurrency(item.price * item.quantity)}
-      </div>
-    </div>
-  ))
-) : (
-  <div>No books in this order</div>
-)}
+                        <div className="order-item-price">
+                          ₱{formatCurrency(item.price * item.quantity)}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div>No books in this order</div>
+                  )}
 
                   {/* Receive Order Button */}
                   {order.status === "Pending" && !receivedOrders[order._id] && (
-                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #ddd" }}>
-                      <div style={{ display: 'flex', gap: 12 }}>
+                    <div className="order-action-container">
+                      <div className="order-action-buttons">
                         <button
                           onClick={() => handleReceiveOrder(order._id)}
                           disabled={!enabledReceiveButtons[order._id]}
-                          style={{
-                            padding: "10px 20px",
-                            backgroundColor: enabledReceiveButtons[order._id] ? "#007bff" : "#ccc",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: enabledReceiveButtons[order._id] ? "pointer" : "not-allowed",
-                            fontSize: "14px",
-                            fontWeight: "600",
-                          }}
+                          className={`receive-btn ${!enabledReceiveButtons[order._id] ? "disabled" : ""}`}
                         >
                           {enabledReceiveButtons[order._id] ? "Receive Order" : "Order Received (Enable in 1 min)"}
                         </button>
@@ -217,16 +227,7 @@ const handleCancelOrder = async (orderId) => {
                         <button
                           onClick={() => handleCancelOrder(order._id)}
                           disabled={!enabledCancelButtons[order._id]}
-                          style={{
-                            padding: "10px 20px",
-                            backgroundColor: enabledCancelButtons[order._id] ? "#dc3545" : "#eee",
-                            color: enabledCancelButtons[order._id] ? "white" : "#999",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: enabledCancelButtons[order._id] ? "pointer" : "not-allowed",
-                            fontSize: "14px",
-                            fontWeight: "600",
-                          }}
+                          className={`cancel-btn ${!enabledCancelButtons[order._id] ? "disabled" : ""}`}
                         >
                           Cancel Order
                         </button>
@@ -235,10 +236,11 @@ const handleCancelOrder = async (orderId) => {
                   )}
 
                   {(receivedOrders[order._id] || order.status === "Complete") && (
-                    <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #ddd", color: "green", fontWeight: "600" }}>
+                    <div className="order-received-label">
                       ✓ Order Received
                     </div>
                   )}
+
                 </div>
               ))
             )}

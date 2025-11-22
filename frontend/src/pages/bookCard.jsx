@@ -11,7 +11,7 @@ const BookCard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const scrollRef = useRef(null);
-  //const { cartItems setCartItems, fetchCart } = useCart();
+  // const { cartItems setCartItems, fetchCart } = useCart();
 
   const [book, setBook] = useState(null);
   const [relatedBooks, setRelatedBooks] = useState([]);
@@ -85,7 +85,10 @@ const BookCard = () => {
         <span className="breadcrumb-link active">{book.title}</span>
       </nav>
 
-      <div className="card-view-book" style={{ "--book-bg": `url('${getImageUrl(book.coverImage)}')` }}>
+      <div
+        className="card-view-book"
+        style={{ "--book-bg": `url('${getImageUrl(book.coverImage)}')` }}
+      >
         <div className="card-content">
           <div className="book-images">
             <img src={getImageUrl(book.coverImage)} alt={book.title} className="main-image" />
@@ -93,7 +96,11 @@ const BookCard = () => {
 
           <div className="book-details">
             <div className="wishlist" onClick={() => toggleLike(book._id)}>
-              {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+              {likedBooks.includes(book._id) ? (
+                <FaHeart className="heart-icon filled" />
+              ) : (
+                <FaRegHeart className="heart-icon" />
+              )}
             </div>
 
             <h2>{book.title}</h2>
@@ -101,37 +108,45 @@ const BookCard = () => {
             <p className="description">{book.description}</p>
 
             <div className="rating">
-              {[...Array(5)].map((_, i) => <FaStar key={i} className="star-icon" />)}
+              {[...Array(5)].map((_, i) => (
+                <FaStar key={i} className="star-icon" />
+              ))}
               <span>5 Ratings</span>
             </div>
+            
+            <div className="book-sold-price">
+              <div className="sold-count">Book Sold: {book.bookSold || 0}</div>
 
-            <div className="sold-count">Book Sold: {book.bookSold || 0}</div>
-
-            <div className="price">
-              {book.onSale ? (
-                <>
-                  <span style={{ textDecoration: 'line-through', color: 'gray', fontSize: '13px', marginRight: 8 }}>
-                    ₱{Number(book.oldPrice).toFixed(2)}
-                  </span>
-                  <span style={{ color: '#035c96', fontWeight: 600 }}>
-                    ₱{Number(book.newPrice).toFixed(2)}
-                  </span>
-                </>
-              ) : (
-                <span style={{ color: '#035c96', fontWeight: 600 }}>
-                  ₱{Number(book.oldPrice).toFixed(2)}
-                </span>
-              )}
+              <div className="price">
+                {book.onSale ? (
+                  <>
+                    <span className="old-price">₱{Number(book.oldPrice).toFixed(2)}</span>
+                    <span className="new-price">₱{Number(book.newPrice).toFixed(2)}</span>
+                  </>
+                ) : (
+                  <span className="normal-price">₱{Number(book.oldPrice).toFixed(2)}</span>
+                )}
+              </div>
             </div>
 
-            <button
-              className="add-cart"
-              onClick={() => addToCart(book)}
-              disabled={book.stock === 0}
-              style={book.stock === 0 ? { background: '#ccc', color: '#888', cursor: 'not-allowed' } : {}}
-            >
-              {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </button>
+            <div className="action-buttons">
+              <button
+                className={`add-cart ${book.stock === 0 ? "out-of-stock" : ""}`}
+                onClick={() => addToCart(book)}
+                disabled={book.stock === 0}
+              >
+                {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              </button>
+              
+              <button
+                className={`buy-now ${book.stock === 0 ? "out-of-stock" : ""}`}
+                onClick={() => addToCart(book)}
+                disabled={book.stock === 0}
+              >
+                {book.stock === 0 ? 'Not Available' : 'Buy Now'}
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -151,7 +166,11 @@ const BookCard = () => {
                   <img src={getImageUrl(relBook.coverImage)} alt={relBook.title} />
                   <span className="genre-tag">{relBook.category.join(", ")}</span>
                   <div className="heart-overlay" onClick={() => toggleLike(relBook._id)}>
-                    {likedBooks.includes(relBook._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                    {likedBooks.includes(relBook._id) ? (
+                      <FaHeart className="heart-icon filled" />
+                    ) : (
+                      <FaRegHeart className="heart-icon" />
+                    )}
                   </div>
                 </div>
                 <div className="book-details">
@@ -160,24 +179,18 @@ const BookCard = () => {
                   <p className="price">
                     {relBook.onSale ? (
                       <>
-                        <span style={{ textDecoration: 'line-through', color: 'gray', fontSize: '13px', marginRight: 8 }}>
-                          ₱{Number(relBook.oldPrice).toFixed(2)}
-                        </span>
-                        <span style={{ color: '#035c96', fontWeight: 600 }}>
-                          ₱{Number(relBook.newPrice).toFixed(2)}
-                        </span>
+                        <span className="old-price">₱{Number(relBook.oldPrice).toFixed(2)}</span>
+                        <span className="new-price">₱{Number(relBook.newPrice).toFixed(2)}</span>
                       </>
                     ) : (
-                      <span style={{ color: '#035c96', fontWeight: 600 }}>
-                        ₱{Number(relBook.oldPrice).toFixed(2)}
-                      </span>
+                      <span className="normal-price">₱{Number(relBook.oldPrice).toFixed(2)}</span>
                     )}
                   </p>
+                  
                   <button
-                    className="add-btn"
+                    className={`add-btn ${relBook.stock === 0 ? "out-of-stock" : ""}`}
                     onClick={() => addToCart(relBook)}
                     disabled={relBook.stock === 0}
-                    style={relBook.stock === 0 ? { background: '#ccc', color: '#888', cursor: 'not-allowed' } : {}}
                   >
                     {relBook.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>

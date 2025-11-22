@@ -118,66 +118,77 @@
   color: white;
 }
 
-.card-view-book .card-content .wishlist{
+.card-view-book .card-content .book-details .wishlist{
     display: flex;
     flex-direction: column;
     align-items: end;
     margin-bottom: 4rem;
 }
 
-.card-view-book .card-content .details-header {
+.card-view-book .card-content .book-details .details-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.card-view-book .card-content h2 {
+.card-view-book .card-content .book-details h2 {
   font-family: var(--font-heading);
   font-size: 1.6rem;
   margin: 0;
 }
 
-.card-view-book .card-content .heart-icon:hover {
+.card-view-book .card-content .book-details .heart-icon:hover {
   color: var(--color-complementary);
 }
 
-.card-view-book .card-content .author {
+.card-view-book .card-content .book-details .author {
   font-style: italic;
   margin: 0.5rem 0;
   color: #fefefe;
 }
 
-.card-view-book .card-content .description {
+.card-view-book .card-content .book-details .description {
   margin: 1rem 0;
   line-height: 1.5;
 }
 
-.card-view-book .card-content .rating {
+.card-view-book .card-content .book-details .rating {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin-bottom: 1rem;
 }
 
-.card-view-book .card-content .star-icon {
+.card-view-book .card-content .book-details .star-icon {
   color: gold;
 }
 
-.card-view-book .card-content .sold-count {
+.card-view-book .card-content .book-details .book-sold-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.card-view-book .card-content .book-details .sold-count {
   font-size: 0.95rem;
   color: #e0e0e0;
   margin-bottom: 0.8rem;
   font-weight: 500;
 }
 
-.card-view-book .card-content .price {
+.card-view-book .card-content .book-details .old-price{
+  font-size: 1.2rem;
+  margin-right: .5rem;
+  text-decoration: line-through;
+  color: #ffbbbb;
+}
+.card-view-book .card-content .book-details .price {
   font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 1.2rem;
   color: white;
 }
 
-.card-view-book .card-content .buttons {
+.card-view-book .card-content .book-details .action-buttons {
   display: flex;
   align-items: flex-end;
   gap: 1rem;
@@ -193,6 +204,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   font-family: var(--font-heading);
+  width: 200px;
 }
 
 .card-view-book .card-content .add-cart {

@@ -359,6 +359,11 @@ body{
   font-family: var(--font-body);
 }
 
+.no-found-labeled{
+  font-weight: 600;
+  color: var(--color-complementary);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -382,6 +387,7 @@ body{
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 10px 0px;
 }
 
