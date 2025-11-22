@@ -93,8 +93,20 @@ const HeroCarousel = () => {
           <div className="text-content">
             <h2>{currentBook.category} Books</h2>
             <p>{currentBook.description}</p>
-            <button className="get-started" onClick={() => navigate("/viewAll")}>Get Started</button>
-          </div>
+            <button
+              className="get-started"
+              onClick={() => {
+                const token = localStorage.getItem("token");
+                if (token) {
+                  navigate("/viewAll");   
+                } else {
+                  navigate("/auth"); 
+                }
+              }}
+            >
+              Get Started
+            </button>
+            </div>
         </div>
       </div>
     </div>
