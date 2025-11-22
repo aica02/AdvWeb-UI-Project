@@ -3,7 +3,8 @@ import Book from "../models/bookModel.js";
 import Log from "../models/logModel.js";
 import { upload } from "../middleware/uploadMiddlew.js";
 import { protect, adminOnly } from "../middleware/authMiddlew.js";
-import Order from "../models/orderModel.js";
+import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 
@@ -38,11 +39,22 @@ router.post("/", protect, adminOnly, upload.single("coverImage"), asyncHandler(a
   console.log("POST /books - req.file:", req.file);
 
   const { title, author, description, category, trending, onSale, oldPrice, newPrice, recommendedAge, bookLanguage, stock } = req.body;
-  // store filename only (frontend will prefix with /uploads/)
   const coverImage = req.file ? req.file.filename : null;
 
   if (!title || !author || !description || !category || oldPrice === undefined || !coverImage) {
     return res.status(400).json({ message: "Missing required fields: title, author, description, category, oldPrice, coverImage" });
+  }
+
+  // Copy uploaded image to frontend public folder
+  if (req.file) {
+    const backendPath = path.join("uploads", req.file.filename); 
+    const frontendPath = path.join("../frontend/public/uploads", req.file.filename); 
+    try {
+      fs.copyFileSync(backendPath, frontendPath);
+      console.log(`Copied ${backendPath} to ${frontendPath}`);
+    } catch (err) {
+      console.error("Error copying file to frontend:", err);
+    }
   }
 
   const normalizedCategory = Array.isArray(category) ? category : (category ? [category] : []);
@@ -62,17 +74,39 @@ router.post("/", protect, adminOnly, upload.single("coverImage"), asyncHandler(a
   });
 
   await newBook.save();
+
   try {
-    await Log.create({ actor: req.user._id, actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(), action: 'Added book', meta: { bookId: newBook._id, title: newBook.title } });
-  } catch (e) { console.error('Log error:', e); }
+    await Log.create({ 
+      actor: req.user._id, 
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(), 
+      action: 'Added book', 
+      meta: { bookId: newBook._id, title: newBook.title } 
+    });
+  } catch (e) { 
+    console.error('Log error:', e); 
+  }
 
   res.status(201).json(newBook);
 }));
 
 // PUT (Update book) with optional cover image upload
+
 router.put("/:id", protect, adminOnly, upload.single("coverImage"), asyncHandler(async (req, res) => {
   const updates = { ...req.body };
-  if (req.file) updates.coverImage = req.file.filename;
+
+  if (req.file) {
+    updates.coverImage = req.file.filename;
+
+    // Copy uploaded image to frontend public folder
+    const backendPath = path.join("uploads", req.file.filename); 
+    const frontendPath = path.join("../frontend/public/uploads", req.file.filename);
+    try {
+      fs.copyFileSync(backendPath, frontendPath);
+      console.log(`Copied ${backendPath} to ${frontendPath}`);
+    } catch (err) {
+      console.error("Error copying file to frontend:", err);
+    }
+  }
 
   // Normalize category and numeric fields
   if (updates.category) {
@@ -89,9 +123,17 @@ router.put("/:id", protect, adminOnly, upload.single("coverImage"), asyncHandler
   });
 
   if (!updatedBook) return res.status(404).json({ message: "Book not found" });
+
   try {
-    await Log.create({ actor: req.user._id, actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(), action: 'Updated book', meta: { bookId: updatedBook._id, title: updatedBook.title } });
-  } catch (e) { console.error('Log error:', e); }
+    await Log.create({ 
+      actor: req.user._id, 
+      actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(), 
+      action: 'Updated book', 
+      meta: { bookId: updatedBook._id, title: updatedBook.title } 
+    });
+  } catch (e) { 
+    console.error('Log error:', e); 
+  }
 
   res.json(updatedBook);
 }));
