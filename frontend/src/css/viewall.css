@@ -147,6 +147,26 @@ body {
   margin: 6px 0;
 }
 
+.book-grid .book-card .book-price.old{
+  font-size: 12px;
+  text-decoration: line-through;
+  color: #555;
+  margin: 0;
+}
+
+.book-grid .book-card  .book-sold-price{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.book-grid .book-card .book-sold{
+  font-size: 12px;
+  font-weight: bold;
+  color: #555;
+  margin: 5px 0;
+}
+
 .book-grid .book-card .add-to-cart {
   background-color: var(--color-primary);
   color: white;

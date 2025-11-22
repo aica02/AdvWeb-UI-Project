@@ -425,7 +425,7 @@ body{
   border-radius: 3px;
 }
 
-.genre-tag {
+.badge {
   position: absolute;
   top: -5px;
   right: -5px;

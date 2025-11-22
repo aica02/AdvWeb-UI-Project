@@ -1,16 +1,19 @@
 import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
         {/* Brand Section */}
-        <div className="footer-section">
-          <h2 className="footer-logo">Logo here</h2>
-          <p className="footer-text">
-            Your trusted online bookstore for quality reads, great deals, and fast delivery across the Philippines.
-          </p>
-        </div>
+       <div className="footer-section">
+        <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <h2 className="footer-logo">BookWise</h2>
+        </Link>
+        <p className="footer-text">
+          Your trusted online bookstore for quality reads, great deals, and fast delivery across the Philippines.
+        </p>
+      </div>
 
         {/* Socials */}
         <div className="footer-section">
@@ -29,9 +32,9 @@ export default function Footer() {
         <div className="footer-section">
           <h3 className="footer-heading">Quick Links</h3>
           <ul className="footer-links">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Featured Books</a></li>
-            <li><a href="#">New Arrivals</a></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/bestSelling">Featured Books</Link></li>
+            <li><Link to="/newReleases">New Arrivals</Link></li>
           </ul>
         </div>
 
