@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import "../css/order.css";
+import "../css/profile.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -151,13 +151,19 @@ export default function Orders() {
 
   return (
     <>
-      <div className="profile-container">
-        <div className="profile-sidebar">
-          <div className="order-profile-menu">
-            <Link to="/profile">Account Information</Link>
-            <Link to="/orders">My Orders</Link>
-          </div>
+      <nav className="breadcrumb">
+      <Link to="/" className="breadcrumb-link">Home</Link>
+      <span className="breadcrumb-separator">/</span>
+      <span className="breadcrumb-link active">My Order</span>
+    </nav>
+    
+    <div className="profile-container">
+      <div className="profile-sidebar">
+        <div className="info-profile-menu">
+          <Link to="/profile">Account Information</Link>
+          <Link to="/orders">My Orders</Link>
         </div>
+      </div>
 
         <div className="profile-content">
           <div className="profile-card">

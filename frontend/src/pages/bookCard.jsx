@@ -80,10 +80,26 @@ const BookCard = () => {
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <Link to="/viewAll" className="breadcrumb-link">{book.category.join(", ")}</Link>
+
+        {/* Dynamic category link to ViewAll with category query */}
+        {book.category.map((cat, idx) => (
+          <React.Fragment key={cat}>
+            <Link
+              to={`/viewAll?category=${encodeURIComponent(cat)}`}
+              className="breadcrumb-link"
+            >
+              {cat}
+            </Link>
+            {idx < book.category.length - 1 && (
+              <span className="breadcrumb-separator">, </span>
+            )}
+          </React.Fragment>
+        ))}
+
         <span className="breadcrumb-separator">/</span>
         <span className="breadcrumb-link active">{book.title}</span>
       </nav>
+
 
       <div
         className="card-view-book"
