@@ -11,14 +11,11 @@ const ViewAll = () => {
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [likedBooks, setLikedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // FILTER STATES
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [selectedAges, setSelectedAges] = useState([]);
-
-  // SORT
+  const [onSale, setOnSale] = useState("");  // added onSale state here
   const [sortOption, setSortOption] = useState("default");
 
   const navigate = useNavigate();
@@ -33,14 +30,12 @@ const ViewAll = () => {
     return `${API}/uploads/${img}`;
   };
 
-  // AUTO-SELECT CATEGORY FROM QUERY PARAM
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryFromURL = params.get("category");
     if (categoryFromURL) setSelectedCategories([categoryFromURL]);
   }, [location.search]);
 
-  // Fetch Books + Search
   useEffect(() => {
     const controller = new AbortController();
     const params = new URLSearchParams(location.search);
@@ -48,22 +43,15 @@ const ViewAll = () => {
 
     const fetchBooks = async () => {
       setLoading(true);
-      setError("");
-
       try {
         let url = `${API}/api/books`;
         if (q) url = `${API}/api/books/search?q=${encodeURIComponent(q)}`;
-
         const res = await axios.get(url, { signal: controller.signal });
         const data = Array.isArray(res.data) ? res.data : res.data?.books ?? [];
-
         setBooks(data);
         setFilteredBooks(data);
       } catch (err) {
-        if (err.name !== "CanceledError") {
-          console.error("Error fetching books:", err);
-          setError("Failed to load books");
-        }
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -73,63 +61,61 @@ const ViewAll = () => {
     return () => controller.abort();
   }, [location.search]);
 
-  // TOGGLE FILTER
   const toggleFilter = (value, setter) => {
     setter((prev) =>
       prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]
     );
   };
 
-  // FILTER + SORT LOGIC
   useEffect(() => {
     let filtered = books;
 
-    // CATEGORY FILTER
-    if (selectedCategories.length > 0) {
+    if (selectedCategories.length)
       filtered = filtered.filter((book) =>
         Array.isArray(book.category)
           ? book.category.some((c) => selectedCategories.includes(c))
           : selectedCategories.includes(book.category)
       );
-    }
 
-    // LANGUAGE FILTER
-    if (selectedLanguages.length > 0) {
+    if (selectedLanguages.length)
       filtered = filtered.filter((book) =>
         book.bookLanguage?.some((lang) => selectedLanguages.includes(lang))
       );
-    }
 
-    // AGE FILTER
-    if (selectedAges.length > 0) {
+    if (selectedAges.length)
       filtered = filtered.filter((book) =>
         book.recommendedAge?.some((age) => selectedAges.includes(age))
       );
+
+    // Add onSale filter logic here:
+    if (onSale === "yes") {
+      filtered = filtered.filter(
+        (book) => book.newPrice && book.newPrice < book.oldPrice && book.newPrice !== 0
+      );
+    } else if (onSale === "no") {
+      filtered = filtered.filter(
+        (book) => !book.newPrice || book.newPrice >= book.oldPrice
+      );
     }
 
-    // SORTING
-    if (sortOption === "highest-price") {
+    if (sortOption === "highest-price")
       filtered = [...filtered].sort(
         (a, b) => (b.newPrice ?? b.oldPrice) - (a.newPrice ?? a.oldPrice)
       );
-    } else if (sortOption === "lowest-price") {
+    else if (sortOption === "lowest-price")
       filtered = [...filtered].sort(
         (a, b) => (a.newPrice ?? a.oldPrice) - (b.newPrice ?? b.oldPrice)
       );
-    } else if (sortOption === "in-stock") {
+    else if (sortOption === "in-stock")
       filtered = [...filtered].sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
-    }
 
     setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, sortOption, books]);
+  }, [books, selectedCategories, selectedLanguages, selectedAges, onSale, sortOption]);
 
-  // LIKE / UNLIKE
   const toggleLike = async (bookId) => {
     if (!token) return alert("Please log in to add items to wishlist");
-
     try {
       const inWishlist = likedBooks.includes(bookId);
-
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -141,20 +127,19 @@ const ViewAll = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
-
       setLikedBooks((prev) =>
         prev.includes(bookId)
           ? prev.filter((id) => id !== bookId)
           : [...prev, bookId]
       );
     } catch (err) {
-      console.error("Error toggling wishlist", err);
+      console.error(err);
     }
   };
 
-  // ADD TO CART
   const addToCart = async (book) => {
     if (!token) return alert("Please log in to add books to your cart.");
+    if ((book.stock ?? 0) <= 0) return;
 
     try {
       await axios.post(
@@ -169,13 +154,19 @@ const ViewAll = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       window.dispatchEvent(new Event("cartUpdated"));
       alert(`${book.title} has been added to your cart!`);
     } catch (err) {
-      console.error("Add to cart error:", err);
+      console.error(err);
       alert("Failed to add to cart.");
     }
+  };
+
+  const discountPercent = (book) => {
+    const oldP = Number(book.oldPrice ?? book.price ?? 0);
+    const newP = Number(book.newPrice ?? 0);
+    if (!oldP || !newP || newP >= oldP) return 0;
+    return Math.round(((oldP - newP) / oldP) * 100);
   };
 
   if (loading) return <div className="loading">Loading books...</div>;
@@ -189,8 +180,6 @@ const ViewAll = () => {
       </nav>
 
       <div className="viewall-container">
-
-        {/* ---------- SIDEBAR FILTERS ---------- */}
         <aside className="sidebar">
           <hr className="line-before-filters" />
           <h3>Categories</h3>
@@ -239,15 +228,28 @@ const ViewAll = () => {
               </li>
             ))}
           </ul>
+
+          <hr className="line-before-filters" />
+          <h3>On Sale</h3>
+          <ul className="filter-list">
+            <li>
+              <input type="radio" name="sales" id="yes" checked={onSale === "yes"} onChange={() => setOnSale("yes")} />
+              <label htmlFor="yes">Yes</label>
+            </li>
+            <li>
+              <input type="radio" name="sales" id="no" checked={onSale === "no"} onChange={() => setOnSale("no")} />
+              <label htmlFor="no">No</label>
+            </li>
+            <li>
+              <input type="radio" name="sales" id="all" checked={onSale === ""} onChange={() => setOnSale("")} />
+              <label htmlFor="all">All Books</label>
+            </li>
+          </ul>
         </aside>
 
-        {/* ---------- MAIN CONTENT ---------- */}
         <section className="main-content">
-
           <div className="view-all-header">
             <h2>Books</h2>
-
-            {/* SORT SECTION */}
             <div className="sort-section">
               <label htmlFor="sort">SORT BY</label>
               <select
@@ -263,55 +265,71 @@ const ViewAll = () => {
             </div>
           </div>
 
-          {/* BOOK GRID */}
           <div className="book-grid">
             {filteredBooks.length === 0 ? (
               <p>No books found.</p>
             ) : (
-              filteredBooks.map((book) => (
-                <div className="book-card" key={book._id}>
-                  <div className="book-image">
-                    <img
-                      src={getImageUrl(book.image || book.coverImage)}
-                      alt={book.title}
-                    />
-                    <div
-                      className="heart-overlay"
-                      onClick={() => toggleLike(book._id)}
-                    >
-                      {likedBooks.includes(book._id) ? (
-                        <FaHeart className="heart-icon filled" />
-                      ) : (
-                        <FaRegHeart className="heart-icon" />
-                      )}
+              filteredBooks.map((book) => {
+                const isOnSale = book.oldPrice && book.newPrice && book.newPrice < book.oldPrice;
+                return (
+                  <div className="book-card" key={book._id}>
+                    <div className="book-image">
+                      <img
+                        src={getImageUrl(book.image || book.coverImage)}
+                        alt={book.title}
+                      />
+                      {isOnSale && <span className="badge">{discountPercent(book)}%</span>}
+                      <div
+                        className="heart-overlay"
+                        onClick={() => toggleLike(book._id)}
+                      >
+                        {likedBooks.includes(book._id) ? (
+                          <FaHeart className="heart-icon filled" />
+                        ) : (
+                          <FaRegHeart className="heart-icon" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="book-info">
+                      <p
+                        className="book-title"
+                        onClick={() => navigate(`/bookCard/${book._id}`)}
+                      >
+                        {book.title}
+                      </p>
+                      <p className="book-author">{book.author}</p>
+                      <div className="book-sold-price">
+                        <div className="sold-only">
+                          <p className="book-sold">{book.bookSold ?? 0} sold</p>
+                        </div>
+                        <div className="price-only">
+                          {isOnSale ? (
+                            <>
+                              <p className="book-price old">₱{book.oldPrice.toFixed(2)}</p>
+                              <p className="book-price">₱{book.newPrice.toFixed(2)}</p>
+                            </>
+                          ) : (
+                            <p className="book-price">₱{(book.newPrice ?? book.oldPrice).toFixed(2)}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        className="add-to-cart"
+                        disabled={(book.stock ?? 0) <= 0}
+                        style={(book.stock ?? 0) <= 0 ? { background: "#ccc", cursor: "not-allowed" } : {}}
+                        onClick={() => addToCart(book)}
+                      >
+                        {(book.stock ?? 0) <= 0 ? "Out of Stock" : "Add to Cart"}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="book-info">
-                    <p
-                      className="book-title"
-                      onClick={() => navigate(`/bookCard/${book._id}`)}
-                    >
-                      {book.title}
-                    </p>
-                    <p className="book-author">{book.author}</p>
-                    <p className="book-price">
-                      ₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}
-                    </p>
-
-                    <button
-                      className="add-to-cart"
-                      onClick={() => addToCart(book)}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
-
       </div>
     </>
   );
