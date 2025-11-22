@@ -188,7 +188,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
 
             <div ref={carouselRef} className="books-carousel">
               {newItems.length === 0 ? (
-                <div>No new releases found.</div>
+                <div className="no-found-labeled">No new releases found.</div>
               ) : (
                 newItems.map((book) => (
                   <div key={book._id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>

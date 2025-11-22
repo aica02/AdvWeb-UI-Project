@@ -232,7 +232,7 @@ const BestSellingBooks = ({ embedded = false }) => {
 
             <div className="books-carousel" ref={carouselRef}>
               {bestItems.length === 0 ? (
-                <div>No best sellers found.</div>
+                <div className="no-found-labeled">No best sellers found.</div>
               ) : (
                 bestItems.map((book) => (
                   <div key={book._id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
