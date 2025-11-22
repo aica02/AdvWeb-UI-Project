@@ -1,7 +1,6 @@
 import User from "../models/userModel.js";
 import Book from "../models/bookModel.js";
 import Order from "../models/orderModel.js";
-import mongoose from "mongoose";
 
 // ADD TO CART
 export const addToCart = async (req, res) => {

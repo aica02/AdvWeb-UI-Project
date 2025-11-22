@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "../css/authpage.css"
-import { Navigate } from "react-router-dom";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
+import "../css/authpage.css";
+import { Navigate, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 
 const API = import.meta.env.VITE_API_URL;
 
 const AuthPage = () => {
+  const navigate = useNavigate(); // ← add this
   const [isLogin, setIsLogin] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [message, setMessage] = useState("");
@@ -33,12 +32,11 @@ const AuthPage = () => {
         password: form.password,
       });
 
-      // ✅ Store token and role
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
       setMessage("Logged in successfully!");
-      setTimeout(() => setRedirect(true), 500); 
+      setTimeout(() => setRedirect(true), 500);
     } catch (err) {
       setMessage(err.response?.data?.message || "Login failed");
     }
@@ -69,10 +67,12 @@ const AuthPage = () => {
   }
 
   return (
-    <>
-    <Header />
-    
     <div className={`auth-container ${isLogin ? "login-active" : "signup-active"}`}>
+      <div className="back-to-home-button" style={{ padding: "1rem", cursor: "pointer" }} onClick={() => navigate("/")}>
+        <FaArrowLeft size={20} style={{ marginRight: "0.5rem" }} />
+        Back to Home
+      </div>
+
       <div className="auth-box">
         <div className="auth-image-side">
           <div className="logo-container">
@@ -132,9 +132,6 @@ const AuthPage = () => {
         </div>
       </div>
     </div>
-    <InfoBanner />
-    <Footer />
-    </>
   );
 };
 

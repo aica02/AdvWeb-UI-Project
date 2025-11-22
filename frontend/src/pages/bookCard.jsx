@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
-import Header from "./header";
-import Footer from "./footer";
 import { useCart } from "../context/cartContext";
 import axios from "axios";
 import "../css/bookcard.css";
@@ -79,7 +77,6 @@ const BookCard = () => {
 
   return (
     <>
-      <Header />
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -191,8 +188,6 @@ const BookCard = () => {
           <button className="scroll-btn right" onClick={() => scroll("right")}>❯</button>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 };

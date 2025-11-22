@@ -3,8 +3,6 @@ import "../css/viewall.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Header from './header';
-import Footer from './footer';
 import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
@@ -164,9 +162,8 @@ const BookSales = () => {
 
   return (
     <>
-      <Header />
       <nav className="breadcrumb">
-        <Link to="/#" className="breadcrumb-link">Home</Link>
+        <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
         <span className="breadcrumb-link active">Book Sales</span>
       </nav>
@@ -242,7 +239,7 @@ const BookSales = () => {
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title}/>
                     <span className="badge">{discountPercent(book)}%</span>
                     <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
                       {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
@@ -252,12 +249,17 @@ const BookSales = () => {
                   <div className="book-info">
                     <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    <p style={{ color: "gray", fontSize: '0.75rem', fontWeight: 500, margin: '0.2rem 0' }}>{book.bookSold || 0} sold</p>
-                    <p className="book-price" style={{ textDecoration: "line-through", color:"gray", fontSize:"13px"}}>₱{(book.oldPrice)?.toFixed(2)}</p>
-                    <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-
                     
-
+                    <div className="book-sold-price">
+                        <div className="sold-only">
+                          <p className="book-sold">{book.bookSold || 0} sold</p>
+                        </div>
+                        <div className="price-only">
+                          <p className="book-price old" >₱{(book.oldPrice)?.toFixed(2)}</p>
+                          <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                        </div>
+                      </div>
+                  
                     <button
                       className="add-to-cart"
                       disabled={(book.stock ?? 0) <= 0}
@@ -273,9 +275,6 @@ const BookSales = () => {
           </div>
         </section>
       </div>
-
-      <InfoBanner />
-      <Footer />
     </>
   );
 };

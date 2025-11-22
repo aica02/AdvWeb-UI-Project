@@ -21,14 +21,19 @@ import BookSales from "../pages/bookSales.jsx";
 import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
 import DashboardSection from "../admin/dashboard.jsx";
 import AdminAccount from "../admin/admin.jsx";
-
 import AddBooksSection from "../admin/addBook.jsx";
 import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
 import UserAccounts from "../admin/userAccounts.jsx";
 import AdminOrders from "../admin/adminOrders.jsx";
 import AdminLogs from "../admin/adminLogs.jsx";
 import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
+import Header from "../pages/header.jsx";
+import Footer from "../pages/footer.jsx";
+import InfoBanner from "../pages/services.jsx";
 
+
+// User protection
+import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
 
 const router = createBrowserRouter([
   {
@@ -36,13 +41,16 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       // Public routes
-      { path: "/", element: <Home /> },
+      { path: "/", element: <Home/> },
       { path: "/auth", element: <AuthPage /> },
       { path: "/bookCard/:id", element: <BookCard /> },
       { path: "/viewAll", element: <ViewAll /> },
       { path: "/bestSelling", element: <BestSellingBooks /> },
       { path: "/newReleases", element: <NewReleaseBooks /> },
-      { path: "/bookSales", element: <BookSales /> },
+      { path: "/bookSales", element: <BookSales />},
+      { path: "/header", element: <Header />},
+      { path: "/footer", element: <Footer />},
+      { path: "/services", element: <InfoBanner />},
       // User protected routes
       {path: "/wishlist",element: (<ProtectedUserRoute> <Wishlists /></ProtectedUserRoute>),},
       {path: "/cart",element: (<ProtectedUserRoute> <Cart /></ProtectedUserRoute>),},

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/cart.css';
-import Header from './header';
-import Footer from './footer';
 import InfoBanner from './services';
-
+import Footer from './footer';
 const API = import.meta.env.VITE_API_URL;
 
 function Cart() {
@@ -147,61 +145,66 @@ function Cart() {
 
   return (
     <div className="cart-page-wrapper">
-      <Header/>
       <div className="cart-page">
-        <div className="item-breadcrumb">
-          <span className="breadcrumb-home">Home</span>
+        <nav className="breadcrumb">
+          <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-current">Cart</span>
-        </div>
+          <span className="breadcrumb-link active">Cart</span>
+        </nav>
 
         <div className="cart-container">
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>
+          <div>
             <h1 className="cart-title">Your Shopping Cart</h1>
-            <div className="cart-controls" style={{display:'flex',alignItems:'center',gap:12}}>
-              <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+            <div className="cart-controls">
+              <label className="select-all-label">
                 <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} />
-                <span style={{fontSize:14,color:'#333'}}>Select All</span>
+                <span>Select All</span>
               </label>
-              <span style={{color:'#666',fontSize:14}}>{selectedIds.size} selected</span>
+              <span className="selected-count">{selectedIds.size} selected</span>
             </div>
           </div>
 
           <div className="cart-content">
-            <section className="cart-items-section" aria-label="Shopping cart items">
+            <section className="cart-items-section">
               {cartItems.length === 0 ? (
                 <div className="empty-cart">
                   <p>Your cart is empty</p>
                 </div>
               ) : (
                 cartItems.map(item => (
-                  <article key={item.key} className="cart-item">
-                    <div style={{display:'flex',alignItems:'center',marginRight:12}}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(item.bookId)}
-                        onChange={() => toggleSelect(item.bookId)}
-                        aria-label={`Select ${item.title} for checkout`}
-                      />
+                  <article key={item.bookId} className="cart-item">
+                    <div className="item-checkbox">
+                      <input type="checkbox" checked={selectedIds.has(item.bookId)} onChange={()=>toggleSelect(item.bookId)} />
                     </div>
 
                     <div className="item-image">
-                      <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" style={{ maxWidth: '100%', height: 'auto' }} />
+                      <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" />
                     </div>
 
                     <div className="item-details">
                       <h3 className="item-title">{item.title}</h3>
                       <p className="item-author">{item.author}</p>
 
-                      <div className="quantity-control" role="group" aria-label="Quantity controls">
-                        <button className="qty-btn" onClick={() => updateQuantity(item.bookId, -1)} disabled={item.quantity <= 1}>−</button>
+                      <div className="quantity-control">
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQuantity(item.bookId, -1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          −
+                        </button>
                         <span className="qty-display">{item.quantity}</span>
-                        <button className="qty-btn" onClick={() => updateQuantity(item.bookId, 1)}>+</button>
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQuantity(item.bookId, 1)}
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
 
                     <div className="item-actions">
-                      <button className="delete-btn" onClick={() => removeItem(item.bookId)} aria-label={`Remove ${item.title}`}>
+                      <button className="delete-btn" onClick={() => removeItem(item.bookId)}>
                         <RiDeleteBin6Line />
                       </button>
                       <div className="item-price">₱ {item.price * item.quantity}</div>
@@ -224,7 +227,7 @@ function Cart() {
                 <span className="summary-value">₱ {shipping}</span>
               </div>
 
-              <div className="summary-divider" role="separator"></div>
+              <div className="summary-divider"></div>
 
               <div className="summary-row summary-total">
                 <span className="summary-label">Total</span>

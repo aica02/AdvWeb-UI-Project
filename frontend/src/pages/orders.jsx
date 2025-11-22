@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../css/order.css";
-import Header from './header';
-import Footer from './footer';
+
+const API = import.meta.env.VITE_API_URL;
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -142,8 +142,6 @@ const handleCancelOrder = async (orderId) => {
 
   return (
     <>
-    <Header />
-    
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="order-profile-menu">
@@ -250,7 +248,6 @@ const handleCancelOrder = async (orderId) => {
         </div>
       </div>      
     </div>
-    <Footer />
     </>
   );
 }
