@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 const HeroCarousel = () => {
@@ -44,7 +45,7 @@ const HeroCarousel = () => {
         "A chilling classic that defined the vampire genre. Dark, atmospheric, and filled with suspense, it delves into fear and fascination. The story examines obsession and morality under a haunting gothic shadow. A masterpiece of horror literature.",
     },
   ];
-
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
 
   const nextSlide = () => {
@@ -92,7 +93,7 @@ const HeroCarousel = () => {
           <div className="text-content">
             <h2>{currentBook.category} Books</h2>
             <p>{currentBook.description}</p>
-            <button className="get-started">Get Started</button>
+            <button className="get-started" onClick={() => navigate("/viewAll")}>Get Started</button>
           </div>
         </div>
       </div>

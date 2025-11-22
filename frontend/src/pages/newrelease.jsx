@@ -327,8 +327,10 @@ const NewReleaseBooks = ({ embedded = false }) => {
                           <p className="book-sold">{book.bookSold || 0} sold</p>
                         </div>
                         <div className="price-only">
-                          <p className="book-price old" >₱{(book.oldPrice)?.toFixed(2)}</p>
-                          <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                          {book.newPrice && book.newPrice < book.oldPrice && (
+                            <p className="book-price old">₱{book.oldPrice.toFixed(2)}</p>
+                          )}
+                          <p className="book-price">₱{(book.newPrice ?? book.oldPrice).toFixed(2)}</p>
                         </div>
                       </div>
 
