@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
@@ -24,17 +24,19 @@ const BestSellingBooks = ({ embedded = false }) => {
   const carouselRef = useRef(null);
 
   // compute best items for embedded carousel - only top 5
-  const bestItems = books
-    .filter((b) => {
-      const salesCount = Number(b.bookSold ?? b.sales ?? b.soldCount ?? b.totalSold ?? 0);
-      return b.bestSeller === true || salesCount > 0;
-    })
-    .sort((a, b) => {
-      const aSold = Number(a.bookSold ?? a.sales ?? 0);
-      const bSold = Number(b.bookSold ?? b.sales ?? 0);
-      return bSold - aSold;
-    })
-    .slice(0, 5);
+  const bestItems = useMemo(() => {
+    return books
+      .filter((b) => {
+        const salesCount = Number(b.bookSold ?? b.sales ?? b.soldCount ?? b.totalSold ?? 0);
+        return b.bestSeller === true || salesCount > 0;
+      })
+      .sort((a, b) => {
+        const aSold = Number(a.bookSold ?? a.sales ?? 0);
+        const bSold = Number(b.bookSold ?? b.sales ?? 0);
+        return bSold - aSold;
+      })
+      .slice(0, 5);
+  }, [books]);
 
   const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
     if (!img) return fallback;

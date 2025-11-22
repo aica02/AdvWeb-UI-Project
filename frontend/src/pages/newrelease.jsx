@@ -111,7 +111,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
     }
 
     setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, newItems]);
+  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, books]);
 
   // Toggle wishlist
   const toggleLike = async (bookId) => {

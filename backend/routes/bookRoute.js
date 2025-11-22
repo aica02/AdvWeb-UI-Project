@@ -18,6 +18,13 @@ router.get("/", asyncHandler(async (req, res) => {
   res.json(books);
 }));
 
+// GET search books
+router.get("/search", asyncHandler(async (req, res) => {
+  const query = req.query.q || "";
+  const books = await Book.find({ title: { $regex: query, $options: "i" } });
+  res.json(books);
+}));
+
 // GET a single book
 router.get("/:id", asyncHandler(async (req, res) => {
   const book = await Book.findById(req.params.id);
