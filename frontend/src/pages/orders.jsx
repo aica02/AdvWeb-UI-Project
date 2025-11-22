@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../css/order.css";
-import Header from './header';
-import Footer from './footer';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -133,8 +131,6 @@ export default function Orders() {
 
   return (
     <>
-    <Header />
-    
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="order-profile-menu">
@@ -241,7 +237,6 @@ export default function Orders() {
         </div>
       </div>      
     </div>
-    <Footer />
     </>
   );
 }

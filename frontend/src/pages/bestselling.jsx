@@ -1,13 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 const API = import.meta.env.VITE_API_URL;
 
 const BestSellingBooks = ({ embedded = false }) => {
@@ -26,18 +23,20 @@ const BestSellingBooks = ({ embedded = false }) => {
   const token = localStorage.getItem("token");
   const carouselRef = useRef(null);
 
-  // compute best items for embedded carousel - only top 5
-  const bestItems = books
-    .filter((b) => {
-      const salesCount = Number(b.bookSold ?? b.sales ?? b.soldCount ?? b.totalSold ?? 0);
-      return b.bestSeller === true || salesCount > 0;
-    })
-    .sort((a, b) => {
-      const aSold = Number(a.bookSold ?? a.sales ?? 0);
-      const bSold = Number(b.bookSold ?? b.sales ?? 0);
-      return bSold - aSold;
-    })
-    .slice(0, 5);
+  // nabago to
+  const bestItems = useMemo(() => {
+    return books
+      .filter((b) => {
+        const salesCount = Number(b.bookSold ?? b.sales ?? b.soldCount ?? b.totalSold ?? 0);
+        return b.bestSeller === true || salesCount > 0;
+      })
+      .sort((a, b) => {
+        const aSold = Number(a.bookSold ?? a.sales ?? 0);
+        const bSold = Number(b.bookSold ?? b.sales ?? 0);
+        return bSold - aSold;
+      })
+      .slice(0, 5);
+  }, [books]);
 
   const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
     if (!img) return fallback;
@@ -206,73 +205,62 @@ const BestSellingBooks = ({ embedded = false }) => {
     }
   };
 
-  return (
+   return (
     <>
-      {!embedded && <Header />}
       {!embedded && (
         <nav className="breadcrumb">
-          <Link to="/#" className="breadcrumb-link">Home</Link>
+          <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-link active">Best Sellers</span>
         </nav>
       )}
 
       {embedded ? (
-        <section style={{ padding: '20px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 10px' }}>
-            <h3 style={{ margin: 0 }}>Best Sellers</h3>
-            
+        <section className="new-release-section">
+          <div className="section-header">
+            <h2>Best Sellers</h2>
           </div>
-          <div style={{ position: 'relative', marginTop: 12 }}>
-            <button
+
+          <div className="carousel-container">
+            <button className="scroll-btn left"
               aria-label="Scroll left"
               onClick={() => {
                 const el = carouselRef.current;
                 if (el) el.scrollBy({ left: -el.clientWidth * 0.7, behavior: 'smooth' });
               }}
-              style={{ position: 'absolute', left: 0, top: '40%', zIndex: 2, background: 'rgba(255,255,255,0.8)', border: 'none', cursor: 'pointer' }}
-            >◀</button>
+            >❮</button>
 
-            <div
-              ref={carouselRef}
-              style={{
-                display: 'flex',
-                gap: 12,
-                overflowX: 'auto',
-                padding: '12px 40px',
-                scrollBehavior: 'smooth',
-              }}
-            >
+            <div className="books-carousel" ref={carouselRef}>
               {bestItems.length === 0 ? (
-                <div style={{ padding: 20 }}>No best sellers found.</div>
+                <div>No best sellers found.</div>
               ) : (
                 bestItems.map((book) => (
-                  <div key={book._id} style={{ minWidth: 200, maxWidth: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', minHeight: 315, padding: 15, border: '1px solid #ddd', borderRadius: 5, background: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', cursor: 'pointer' }} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
-                    <div className="book-image" style={{ position: 'relative', marginBottom: 10 }}>
-                      <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 3 }} />
-                      <span style={{ position: 'absolute', top: -5, right: -5, background: '#ff3131', color: '#fff', fontSize: '0.75rem', padding: '3px 15px', borderRadius: 2 }} className="badge">Best Seller</span>
+                  <div key={book._id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
+                    <div className="book-image">
+                      <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} />
+                      <span className="badge">Best Seller</span>
+                      <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
+                        {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                      </div>
                     </div>
-                    <div className="book-info" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                      <p className="book-title" style={{ fontWeight: 'bold', fontSize: '0.8rem', margin: '0.3rem 0', cursor: 'pointer' }}>{book.title}</p>
-                      <p className="book-author" style={{ color: '#555', fontSize: '0.7rem', flexGrow: 1 }}>{book.author}</p>
-                      <p style={{ color: '#ff7043', fontSize: '0.75rem', fontWeight: 500, margin: '0.2rem 0' }}>Book Sold: {book.bookSold || 0}</p>
-                      <p className="book-price" style={{ textDecoration: "line-through", color:"gray", fontSize:"13px"}}>₱{(book.oldPrice)?.toFixed(2)}</p>
-                      <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                      <button style={{ backgroundColor: '#035c96', color: 'white', border: 'none', padding: '0.5rem 0.8rem', borderRadius: 3, cursor: 'pointer', transition: 'background-color 0.3s ease' }} className="add-to-cart" onMouseEnter={(e) => e.target.style.backgroundColor = '#01203f'} onMouseLeave={(e) => e.target.style.backgroundColor = '#035c96'}>Add to Cart</button>
+                    <div className="book-details">
+                      <h3>{book.title}</h3>
+                      <p className="author">{book.author}</p>
+                      <p className="price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                      <button className="add-btn" onClick={() => addToCart(book)}>Add to Cart</button>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            <button
+            <button className="scroll-btn right"
               aria-label="Scroll right"
               onClick={() => {
                 const el = carouselRef.current;
                 if (el) el.scrollBy({ left: el.clientWidth * 0.7, behavior: 'smooth' });
               }}
-              style={{ position: 'absolute', right: 0, top: '40%', zIndex: 2, background: 'rgba(255,255,255,0.8)', border: 'none', cursor: 'pointer' }}
-            >▶</button>
+            >❯</button>
           </div>
         </section>
       ) : (
@@ -366,7 +354,7 @@ const BestSellingBooks = ({ embedded = false }) => {
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} />
                     <span className="badge">Best Seller</span>
                     <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
                       {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
@@ -376,10 +364,26 @@ const BestSellingBooks = ({ embedded = false }) => {
                   <div className="book-info">
                     <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    <p style={{ color: "gray", fontSize: '0.75rem', fontWeight: 500, margin: '0.2rem 0' }}>{book.bookSold || 0} sold</p>
-                      <p className="book-price" style={{ textDecoration: "line-through", color:"gray", fontSize:"13px"}}>₱{(book.oldPrice)?.toFixed(2)}</p>
+                    
+                  <div className="book-sold-price">
+                    <div className="sold-only">
+                      <p className="book-sold">{book.bookSold || 0} sold</p>
+                    </div>
+                    <div className="price-only">
+                      <p className="book-price old" >₱{(book.oldPrice)?.toFixed(2)}</p>
                       <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                      <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
+                    </div>
+                  </div>
+
+                  <button
+                      className="add-to-cart"
+                      disabled={(book.stock ?? 0) <= 0}
+                      style={(book.stock ?? 0) <= 0 ? { background: "#ccc", cursor: "not-allowed" } : {}}
+                      onClick={() => addToCart(book)}
+                    >
+                      {(book.stock ?? 0) <= 0 ? "Out of Stock" : "Add to Cart"}
+                    </button>    
+                  
                   </div>
                 </div>
               ))
@@ -389,8 +393,6 @@ const BestSellingBooks = ({ embedded = false }) => {
       </div>
       
       )}
-      {!embedded && <InfoBanner />}
-      {!embedded && <Footer />}
     </>
   );
 };

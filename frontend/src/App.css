@@ -425,7 +425,7 @@ body{
   border-radius: 3px;
 }
 
-.genre-tag {
+.badge {
   position: absolute;
   top: -5px;
   right: -5px;
@@ -755,7 +755,9 @@ body{
 
 /* Medium screens (tablets) */
 @media (max-width: 768px) {
-  
+  *{
+    font-size: 12px;
+  }
   .header {
     display: block;
     padding: 25px 20px;
@@ -764,7 +766,6 @@ body{
   .header-logo {
     margin-left: 20px;
   }
-
   .searchbar-profile {
     display: flex;
     align-items: center;
@@ -784,8 +785,12 @@ body{
   }
 
   .header .search-container {
-    width: 100%; /* full width on mobile */
+    width: 100%;
     margin: 1rem 0 0;
+  }
+  
+  .sub-nav ul {
+    font-size: 12px;
   }
 
   .profile-menu {

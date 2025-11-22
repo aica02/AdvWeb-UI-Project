@@ -5,9 +5,6 @@ import { FaCreditCard } from "react-icons/fa";
 import { BsBank } from "react-icons/bs";
 import "../css/PaymentPage.css";
 import { useNavigate } from "react-router-dom";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -117,7 +114,8 @@ function Payment() {
 
   // Edit Info redirect
   const handleEditShipping = () => {
-    window.location.href = "http://localhost:5173/profile/edit";
+    navigate("/profile/edit");
+    // window.location.href = "http://localhost:5173/profile/edit";
   };
 
   // Apply Coupon
@@ -204,8 +202,6 @@ function Payment() {
 
   return (
     <> 
-    <Header/>
-    
     <div className="payment-page">
       <div className="content-wrapper">
         {/* LEFT SIDE */}
@@ -380,8 +376,6 @@ function Payment() {
         </aside>
       </div>
     </div>
-    <InfoBanner/>
-    <Footer/>
     </>
   );
 }

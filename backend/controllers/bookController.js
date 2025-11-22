@@ -7,7 +7,7 @@ export const postABook = async (req, res) => {
   try {
     const newBook = new Book({
       ...req.body,
-      coverImage: "", // will update if file is uploaded
+      coverImage: "",
     });
 
     await newBook.save();
@@ -15,7 +15,7 @@ export const postABook = async (req, res) => {
     if (req.file) {
       const ext = path.extname(req.file.originalname);
       const newFilename = `${newBook._id}${ext}`;
-      const uploadsDir = path.join(path.resolve(), "uploads"); // ensure we save inside /uploads
+      const uploadsDir = path.join(path.resolve(), "uploads");
 
       // make sure uploads folder exists
       if (!fs.existsSync(uploadsDir)) {

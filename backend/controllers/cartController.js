@@ -1,9 +1,7 @@
-
-
 import mongoose from "mongoose";
 import User from "../models/userModel.js";
 import Order from "../models/orderModel.js";
-import Book from "../models/bookModel.js"; // Import Book model for stock validation
+import Book from "../models/bookModel.js";
 import eventEmitter from "../utils/eventEmitter.js";
 
 // ADD TO CART

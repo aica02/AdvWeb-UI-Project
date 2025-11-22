@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import "../css/wishlists.css";
 import { FaTrash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL;
@@ -89,7 +86,6 @@ const Wishlists = () => {
 
   return (
     <>
-      <Header />
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -138,9 +134,6 @@ const Wishlists = () => {
           </div>
         </section>
       </div>
-
-      <InfoBanner />
-      <Footer />
     </>
   );
 };
