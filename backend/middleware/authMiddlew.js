@@ -23,9 +23,7 @@ export const protect = async (req, res, next) => {
   }
 };
 
-
-
-// ✅ Only admins can access these routes
+// Only admins can access these routes
 export const adminOnly = (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });

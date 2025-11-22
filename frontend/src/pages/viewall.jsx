@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "../css/wishlists.css";
-import { FaTrash } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import "../css/viewall.css";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Header from './header';
 import Footer from './footer';
 import InfoBanner from './services';
@@ -9,11 +9,16 @@ import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL;
 
-const Wishlists = () => {
+const ViewAll = () => {
   const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [likedBooks, setLikedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const location = useLocation();
+
   const token = localStorage.getItem('token');
 
   const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
@@ -24,37 +29,57 @@ const Wishlists = () => {
     return `${API}/uploads/${img}`;
   };
 
-  const fetchWishlist = async () => {
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams(location.search);
+    const q = (params.get('search') || '').trim();
+
+    const fetchBooks = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        let url = `${API}/api/books`;
+        // If your backend exposes a search endpoint use it. Adjust as necessary:
+        if (q) {
+          // Option 1: dedicated search endpoint
+          url = `${API}/api/books/search?q=${encodeURIComponent(q)}`;
+          // Option 2 (if your backend supports query param on listing):
+          // url = `${API}/api/books?search=${encodeURIComponent(q)}`;
+        }
+
+        const res = await axios.get(url, { signal: controller.signal });
+        const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+        setBooks(data);
+        setFilteredBooks(data);
+      } catch (err) {
+        if (err.name === 'CanceledError' || err.message === 'canceled') return;
+        console.error('Error fetching books (viewAll):', err);
+        setError('Failed to load books');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+
+    return () => controller.abort();
+  }, [location.search]);
+
+  const toggleLike = async (bookId) => {
     if (!token) {
-      setBooks([]);
-      setLoading(false);
+      alert('Please log in to add items to wishlist');
       return;
     }
-
     try {
-      setLoading(true);
-      const res = await axios.get(`${API}/api/wishlist`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = Array.isArray(res.data) ? res.data : [];
-      setBooks(data);
+      const inWishlist = likedBooks.includes(bookId);
+      if (inWishlist) {
+        await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+      } else {
+        await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+      }
+      setLikedBooks(prev => prev.includes(bookId) ? prev.filter(id => id !== bookId) : [...prev, bookId]);
     } catch (err) {
-      console.error('Error fetching wishlist', err);
-      setError('Failed to load wishlist');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
-
-  const removeFromWishlist = async (bookId) => {
-    try {
-      await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
-      setBooks((prev) => prev.filter((b) => b._id !== bookId));
-    } catch (err) {
-      console.error('Error removing from wishlist', err);
-      alert('Unable to remove item');
+      console.error('Error toggling wishlist', err);
     }
   };
 
@@ -63,27 +88,26 @@ const Wishlists = () => {
       alert('Please log in to add books to your cart.');
       return;
     }
-
     try {
-      const payload = {
+      await axios.post(`${API}/api/cart/add`, {
         bookId: book._id,
         price: book.newPrice ?? book.oldPrice,
         quantity: 1,
         title: book.title,
         author: book.author,
-        image: getImageUrl(book.coverImage || book.image, `${API}/uploads/default.png`),
-      };
+        image: getImageUrl(book.image || book.coverImage, `${API}/uploads/default.png`),
+      }, { headers: { Authorization: `Bearer ${token}` } });
 
-      await axios.post(`${API}/api/cart/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      const cartRes = await axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } });
       window.dispatchEvent(new Event('cartUpdated'));
-      alert(`${book.title} added to cart`);
+      alert(`${book.title} has been added to your cart!`);
     } catch (err) {
-      console.error('Error adding to cart from wishlist', err);
-      alert(err.response?.data?.message || 'Could not add to cart');
+      console.error('Error adding to cart:', err);
+      alert(err.response?.data?.message || 'Server error: Could not add to cart');
     }
   };
 
-  if (loading) return <div className="loading">Loading wishlist...</div>;
+  if (loading) return <div className="loading">Loading books...</div>;
 
   return (
     <>
@@ -91,30 +115,32 @@ const Wishlists = () => {
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
-        <span className="breadcrumb-link active">Wishlist</span>
+        <span className="breadcrumb-link active">View All</span>
       </nav>
 
-      <div className="wishlist-container">
+      <div className="viewall-container">
         <section className="main-content">
           <div className="view-all-header">
-            <h2>Your Wishlist</h2>
+            <h2>Books</h2>
           </div>
 
           {error && <div className="error-message">{error}</div>}
 
           <div className="book-grid">
-            {books.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#888' }}>Your wishlist is empty.</div>
+            {filteredBooks.length === 0 ? (
+              <p>No books found.</p>
             ) : (
-              books.map((book) => (
+              filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
-                    <span className="trash-badge" onClick={() => removeFromWishlist(book._id)} style={{ cursor: 'pointer' }}><FaTrash/></span>
+                    <img src={getImageUrl(book.image || book.coverImage, `${API}/uploads/art1.png`)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
+                      {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                    </div>
                   </div>
 
                   <div className="book-info">
-                    <p className="book-title" onClick={() => navigate(`/bookCard/${book._id}`)}>{book.title}</p>
+                    <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
                     <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
                     <button className="add-to-cart" onClick={() => addToCart(book)}>Add to Cart</button>
@@ -132,4 +158,5 @@ const Wishlists = () => {
   );
 };
 
-export default Wishlists;
+export default ViewAll;
+

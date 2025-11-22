@@ -74,3 +74,28 @@
   from {transform:translateY(-10px); opacity:0;}
   to {transform:translateY(0); opacity:1;}
 }
+
+.auto-dropdown {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 999;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.auto-dropdown li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.auto-dropdown li:hover {
+  background: #f5f5f5;
+}

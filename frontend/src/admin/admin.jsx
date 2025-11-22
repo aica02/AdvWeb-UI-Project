@@ -1,5 +1,5 @@
 import React from "react";
-import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus} from "react-icons/fa";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "../css/admin.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -50,7 +50,20 @@ const AdminAccount = () => {
           >
             <FaUserMinus />
           </button>
-          
+
+          <button
+            className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`}
+            onClick={() => navigate("/admin/orders")}
+          >
+            <FaBox />
+          </button>
+
+          <button
+            className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`}
+            onClick={() => navigate("/admin/logs")}
+          >
+            <FaBell />
+          </button>
         </nav>
       </aside>
 

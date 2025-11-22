@@ -14,7 +14,7 @@ const bookSchema = new mongoose.Schema({
     required: true,
   },
   category:  {
-    type: String,
+    type: [String],
     required: true,
   },
   trending: {
@@ -24,6 +24,18 @@ const bookSchema = new mongoose.Schema({
   coverImage: {
     type: String,
     required: true,
+  },
+  stock: {
+    type: Number,
+    default: 0,
+  },
+  bookSold: {
+    type: Number,
+    default: 0,
+  },
+  onSale: {
+    type: Boolean,
+    default: false,
   },
   oldPrice: {
     type: Number,

@@ -11,8 +11,8 @@ const Home = () => {
     <>
         <Header/>
         <HeroCarousel />
-        <BestSellingBooks />
-        <NewReleaseBooks />
+        <BestSellingBooks embedded/>
+        <NewReleaseBooks embedded/>
         <InfoBanner/>
         <Footer/>
     </>

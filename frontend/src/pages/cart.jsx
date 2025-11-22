@@ -11,6 +11,8 @@ const API = import.meta.env.VITE_API_URL;
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(true);
   const [subtotal, setSubtotal] = useState(0);
   const [shipping] = useState(100);
   const [total, setTotal] = useState(0);
@@ -20,8 +22,10 @@ function Cart() {
   const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
     if (!img) return fallback;
     if (img.startsWith("http")) return img;
+    if (img.includes("://")) return img; // full URL
+    if (img.startsWith("/uploads/")) return `${API}${img}`;
+    if (img.startsWith("uploads/")) return `${API}/${img}`;
     if (img.startsWith("/")) return `${API}${img}`;
-    if (img.startsWith("uploads")) return `${API}/${img}`;
     return `${API}/uploads/${img}`;
   };
 
@@ -45,6 +49,10 @@ function Cart() {
         }));
 
         setCartItems(items);
+        // default select all items
+        const all = new Set(items.map(i => i.bookId));
+        setSelectedIds(all);
+        setSelectAll(true);
         setSubtotal(data.totalAmount || 0);
         setTotal((data.totalAmount || 0) + shipping);
       } catch (err) {
@@ -56,14 +64,14 @@ function Cart() {
 
   // Update quantity in backend
 const updateQuantity = async (bookId, change) => {
-  const item = cartItems.find(i => i.bookId === bookId); // Fix this if necessary
+  const item = cartItems.find(i => i.bookId === bookId); 
   if (!item) return;
 
   const newQty = Math.max(1, item.quantity + change);
 
   try {
     await axios.patch(`${API}/api/cart/update`, {
-      bookId: bookId,  // Ensure you're passing the correct bookId
+      bookId: bookId, 
       quantity: newQty
     }, {
       headers: { Authorization: `Bearer ${token}` }
@@ -103,8 +111,39 @@ const updateQuantity = async (bookId, change) => {
 
   // Proceed to checkout
   const handleProceedToCheckout = () => {
+    // store selected book ids for checkout
+    const arr = Array.from(selectedIds);
+    localStorage.setItem('selectedBookIds', JSON.stringify(arr));
     navigate('/payment');
   };
+
+  const toggleSelect = (bookId) => {
+    const next = new Set(selectedIds);
+    if (next.has(bookId)) next.delete(bookId);
+    else next.add(bookId);
+    setSelectedIds(next);
+    setSelectAll(next.size === cartItems.length && cartItems.length > 0);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      // deselect all
+      setSelectedIds(new Set());
+      setSelectAll(false);
+    } else {
+      const all = new Set(cartItems.map(i => i.bookId));
+      setSelectedIds(all);
+      setSelectAll(true);
+    }
+  };
+
+  // Calculate subtotal and total for SELECTED items only
+  useEffect(() => {
+    const selectedItems = cartItems.filter(item => selectedIds.has(item.bookId));
+    const selectedSubtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+    setSubtotal(selectedSubtotal);
+    setTotal(selectedSubtotal + shipping);
+  }, [selectedIds, cartItems, shipping]);
 
   return (
     <div className="cart-page-wrapper">
@@ -117,7 +156,16 @@ const updateQuantity = async (bookId, change) => {
         </div>
 
         <div className="cart-container">
-          <h1 className="cart-title">Your Shopping Cart</h1>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>
+            <h1 className="cart-title">Your Shopping Cart</h1>
+            <div className="cart-controls" style={{display:'flex',alignItems:'center',gap:12}}>
+              <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+                <input type="checkbox" checked={selectAll} onChange={toggleSelectAll} />
+                <span style={{fontSize:14,color:'#333'}}>Select All</span>
+              </label>
+              <span style={{color:'#666',fontSize:14}}>{selectedIds.size} selected</span>
+            </div>
+          </div>
           <div className="cart-content">
 
             <section className="cart-items-section" aria-label="Shopping cart items">
@@ -128,6 +176,9 @@ const updateQuantity = async (bookId, change) => {
               ) : (
                 cartItems.map(item => (
                   <article key={item.bookId} className="cart-item">
+                    <div style={{display:'flex',alignItems:'center',marginRight:12}}>
+                      <input type="checkbox" checked={selectedIds.has(item.bookId)} onChange={()=>toggleSelect(item.bookId)} aria-label={`Select ${item.title} for checkout`} />
+                    </div>
                     <div className="item-image">
                       <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" style={{ maxWidth: '100%', height: 'auto' }} />
                     </div>

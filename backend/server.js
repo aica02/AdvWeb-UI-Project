@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
 import bookRoutes from "./routes/bookRoute.js";
 import cartRoutes from "./routes/cartRoute.js";
+import logRoutes from "./routes/logRoute.js";
 import wishlistRoutes from "./routes/wishlistRoute.js";
 import { trackVisit } from "./middleware/visitMiddlew.js";
 import cartRoute from "./routes/cartRoute.js";
@@ -72,6 +73,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/logs", logRoutes);
 app.use(trackVisit);
 
 

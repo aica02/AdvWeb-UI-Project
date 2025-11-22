@@ -16,7 +16,7 @@ import Payment from "../pages/payment.jsx";
 
 import BestSellingBooks from "../pages/bestselling.jsx";
 import NewReleaseBooks from "../pages/newrelease.jsx";
-//import BookSales from "../pages/booksales.jsx";
+import BookSales from "../pages/bookSales.jsx";
 // Admin
 import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
 import DashboardSection from "../admin/dashboard.jsx";
@@ -24,6 +24,8 @@ import AdminAccount from "../admin/admin.jsx";
 import AddBooksSection from "../admin/addBook.jsx";
 import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
 import UserAccounts from "../admin/userAccounts.jsx";
+import AdminOrders from "../admin/adminOrders.jsx";
+import AdminLogs from "../admin/adminLogs.jsx";
 import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
 
 
@@ -42,7 +44,7 @@ const router = createBrowserRouter([
       { path: "/viewAll", element: <ViewAll /> },
       { path: "/bestSelling", element: <BestSellingBooks /> },
       { path: "/newReleases", element: <NewReleaseBooks /> },
-      
+      { path: "/bookSales", element: <BookSales /> },
       // User protected routes
       {path: "/wishlist",element: (<ProtectedUserRoute> <Wishlists /></ProtectedUserRoute>),},
       {path: "/cart",element: (<ProtectedUserRoute> <Cart /></ProtectedUserRoute>),},
@@ -65,6 +67,8 @@ const router = createBrowserRouter([
           { path: "addbook", element: <AddBooksSection /> },
           { path: "editdeletebook", element: <EditDeleteBooksSection /> },
           { path: "useraccountsdelete", element: <UserAccounts /> },
+          { path: "orders", element: <AdminOrders /> },
+          { path: "logs", element: <AdminLogs /> },
           { path: "", element: <DashboardSection /> }, // default
         ],
       },

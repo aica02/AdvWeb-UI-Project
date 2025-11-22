@@ -2,6 +2,7 @@ import Book from "../models/bookModel.js";
 import User from "../models/userModel.js";
 import Order from "../models/orderModel.js";
 import Visit from "../models/visitModel.js";
+import Log from "../models/logModel.js";
 
 export const getAdminStats = async (req, res) => {
   try {
@@ -50,12 +51,16 @@ export const getAdminStats = async (req, res) => {
       { $project: { _id: 0, bookId: "$book._id", title: "$book.title", totalSold: 1 } }
     ]);
 
-    // website visits today (if Visit model exists)
+    // website visits today: sum the visit.count for today's documents
     let visitsToday = 0;
     try {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      visitsToday = await Visit.countDocuments({ date: { $gte: startOfDay } });
+      const agg = await Visit.aggregate([
+        { $match: { date: { $gte: startOfDay } } },
+        { $group: { _id: null, total: { $sum: "$count" } } }
+      ]);
+      visitsToday = agg[0]?.total || 0;
     } catch (e) {
       visitsToday = 0;
     }
@@ -76,12 +81,29 @@ export const getAdminStats = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find(
-      { role: { $ne: "admin" } },
-      "firstName lastName email role"
-    );
+    // Aggregate users with their total orders count
+    const usersAgg = await User.aggregate([
+      { $match: { role: { $ne: "admin" } } },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "_id",
+          foreignField: "user",
+          as: "orders"
+        }
+      },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          role: 1,
+          totalOrders: { $size: "$orders" }
+        }
+      }
+    ]);
 
-    res.json({ users });
+    res.json({ users: usersAgg });
   } catch (err) {
     console.error("Fetch Users Error:", err);
     res.status(500).json({ message: "Failed to fetch users" });
@@ -111,5 +133,26 @@ export const getBookSales = async (req, res) => {
   } catch (err) {
     console.error("Error fetching book sales:", err);
     res.status(500).json({ message: "Failed to fetch book sales" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await User.findByIdAndDelete(id);
+    // Optionally, remove user's orders as well (commented out)
+    // await Order.deleteMany({ user: id });
+
+    try {
+      await Log.create({ actor: req.user._id, actorName: `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim(), action: 'Deleted user', meta: { userId: id, email: user.email } });
+    } catch (e) { console.error('Log error:', e); }
+
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    console.error("Delete user error:", err);
+    res.status(500).json({ message: "Failed to delete user" });
   }
 };

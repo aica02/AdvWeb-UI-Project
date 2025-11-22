@@ -1,6 +1,4 @@
-/* =========================
-   GLOBAL VARIABLES
-   ========================= */
+
 :root {
   --color-primary: #035c96;
   --color-secondary: #01203f;
@@ -86,9 +84,17 @@
   margin-bottom: 1rem;
 }
 
-/* =========================
-   LAYOUT
-   ========================= */
+.cart-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cart-controls input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 /* LAYOUT */
 .cart-page .cart-content {
   display: grid;
@@ -97,9 +103,6 @@
   align-items: flex-start;
 }
 
-/* =========================
-   ITEMS SECTION
-   ========================= */
 /* ITEMS SECTION */
 .cart-page .cart-items-section {
   display: flex;
@@ -107,9 +110,6 @@
   gap: 1.5rem;
 }
 
-/* =========================
-   CART ITEM
-   ========================= */
 
 /* CART ITEM */
 .cart-page .cart-item {
@@ -257,9 +257,6 @@
   font-size: 1.1rem;
 }
 
-/* =========================
-   ORDER SUMMARY
-   ========================= */
 
 /* ORDER SUMMARY */
 .cart-page .order-summary {
@@ -331,11 +328,6 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(3, 92, 150, 0.3);
 }
-
-
-/* =========================
-   RESPONSIVE DESIGN
-   ========================= */
 
    /* RESPONSIVE DESIGN */
 @media (max-width: 992px) {
