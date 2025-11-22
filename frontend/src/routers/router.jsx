@@ -26,7 +26,6 @@ import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
 import UserAccounts from "../admin/userAccounts.jsx";
 import AdminOrders from "../admin/adminOrders.jsx";
 import AdminLogs from "../admin/adminLogs.jsx";
-import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
 import Header from "../pages/header.jsx";
 import Footer from "../pages/footer.jsx";
 import InfoBanner from "../pages/services.jsx";

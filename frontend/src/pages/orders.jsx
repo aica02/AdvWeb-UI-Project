@@ -5,8 +5,6 @@ import "../css/order.css";
 
 const API = import.meta.env.VITE_API_URL;
 
-const API = import.meta.env.VITE_API_URL;
-
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
