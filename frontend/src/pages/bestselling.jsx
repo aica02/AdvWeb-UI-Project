@@ -23,7 +23,7 @@ const BestSellingBooks = ({ embedded = false }) => {
   const token = localStorage.getItem("token");
   const carouselRef = useRef(null);
 
-  // compute best items for embedded carousel - only top 5
+  // nabago to
   const bestItems = useMemo(() => {
     return books
       .filter((b) => {

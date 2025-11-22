@@ -67,7 +67,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
     );
   };
 
-  // Apply filters + sorting
+  // sort and filter ang nagloop dito
   useEffect(() => {
     let filtered = newItems;
 
