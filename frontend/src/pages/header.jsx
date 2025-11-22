@@ -230,8 +230,8 @@ export default function Header() {
 
         <div className="profile-menu">
           {isLoggedIn && (
-            <div className="cart-icon" onClick={handleCartClick}>
-              <FaShoppingCart size={20} />
+            <div className="cart-button" onClick={handleCartClick}>
+              <FaShoppingCart className="icon-cart" size={20} />
               {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
             </div>
           )}

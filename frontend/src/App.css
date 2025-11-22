@@ -87,7 +87,7 @@ body{
   gap: 10px;
 }
 
-.profile-menu .profile-button, .profile-menu .notification-bell {
+.profile-menu .profile-button, .profile-menu .cart-button {
   background: none;
   border: none;
   border-radius: 50%;
@@ -99,28 +99,29 @@ body{
   align-items: center;
 }
 
-.icon-user, .icon-bell{
+.icon-user, .icon-cart{
   color: var(--color-secondary);
 }
 
-.notification-bell {
+.cart-button {
   position: relative;
   margin-right: 10px;
   cursor: pointer;
 }
 
-.notif-count {
+.cart-count {
   position: absolute;
-  top: 2px;
-  right: 5px;
+  top: 0px;
+  right: 2px;
   background-color: red;
+  font-weight: 700;
   color: white;
-  font-size: 9px;
-  padding: 4px 6px;
+  font-size: 8px;
+  padding: 4px 8px;
   border-radius: 50%;
 }
 
-.profile-menu .profile-button:hover, .notification-bell:hover {
+.profile-menu .profile-button:hover, .cart-button:hover {
   background-color: #f1f1f1;
   scale: 1.1;
 }

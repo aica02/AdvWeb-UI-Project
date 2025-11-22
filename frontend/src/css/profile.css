@@ -168,8 +168,8 @@
 }
 
 .order-item-media img {
-  width: 60px;
-  height: 80px;
+  width: 100px;
+  height: 120px;
   object-fit: cover;
   border-radius: 4px;
   margin-right: 10px;
@@ -205,7 +205,6 @@
 }
 
 .order-action-container {
-  margin-top: 12px;
   border-top: 1px solid #eee;
   padding-top: 10px;
   display: flex;
