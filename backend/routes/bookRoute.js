@@ -35,8 +35,8 @@ router.get("/:id", asyncHandler(async (req, res) => {
 
 // POST (Add book) with cover image upload
 router.post("/", protect, adminOnly, upload.single("coverImage"), asyncHandler(async (req, res) => {
-  console.log("POST /books - req.body:", req.body);
-  console.log("POST /books - req.file:", req.file);
+  //console.log("POST /books - req.body:", req.body);
+  //console.log("POST /books - req.file:", req.file);
 
   const { title, author, description, category, trending, onSale, oldPrice, newPrice, recommendedAge, bookLanguage, stock } = req.body;
   const coverImage = req.file ? req.file.filename : null;
