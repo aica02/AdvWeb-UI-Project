@@ -11,8 +11,10 @@ import cartRoutes from "./routes/cartRoute.js";
 import logRoutes from "./routes/logRoute.js";
 import wishlistRoutes from "./routes/wishlistRoute.js";
 import { trackVisit } from "./middleware/visitMiddlew.js";
+import cartRoute from "./routes/cartRoute.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import ordersRouter from "./routes/bookRoute.js";
 
 
 dotenv.config();
@@ -73,6 +75,9 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/logs", logRoutes);
 app.use(trackVisit);
+
+
+
 
 
 // Serve static uploads

@@ -21,7 +21,6 @@ import BookSales from "../pages/bookSales.jsx";
 import ProtectedAdminRoute from "./ProtectedAdminRoute.jsx";
 import DashboardSection from "../admin/dashboard.jsx";
 import AdminAccount from "../admin/admin.jsx";
-
 import AddBooksSection from "../admin/addBook.jsx";
 import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
 import UserAccounts from "../admin/userAccounts.jsx";
@@ -29,6 +28,9 @@ import AdminOrders from "../admin/adminOrders.jsx";
 import AdminLogs from "../admin/adminLogs.jsx";
 import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
 
+
+// User protection
+import { ProtectedUserRoute } from "./ProtectedUserRoute.jsx";
 
 const router = createBrowserRouter([
   {

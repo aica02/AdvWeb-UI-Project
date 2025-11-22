@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
-
 const orderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   books: [
     {
-      book: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
+      book: { type: mongoose.Schema.Types.ObjectId, ref: "Book" }, // This should be populated
       quantity: { type: Number, default: 1 },
       price: { type: Number, required: true },
       title: String,
