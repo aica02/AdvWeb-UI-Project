@@ -17,14 +17,9 @@ function Cart() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
-    if (!img) return fallback;
-    if (img.startsWith("http")) return img;
-    if (img.includes("://")) return img; 
-    if (img.startsWith("/uploads/")) return `${API}${img}`;
-    if (img.startsWith("uploads/")) return `${API}/${img}`;
-    if (img.startsWith("/")) return `${API}${img}`;
-    return `${API}/uploads/${img}`;
+const getImageUrl = (filename) => {
+    if (!filename) return `../public/uploads/art1.png`;
+    return `../public/uploads/${filename}`;
   };
 
   // Fetch cart from backend

@@ -44,7 +44,7 @@ export default function Orders() {
                 (item.book && (item.book.coverImage || item.book.image))
                   ? item.image?.startsWith("http")
                     ? item.image
-                    : `${API}/${item.image || item.book.coverImage || item.book.image}`
+                    : `../public/uploads/${item.image || item.book.coverImage || item.book.image}`
                   : `${API}/uploads/default.png`,
             })),
           }))
@@ -213,7 +213,7 @@ export default function Orders() {
                         </div>
 
                         <div className="order-item-price">
-                          ₱{formatCurrency(item.price * item.quantity)}
+                          ₱{formatCurrency(item.price * item.quantity + 100)}
                         </div>
                       </div>
                     ))}

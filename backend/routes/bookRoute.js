@@ -47,8 +47,8 @@ router.post("/", protect, adminOnly, upload.single("coverImage"), asyncHandler(a
 
   // Copy uploaded image to frontend public folder
   if (req.file) {
-    const backendPath = path.join("uploads", req.file.filename); // backend/uploads/filename
-    const frontendPath = path.join("../frontend/public/uploads", req.file.filename); // adjust to your frontend folder
+    const backendPath = path.join("uploads", req.file.filename); 
+    const frontendPath = path.join("../frontend/public/uploads", req.file.filename); 
     try {
       fs.copyFileSync(backendPath, frontendPath);
       console.log(`Copied ${backendPath} to ${frontendPath}`);
@@ -98,8 +98,8 @@ router.put("/:id", protect, adminOnly, upload.single("coverImage"), asyncHandler
     updates.coverImage = req.file.filename;
 
     // Copy uploaded image to frontend public folder
-    const backendPath = path.join("uploads", req.file.filename); // backend/uploads/filename
-    const frontendPath = path.join("../frontend/public/uploads", req.file.filename); // adjust to your frontend folder
+    const backendPath = path.join("uploads", req.file.filename); 
+    const frontendPath = path.join("../frontend/public/uploads", req.file.filename);
     try {
       fs.copyFileSync(backendPath, frontendPath);
       console.log(`Copied ${backendPath} to ${frontendPath}`);
