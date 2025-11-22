@@ -3,9 +3,6 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import "../css/viewall.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -70,7 +67,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
     );
   };
 
-  // Apply filters + sorting
+  // sort and filter ang nagloop dito
   useEffect(() => {
     let filtered = newItems;
 
@@ -114,7 +111,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
     }
 
     setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, newItems]);
+  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, books]);
 
   // Toggle wishlist
   const toggleLike = async (bookId) => {
@@ -149,7 +146,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       // Refresh cart
-      const cartRes = await axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const cartRes = await axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } });
       const items = cartRes.data.books.map((item) => ({
         id: item.book._id,
         title: item.book.title,
@@ -169,57 +166,54 @@ const NewReleaseBooks = ({ embedded = false }) => {
 
   return (
     <>
-      {!embedded && <Header />}
       {!embedded && (
         <nav className="breadcrumb">
-          <Link to="/#" className="breadcrumb-link">Home</Link>
+          <Link to="/" className="breadcrumb-link">Home</Link>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-link active">New Released Books</span>
         </nav>
       )}
 
       {embedded ? (
-        <section style={{ padding: '20px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 10px' }}>
-            <h3 style={{ margin: 0 }}>New Releases</h3>
+        <section className="new-release-section">
+          <div className="section-header">
+            <h3>New Releases</h3>
           </div>
-          <div style={{ position: 'relative', marginTop: 12 }}>
-            <button
+
+          <div className="carousel-container">
+            <button className="scroll-btn left"
               aria-label="Scroll left"
               onClick={() => { const el = carouselRef.current; if (el) el.scrollBy({ left: -el.clientWidth * 0.7, behavior: 'smooth' }); }}
-              style={{ position: 'absolute', left: 0, top: '40%', zIndex: 2, background: 'rgba(255,255,255,0.8)', border: 'none', cursor: 'pointer' }}
-            >◀</button>
+            >❮</button>
 
-            <div
-              ref={carouselRef}
-              style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '12px 40px', scrollBehavior: 'smooth' }}
-            >
+            <div ref={carouselRef} className="books-carousel">
               {newItems.length === 0 ? (
-                <div style={{ padding: 20 }}>No new releases found.</div>
+                <div>No new releases found.</div>
               ) : (
                 newItems.map((book) => (
-                  <div key={book._id} style={{ minWidth: 200, maxWidth: 220, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', minHeight: 315, padding: 15, border: '1px solid #ddd', borderRadius: 5, background: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', cursor: 'pointer' }} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
-                    <div className="book-image" style={{ position: 'relative', marginBottom: 10 }}>
-                      <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 3 }} />
+                  <div key={book._id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
+                    <div className="book-image">
+                      <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} />
+                      <span className="badge">New Release</span>
+                      <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
+                        {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                      </div>
                     </div>
-                    <div className="book-info" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
-                      <p className="book-title" style={{ fontWeight: 'bold', fontSize: '0.8rem', margin: '0.3rem 0', cursor: 'pointer' }}>{book.title}</p>
-                      <p className="book-author" style={{ color: '#555', fontSize: '0.7rem', flexGrow: 1 }}>{book.author}</p>
-                      <p style={{ color: '#ff7043', fontSize: '0.75rem', fontWeight: 500, margin: '0.2rem 0' }}>Book Sold: {book.bookSold || 0}</p>
-                      <p className="book-price" style={{ textDecoration: "line-through", color:"gray", fontSize:"13px"}}>₱{(book.oldPrice)?.toFixed(2)}</p>
-                      <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                      <button style={{ backgroundColor: '#035c96', color: 'white', border: 'none', padding: '0.5rem 0.8rem', borderRadius: 3, cursor: 'pointer', transition: 'background-color 0.3s ease' }} className="add-to-cart" onMouseEnter={(e) => e.target.style.backgroundColor = '#01203f'} onMouseLeave={(e) => e.target.style.backgroundColor = '#035c96'}>Add to Cart</button>
+                    <div className="book-details">
+                      <h3>{book.title}</h3>
+                      <p className="author">{book.author}</p>
+                      <p className="price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                      <button className="add-btn">Add to Cart</button>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            <button
+            <button className="scroll-btn right"
               aria-label="Scroll right"
               onClick={() => { const el = carouselRef.current; if (el) el.scrollBy({ left: el.clientWidth * 0.7, behavior: 'smooth' }); }}
-              style={{ position: 'absolute', right: 0, top: '40%', zIndex: 2, background: 'rgba(255,255,255,0.8)', border: 'none', cursor: 'pointer' }}
-            >▶</button>
+            >❯</button>
           </div>
         </section>
       ) : (
@@ -317,7 +311,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
                 filteredBooks.map((book) => (
                   <div className="book-card" key={book._id}>
                     <div className="book-image">
-                      <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                      <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title}/>
                       <span className="badge">New Release</span>
                       <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
                         {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
@@ -327,12 +321,17 @@ const NewReleaseBooks = ({ embedded = false }) => {
                     <div className="book-info">
                       <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
                       <p className="book-author">{book.author}</p>
-                      <p style={{ color: "gray", fontSize: '0.75rem', fontWeight: 500, margin: '0.2rem 0' }}>{book.bookSold || 0} sold</p>
-
-                      <p className="book-price" style={{ textDecoration: "line-through", color:"gray", fontSize:"13px"}}>₱{(book.oldPrice)?.toFixed(2)}</p>
-                      <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-
                       
+                      <div className="book-sold-price">
+                        <div className="sold-only">
+                          <p className="book-sold">{book.bookSold || 0} sold</p>
+                        </div>
+                        <div className="price-only">
+                          <p className="book-price old" >₱{(book.oldPrice)?.toFixed(2)}</p>
+                          <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
+                        </div>
+                      </div>
+
 
                       <button
                         className="add-to-cart"
@@ -350,8 +349,6 @@ const NewReleaseBooks = ({ embedded = false }) => {
           </section>
         </div>
       )}
-      {!embedded && <InfoBanner />}
-      {!embedded && <Footer />}
     </>
   );
 };

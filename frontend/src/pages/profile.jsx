@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/profileInfo.css";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 const API = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
@@ -37,8 +34,6 @@ export default function Profile() {
 
   return (
     <>
-    <Header/>
-
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="info-profile-menu">
@@ -100,7 +95,6 @@ export default function Profile() {
         </div>
       </div>
     </div>
-    <Footer/>
     </>
   );
 }

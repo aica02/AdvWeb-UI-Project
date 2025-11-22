@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import "../css/viewall.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import Header from './header';
-import Footer from './footer';
-import InfoBanner from './services';
 import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL;
@@ -98,7 +95,7 @@ const ViewAll = () => {
         image: getImageUrl(book.image || book.coverImage, `${API}/uploads/default.png`),
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      const cartRes = await axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const cartRes = await axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } });
       window.dispatchEvent(new Event('cartUpdated'));
       alert(`${book.title} has been added to your cart!`);
     } catch (err) {
@@ -111,7 +108,6 @@ const ViewAll = () => {
 
   return (
     <>
-      <Header />
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -151,9 +147,6 @@ const ViewAll = () => {
           </div>
         </section>
       </div>
-
-      <InfoBanner />
-      <Footer />
     </>
   );
 };

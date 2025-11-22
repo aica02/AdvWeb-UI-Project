@@ -32,13 +32,10 @@ export default function Header() {
 
   // keep header input synced with `search` query param (so back/forward preserves the term)
   useEffect(() => {
-    try {
-      const q = new URLSearchParams(location.search).get("search") || "";
-      setSearchTerm(q);
-    } catch (e) {
-      // ignore
-    }
+    const q = new URLSearchParams(location.search).get("search") || "";
+    setSearchTerm(prev => (prev === q ? prev : q));
   }, [location.search]);
+
 
   // simple autocomplete fetch
   useEffect(() => {
@@ -77,7 +74,7 @@ export default function Header() {
         return;
       }
       try {
-        const res = await axios.get(`${API}/api/cart/pending`, {
+        const res = await axios.get(`${API}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCartCount(res.data?.books?.length || 0);
@@ -95,7 +92,7 @@ export default function Header() {
     const handler = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-      axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } })
+      axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => setCartCount(res.data?.books?.length || 0))
         .catch(() => {});
     };
@@ -182,7 +179,11 @@ export default function Header() {
   return (
     <>
       <header className="header">
-        <div className="header-logo"><h1>Logo here</h1></div>
+        <div className="header-logo">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <h1>BookWise</h1>
+          </Link>
+        </div>
 
         <div className="header-search">
           <div className="search-container">
@@ -249,10 +250,25 @@ export default function Header() {
                   </li>
                 ) : (
                   <>
-                    <li onClick={() => navigate("/profile")}><FaUser className="dropdown-icon" /><Link to="/profile">Profile</Link></li>
-                    <li onClick={() => navigate("/wishlist")}><FaHeart className="dropdown-icon" /><Link to="/wishlist">Wishlist</Link></li>
-                    <li onClick={handleCartClick}><FaShoppingCart className="dropdown-icon" /><span>Cart</span></li>
-                    <li onClick={handleLogout}><FaSignOutAlt className="dropdown-icon"/><span>Log Out</span></li>
+                    <li onClick={() => { navigate("/profile"); setIsOpen(false); }}>
+                      <FaUser className="dropdown-icon" />
+                      <span>Profile</span>
+                    </li>
+
+                    <li onClick={() => { navigate("/wishlist"); setIsOpen(false); }}>
+                      <FaHeart className="dropdown-icon" />
+                      <span>Wishlist</span>
+                    </li>
+
+                    <li onClick={() => { navigate("/cart"); setIsOpen(false); }}>
+                      <FaShoppingCart className="dropdown-icon" />
+                      <span>Cart</span>
+                    </li>
+
+                    <li onClick={handleLogout}>
+                      <FaSignOutAlt className="dropdown-icon" />
+                      <span>Log Out</span>
+                    </li>
                   </>
                 )}
               </ul>

@@ -10,6 +10,7 @@ const AdminOrders = () => {
   const [error, setError] = useState("");
   const [filterUserName, setFilterUserName] = useState("");
   const [filterBookTitle, setFilterBookTitle] = useState("");
+
   const fetchAllOrders = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -17,11 +18,12 @@ const AdminOrders = () => {
       setLoading(false);
       return;
     }
+
     try {
       setLoading(true);
       setError("");
 
-      const res = await axios.get(`${API}/api/cart/admin/all-orders`, {
+      const res = await axios.get(`${API}/api/cart/orders/admin/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -36,6 +38,7 @@ const AdminOrders = () => {
 
       setOrders(enrichedOrders);
     } catch (err) {
+      console.error("Fetch orders error:", err);
       setError(
         err.response?.data?.message || "Failed to fetch orders. Please try again later."
       );
@@ -46,13 +49,13 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchAllOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredOrders = orders.filter((order) => {
     const userNameMatch = filterUserName
       ? (order.userName || "").toLowerCase().includes(filterUserName.toLowerCase())
       : true;
+
     const bookTitleMatch = filterBookTitle
       ? (order.books || [])
           .map((b) => b.title || "")
@@ -60,12 +63,13 @@ const AdminOrders = () => {
           .toLowerCase()
           .includes(filterBookTitle.toLowerCase())
       : true;
+
     return userNameMatch && bookTitleMatch;
   });
 
   return (
     <section className="admin-section">
-    <h2 style={{margin: 30}}>All Orders</h2>
+      <h2 style={{ margin: 30 }}>All Orders</h2>
 
       <div className="filters-container" style={{ marginBottom: "20px" }}>
         <div className="filter-group">
@@ -119,7 +123,9 @@ const AdminOrders = () => {
               </tr>
             ) : (
               filteredOrders.map((order) => {
-                const titles = (order.books || []).map((b) => b.title).join(", ");
+                const titles = (order.books || [])
+                  .map((b) => b.title)
+                  .join(", ");
 
                 const totalQty = (order.books || []).reduce(
                   (sum, item) => sum + (item.quantity || 0),
@@ -140,7 +146,6 @@ const AdminOrders = () => {
                     <td style={{ maxWidth: 300 }}>{titles}</td>
                     <td>{totalQty}</td>
                     <td>₱{(totalPrice || 0).toFixed(2)}</td>
-
                     <td
                       style={{
                         color:

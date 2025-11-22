@@ -17,7 +17,16 @@ const userSchema = new mongoose.Schema(
     street: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
- 
+    cart: [
+      {
+        bookId: { type: mongoose.Schema.Types.ObjectId, ref: "Book", required: true },
+        quantity: { type: Number, required: true },
+        price: { type: Number },
+        title: { type: String },
+        author: { type: String },
+        image: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );
