@@ -107,7 +107,7 @@ const Wishlists = () => {
               books.map((book) => (
                 <div className="book-card" key={book._id}>
                   <div className="book-image">
-                    <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} style={{ maxWidth: '100%', height: 'auto' }} />
+                    <img src={getImageUrl(book.coverImage || book.image)} alt={book.title}/>
                     <span className="trash-badge" onClick={() => removeFromWishlist(book._id)} style={{ cursor: 'pointer' }}><FaTrash/></span>
                   </div>
 

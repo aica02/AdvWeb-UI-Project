@@ -78,7 +78,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 55%;
+  width: 60%;
   justify-content: space-between;
   color: var(--color-secondary);
 }
@@ -91,7 +91,11 @@
 .cart-items-section input[type="checkbox"] {
   margin-left: 2rem;
 }
-
+.cart-controls .selected-count {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-right: 1rem;
+}
 /* LAYOUT */
 .cart-page .cart-content {
   display: grid;
