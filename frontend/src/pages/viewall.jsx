@@ -98,7 +98,7 @@ const ViewAll = () => {
         image: getImageUrl(book.image || book.coverImage, `${API}/uploads/default.png`),
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      const cartRes = await axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const cartRes = await axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } });
       window.dispatchEvent(new Event('cartUpdated'));
       alert(`${book.title} has been added to your cart!`);
     } catch (err) {

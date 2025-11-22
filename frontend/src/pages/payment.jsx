@@ -25,52 +25,30 @@ function Payment() {
   const token = localStorage.getItem("token");
   const shipping = 100;
 
-  //  Fetch user info
-  const fetchUser = async () => {
-    try {
-      const { data } = await axios.get(`${API}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(data.user);
-    } catch (err) {
-      console.error("Failed to fetch user info:", err);
-    }
-  };
-  //  Fetch cart info (Pending cart from database)
-  const fetchCart = async () => {
-    try {
-      const localSelected = localStorage.getItem('selectedCartItems');
-      if (localSelected) {
-        const items = JSON.parse(localSelected);
-        setCartItems(items);
-        setLoading(false);
-        return;
-      }
-      const res = await axios.get(`${API}/api/cart/pending`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const raw = res.data.books || [];
-      const mapped = raw.map(b => ({
-        id: b.book?._id || b.bookId || b._id,
-        title: b.book?.title || b.title || "",
-        author: b.book?.author || b.author || "",
-        price: b.price || (b.book?.newPrice ?? b.book?.oldPrice) || 0,
-        quantity: b.quantity || 1,
-        image: b.book?.coverImage || b.book?.image || null
-      }));
-      setCartItems(mapped);
-    } catch (err) {
-      console.error("Error fetching cart:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch user info
   useEffect(() => {
     if (!token) return;
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get(`${API}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(data.user);
+      } catch (err) {
+        console.error("Failed to fetch user info:", err);
+      }
+    };
     fetchUser();
-    fetchCart();
   }, [token]);
+
+  // Load selected cart items from localStorage
+  useEffect(() => {
+    const selected = localStorage.getItem('selectedCartItems');
+    if (selected) {
+      setCartItems(JSON.parse(selected));
+    }
+    setLoading(false);
+  }, []);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const total = Math.max(subtotal + shipping - discount, 0);
@@ -99,7 +77,6 @@ function Payment() {
     return true;
   };
 
-  // Shipping completeness check
   const shippingFields = user
     ? [
         user.firstName,
@@ -115,9 +92,8 @@ function Payment() {
 
   const isShippingComplete = shippingFields.every((f) => f && f.trim() !== "");
 
-  // Edit Info redirect
   const handleEditShipping = () => {
-    window.location.href = "http://localhost:5173/profile/edit";
+    navigate("/profile/edit");
   };
 
   // Apply Coupon
@@ -142,24 +118,14 @@ function Payment() {
     }
   };
 
-
   const handleCheckout = async () => {
     if (!paymentMethod) return alert("Select a payment method");
-
-    if (paymentMethod === "card" && !validateCard()) {
-      return;
-    }
-
-    if (!isShippingComplete) {
-      return alert("Please complete your shipping details.");
-    }
+    if (paymentMethod === "card" && !validateCard()) return;
+    if (!isShippingComplete) return alert("Please complete your shipping details.");
+    if (cartItems.length === 0) return alert("No items selected for checkout.");
 
     try {
-      const selectedBookIds = JSON.parse(localStorage.getItem("selectedBookIds"));
-      if (!selectedBookIds || selectedBookIds.length === 0) {
-        alert("No items selected for checkout.");
-        return;
-      }
+      const selectedBookIds = cartItems.map(i => i.bookId || i.id);
 
       const checkoutData = {
         paymentMethod,
@@ -179,9 +145,8 @@ function Payment() {
 
       if (data.message || data.order) {
         alert(`Order placed successfully! Your order ID: ${data.order?._id || "N/A"}`);
-        localStorage.removeItem("selectedBookIds");
-        localStorage.removeItem("selectedCartItems");
         window.dispatchEvent(new Event("cartUpdated"));
+        localStorage.removeItem("selectedCartItems");
         navigate("/orders");
       } else {
         alert("Failed to place order. Try again.");
@@ -192,196 +157,179 @@ function Payment() {
     }
   };
 
-
-
   const paymentMethods = [
     { id: "card", icon: <FaCreditCard />, label: "Card" },
     { id: "bank", icon: <BsBank />, label: "Bank" },
     { id: "cod", icon: <IoCashOutline />, label: "Cash On Delivery" },
   ];
 
-
+  if (loading) return <p>Loading...</p>;
 
   return (
-    <> 
-    <Header/>
-    
-    <div className="payment-page">
-      <div className="content-wrapper">
-        {/* LEFT SIDE */}
-        <div className="left-section">
-          <section className="shipping-section">
-            <h1 className="section-title">Shipping Details</h1>
-
-            {user ? (
-              <div className="info-container">
-                <div className="info-header">Information</div>
-                <div className="info-content">
-                  {[{ label: "First Name", value: user.firstName },
-                    { label: "Last Name", value: user.lastName },
-                    { label: "Phone", value: user.phone },
-                    { label: "Province", value: user.province },
-                    { label: "City/Municipality", value: user.city },
-                    { label: "Barangay", value: user.barangay },
-                    { label: "Street", value: user.street },
-                    { label: "Postal Code", value: user.postalCode },
-                  ].map((f, i) => (
-                    <div key={i} className="info-item">
-                      <span className="info-label">{f.label}</span>
-                      <span className="info-value">{f.value}</span>
-                    </div>
-                  ))}
+    <>
+      <Header />
+      <div className="payment-page">
+        <div className="content-wrapper">
+          {/* LEFT SIDE */}
+          <div className="left-section">
+            <section className="shipping-section">
+              <h1 className="section-title">Shipping Details</h1>
+              {user ? (
+                <div className="info-container">
+                  <div className="info-header">Information</div>
+                  <div className="info-content">
+                    {[
+                      { label: "First Name", value: user.firstName },
+                      { label: "Last Name", value: user.lastName },
+                      { label: "Phone", value: user.phone },
+                      { label: "Province", value: user.province },
+                      { label: "City/Municipality", value: user.city },
+                      { label: "Barangay", value: user.barangay },
+                      { label: "Street", value: user.street },
+                      { label: "Postal Code", value: user.postalCode },
+                    ].map((f, i) => (
+                      <div key={i} className="info-item">
+                        <span className="info-label">{f.label}</span>
+                        <span className="info-value">{f.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="info-actions">
+                    <button onClick={handleEditShipping} className="edit-button">Edit</button>
+                  </div>
                 </div>
-                <div className="info-actions">
-                  <button onClick={handleEditShipping} className="edit-button">
-                    Edit
+              ) : (
+                <p>Please log in to view your shipping information.</p>
+              )}
+            </section>
+
+            <section className="payment-section">
+              <h2 className="payment-title">Payment Method <span className="required">*</span></h2>
+              <div className="payment-methods">
+                {paymentMethods.map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => setPaymentMethod(method.id)}
+                    className={`payment-method ${paymentMethod === method.id ? "active" : ""}`}
+                  >
+                    <span className="payment-icon">{method.icon}</span>
+                    <span>{method.label}</span>
                   </button>
-                </div>
+                ))}
               </div>
+
+              {paymentMethod === "card" && (
+                <div className="card-form">
+                  {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+                  <label className="form-field">
+                    <span className="form-label">Card Number <span className="required">*</span></span>
+                    <input
+                      type="text"
+                      name="cardNumber"
+                      placeholder="Enter here..."
+                      value={cardInfo.cardNumber}
+                      onChange={(e) => setCardInfo({ ...cardInfo, cardNumber: e.target.value })}
+                      maxLength="19"
+                      className="form-input"
+                    />
+                  </label>
+                  <div className="form-row">
+                    <label className="form-field">
+                      <span className="form-label">Expiry <span className="required">*</span></span>
+                      <input
+                        type="text"
+                        name="expiry"
+                        placeholder="MM / YY"
+                        value={cardInfo.expiry}
+                        onChange={(e) => setCardInfo({ ...cardInfo, expiry: e.target.value })}
+                        maxLength="7"
+                        className="form-input"
+                      />
+                    </label>
+                    <label className="form-field">
+                      <span className="form-label">CVC <span className="required">*</span></span>
+                      <input
+                        type="text"
+                        name="cvc"
+                        placeholder="CVC"
+                        value={cardInfo.cvc}
+                        onChange={(e) => setCardInfo({ ...cardInfo, cvc: e.target.value })}
+                        maxLength="4"
+                        className="form-input"
+                      />
+                    </label>
+                  </div>
+                  <p className="form-disclaimer">
+                    By providing your card information, you allow this store to charge your card for future payments.
+                  </p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* RIGHT SIDE */}
+          <aside className="order-summary">
+            <h2 className="summary-title">Order Summary</h2>
+            {cartItems.length === 0 ? (
+              <p>No items selected for checkout.</p>
             ) : (
-              <p>Please log in to view your shipping information.</p>
+              cartItems.map(item => (
+                <article key={item.bookId || item.id} className="cart-item">
+                  <div className="item-details">
+                    <h3 className="item-title">{item.title}</h3>
+                    <p className="item-author">{item.author}</p>
+                    <p className="item-quantity">Quantity: {item.quantity}</p>
+                    <p className="item-price">₱{formatCurrency(item.price * item.quantity)}</p>
+                  </div>
+                </article>
+              ))
             )}
-          </section>
 
-          {/* PAYMENT METHOD */}
-          <section className="payment-section">
-            <h2 className="payment-title">
-              Payment Method <span className="required">*</span>
-            </h2>
-            <div className="payment-methods">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  onClick={() => setPaymentMethod(method.id)}
-                  className={`payment-method ${paymentMethod === method.id ? "active" : ""}`}
-                >
-                  <span className="payment-icon">{method.icon}</span>
-                  <span>{method.label}</span>
-                </button>
-              ))}
+            <div className="coupon-section">
+              <input
+                type="text"
+                placeholder="Coupon Code"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                className="coupon-input"
+              />
+              <button onClick={handleApplyCoupon} className="coupon-button">Apply</button>
             </div>
 
-            {paymentMethod === "card" && (
-              <div className="card-form">
-                {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-                <label className="form-field">
-                  <span className="form-label">
-                    Card Number <span className="required">*</span>
-                  </span>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="Enter here..."
-                    value={cardInfo.cardNumber}
-                    onChange={(e) => setCardInfo({ ...cardInfo, cardNumber: e.target.value })}
-                    maxLength="19"
-                    className="form-input"
-                  />
-                </label>
-                <div className="form-row">
-                  <label className="form-field">
-                    <span className="form-label">
-                      Expiry <span className="required">*</span>
-                    </span>
-                    <input
-                      type="text"
-                      name="expiry"
-                      placeholder="MM / YY"
-                      value={cardInfo.expiry}
-                      onChange={(e) => setCardInfo({ ...cardInfo, expiry: e.target.value })}
-                      maxLength="7"
-                      className="form-input"
-                    />
-                  </label>
-                  <label className="form-field">
-                    <span className="form-label">
-                      CVC <span className="required">*</span>
-                    </span>
-                    <input
-                      type="text"
-                      name="cvc"
-                      placeholder="CVC"
-                      value={cardInfo.cvc}
-                      onChange={(e) => setCardInfo({ ...cardInfo, cvc: e.target.value })}
-                      maxLength="4"
-                      className="form-input"
-                    />
-                  </label>
-                </div>
-                <p className="form-disclaimer">
-                  By providing your card information, you allow this store to charge your card for future payments.
-                </p>
-              </div>
-            )}
-          </section>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <aside className="order-summary">
-          <h2 className="summary-title">Order Summary</h2>
-          {cartItems.length === 0 ? (
-            <p>Your cart is empty.</p>
-          ) : (
-            cartItems.map((item) => (
-              <article key={item.id} className="cart-item">
-                
-                <div className="item-details">
-                  <h3 className="item-title">{item.title}</h3>
-                  <p className="item-author">{item.author}</p>
-                  <p className="item-quantity">Quantity: {item.quantity}</p>
-                  <p className="item-price">₱{formatCurrency(item.price * item.quantity)}</p>
-                </div>
-              </article>
-            ))
-          )}
-
-          <div className="coupon-section">
-            <input
-              type="text"
-              placeholder="Coupon Code"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              className="coupon-input"
-            />
-            <button onClick={handleApplyCoupon} className="coupon-button">
-              Apply
-            </button>
-          </div>
-
-          <div className="pricing-details">
-            <div className="pricing-row">
-              <span className="pricing-label">Subtotal</span>
-              <span className="pricing-value">₱ {formatCurrency(subtotal)}</span>
-            </div>
-            <div className="pricing-row">
-              <span className="pricing-label">Shipping</span>
-              <span className="pricing-value">₱ {formatCurrency(shipping)}</span>
-            </div>
-            {discount > 0 && (
+            <div className="pricing-details">
               <div className="pricing-row">
-                <span className="pricing-label">Discount</span>
-                <span className="pricing-value">-₱ {formatCurrency(discount)}</span>
+                <span className="pricing-label">Subtotal</span>
+                <span className="pricing-value">₱ {formatCurrency(subtotal)}</span>
               </div>
-            )}
-            <hr className="pricing-divider" />
-            <div className="pricing-row total">
-              <span className="pricing-label">Total</span>
-              <span className="pricing-value">₱ {formatCurrency(total)}</span>
+              <div className="pricing-row">
+                <span className="pricing-label">Shipping</span>
+                <span className="pricing-value">₱ {formatCurrency(shipping)}</span>
+              </div>
+              {discount > 0 && (
+                <div className="pricing-row">
+                  <span className="pricing-label">Discount</span>
+                  <span className="pricing-value">-₱ {formatCurrency(discount)}</span>
+                </div>
+              )}
+              <hr className="pricing-divider" />
+              <div className="pricing-row total">
+                <span className="pricing-label">Total</span>
+                <span className="pricing-value">₱ {formatCurrency(total)}</span>
+              </div>
             </div>
-          </div>
 
-          <button
-            onClick={handleCheckout}
-            disabled={cartItems.length === 0 || !isShippingComplete}
-            className={`checkout-button ${cartItems.length === 0 || !isShippingComplete ? "disabled" : ""}`}
-          >
-            Place Order
-          </button>
-        </aside>
+            <button
+              onClick={handleCheckout}
+              disabled={cartItems.length === 0 || !isShippingComplete}
+              className={`checkout-button ${cartItems.length === 0 || !isShippingComplete ? "disabled" : ""}`}
+            >
+              Place Order
+            </button>
+          </aside>
+        </div>
       </div>
-    </div>
-    <InfoBanner/>
-    <Footer/>
+      <InfoBanner />
+      <Footer />
     </>
   );
 }

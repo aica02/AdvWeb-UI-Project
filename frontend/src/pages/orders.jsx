@@ -27,7 +27,7 @@ export default function Orders() {
       setError("");
 
       // Fetch all orders (both Pending and Complete statuses)
-      const res = await axios.get(`${API}/api/cart/all-orders`, { 
+      const res = await axios.get(`${API}/api/cart/orders/all`, {
         headers: { Authorization: `Bearer ${token}` } 
       });
 
@@ -101,8 +101,7 @@ export default function Orders() {
 
   const handleReceiveOrder = async (orderId) => {
     try {
-      await axios.put(
-        `${API}/api/cart/receive-order/${orderId}`,
+      await axios.put(`${API}/api/cart/orders/receive/${orderId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -115,15 +114,27 @@ export default function Orders() {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
-    try {
-      await axios.put(`${API}/api/cart/cancel-order/${orderId}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      fetchOrders();
-    } catch (err) {
-      console.error('Error cancelling order:', err);
-      alert(err.response?.data?.message || 'Failed to cancel order.');
-    }
-  };
+const handleCancelOrder = async (orderId) => {
+  try {
+    await axios.put(`${API}/api/cart/orders/cancel/${orderId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // Update local state to mark the order as cancelled
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order._id === orderId ? { ...order, status: "Cancelled" } : order
+      )
+    );
+
+    // Remove the cancel button for this order
+    setEnabledCancelButtons((prev) => ({ ...prev, [orderId]: false }));
+
+  } catch (err) {
+    console.error("Error cancelling order:", err);
+    alert(err.response?.data?.message || "Failed to cancel order.");
+  }
+};
 
   const formatCurrency = (amount) => amount.toFixed(2);
 

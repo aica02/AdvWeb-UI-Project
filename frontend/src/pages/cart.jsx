@@ -22,39 +22,42 @@ function Cart() {
   const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
     if (!img) return fallback;
     if (img.startsWith("http")) return img;
-    if (img.includes("://")) return img; // full URL
+    if (img.includes("://")) return img; 
     if (img.startsWith("/uploads/")) return `${API}${img}`;
     if (img.startsWith("uploads/")) return `${API}/${img}`;
     if (img.startsWith("/")) return `${API}${img}`;
     return `${API}/uploads/${img}`;
   };
 
-  // Fetch pending cart from backend
+  // Fetch cart from backend
   useEffect(() => {
     const fetchCart = async () => {
       if (!token) return;
 
       try {
-        const { data } = await axios.get(`${API}/api/cart/pending`, {
+        const { data } = await axios.get(`${API}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        const items = data.books.map(item => ({
-          bookId: item.book._id,  
+        const items = data.books.map((item, index) => ({
+          bookId: item.book.id,
           title: item.book.title,
           author: item.book.author,
-          price: item.price,
-          quantity: item.quantity,
-          image: getImageUrl(item.book.coverImage || item.book.image, `${API}/uploads/default.png`)
+          price: Number(item.book.price) || 0,
+          quantity: Number(item.quantity) || 1,
+          image: getImageUrl(item.book.image, `${API}/uploads/default.png`),
+          key: item.book.id || index
         }));
 
         setCartItems(items);
-        // default select all items
+
         const all = new Set(items.map(i => i.bookId));
         setSelectedIds(all);
         setSelectAll(true);
-        setSubtotal(data.totalAmount || 0);
-        setTotal((data.totalAmount || 0) + shipping);
+
+        const totalAmount = data.totalAmount || 0;
+        setSubtotal(totalAmount);
+        setTotal(totalAmount + shipping);
       } catch (err) {
         console.error("Error fetching cart:", err);
       }
@@ -62,36 +65,30 @@ function Cart() {
     fetchCart();
   }, [token, shipping]);
 
-  // Update quantity in backend
-const updateQuantity = async (bookId, change) => {
-  const item = cartItems.find(i => i.bookId === bookId); 
-  if (!item) return;
+  // Update quantity
+  const updateQuantity = async (bookId, change) => {
+    const item = cartItems.find(i => i.bookId === bookId); 
+    if (!item) return;
 
-  const newQty = Math.max(1, item.quantity + change);
+    const newQty = Math.max(1, item.quantity + change);
 
-  try {
-    await axios.patch(`${API}/api/cart/update`, {
-      bookId: bookId, 
-      quantity: newQty
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+      await axios.patch(`${API}/api/cart/update`, { bookId, quantity: newQty }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    const updatedItems = cartItems.map(i =>
-      i.bookId === bookId ? { ...i, quantity: newQty } : i
-    );
+      const updatedItems = cartItems.map(i =>
+        i.bookId === bookId ? { ...i, quantity: newQty } : i
+      );
 
-    const newSubtotal = updatedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    setCartItems(updatedItems);
-    setSubtotal(newSubtotal);
-    setTotal(newSubtotal + shipping);
-  } catch (err) {
-    console.error("Error updating quantity:", err);
-  }
-};
+      setCartItems(updatedItems);
+      recalcTotal(updatedItems, selectedIds);
+    } catch (err) {
+      console.error("Error updating quantity:", err);
+    }
+  };
 
-
-  // Remove item from cart
+  // Remove item
   const removeItem = async (bookId) => {
     try {
       await axios.delete(`${API}/api/cart/remove/${bookId}`, {
@@ -99,22 +96,24 @@ const updateQuantity = async (bookId, change) => {
       });
 
       const updatedItems = cartItems.filter(item => item.bookId !== bookId);
-      const newSubtotal = updatedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-
       setCartItems(updatedItems);
-      setSubtotal(newSubtotal);
-      setTotal(newSubtotal + shipping);
+
+      const updatedSelected = new Set(selectedIds);
+      updatedSelected.delete(bookId);
+      setSelectedIds(updatedSelected);
+
+      recalcTotal(updatedItems, updatedSelected);
     } catch (err) {
       console.error("Error removing item:", err);
     }
   };
 
-  // Proceed to checkout
-  const handleProceedToCheckout = () => {
-    // store selected book ids for checkout
-    const arr = Array.from(selectedIds);
-    localStorage.setItem('selectedBookIds', JSON.stringify(arr));
-    navigate('/payment');
+  // Recalculate subtotal & total
+  const recalcTotal = (items, selected) => {
+    const selectedItems = items.filter(i => selected.has(i.bookId));
+    const newSubtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+    setSubtotal(newSubtotal);
+    setTotal(newSubtotal + shipping);
   };
 
   const toggleSelect = (bookId) => {
@@ -123,27 +122,28 @@ const updateQuantity = async (bookId, change) => {
     else next.add(bookId);
     setSelectedIds(next);
     setSelectAll(next.size === cartItems.length && cartItems.length > 0);
+    recalcTotal(cartItems, next);
   };
 
   const toggleSelectAll = () => {
     if (selectAll) {
-      // deselect all
       setSelectedIds(new Set());
       setSelectAll(false);
+      recalcTotal(cartItems, new Set());
     } else {
       const all = new Set(cartItems.map(i => i.bookId));
       setSelectedIds(all);
       setSelectAll(true);
+      recalcTotal(cartItems, all);
     }
   };
 
-  // Calculate subtotal and total for SELECTED items only
-  useEffect(() => {
-    const selectedItems = cartItems.filter(item => selectedIds.has(item.bookId));
-    const selectedSubtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    setSubtotal(selectedSubtotal);
-    setTotal(selectedSubtotal + shipping);
-  }, [selectedIds, cartItems, shipping]);
+  const handleProceedToCheckout = () => {
+    if (selectedIds.size === 0) return alert("Please select at least one item.");
+    const selectedArray = cartItems.filter(i => selectedIds.has(i.bookId));
+    localStorage.setItem('selectedCartItems', JSON.stringify(selectedArray));
+    navigate('/payment');
+  };
 
   return (
     <div className="cart-page-wrapper">
@@ -166,8 +166,8 @@ const updateQuantity = async (bookId, change) => {
               <span style={{color:'#666',fontSize:14}}>{selectedIds.size} selected</span>
             </div>
           </div>
-          <div className="cart-content">
 
+          <div className="cart-content">
             <section className="cart-items-section" aria-label="Shopping cart items">
               {cartItems.length === 0 ? (
                 <div className="empty-cart">
@@ -175,10 +175,16 @@ const updateQuantity = async (bookId, change) => {
                 </div>
               ) : (
                 cartItems.map(item => (
-                  <article key={item.bookId} className="cart-item">
+                  <article key={item.key} className="cart-item">
                     <div style={{display:'flex',alignItems:'center',marginRight:12}}>
-                      <input type="checkbox" checked={selectedIds.has(item.bookId)} onChange={()=>toggleSelect(item.bookId)} aria-label={`Select ${item.title} for checkout`} />
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.bookId)}
+                        onChange={() => toggleSelect(item.bookId)}
+                        aria-label={`Select ${item.title} for checkout`}
+                      />
                     </div>
+
                     <div className="item-image">
                       <img src={item.image} alt={`Cover of ${item.title}`} loading="lazy" style={{ maxWidth: '100%', height: 'auto' }} />
                     </div>
@@ -188,43 +194,24 @@ const updateQuantity = async (bookId, change) => {
                       <p className="item-author">{item.author}</p>
 
                       <div className="quantity-control" role="group" aria-label="Quantity controls">
-                        <button
-                          className="qty-btn"
-                          onClick={() => updateQuantity(item.bookId, -1)}
-                          aria-label="Decrease quantity"
-                          disabled={item.quantity <= 1}
-                        >
-                          −
-                        </button>
-                        <span className="qty-display" aria-label={`Quantity: ${item.quantity}`}> {item.quantity} </span>
-                        <button
-                          className="qty-btn"
-                          onClick={() => updateQuantity(item.bookId, 1)}
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
+                        <button className="qty-btn" onClick={() => updateQuantity(item.bookId, -1)} disabled={item.quantity <= 1}>−</button>
+                        <span className="qty-display">{item.quantity}</span>
+                        <button className="qty-btn" onClick={() => updateQuantity(item.bookId, 1)}>+</button>
                       </div>
                     </div>
 
                     <div className="item-actions">
-                      <button
-                        className="delete-btn"
-                        onClick={() => removeItem(item.bookId)} // Use bookId
-                        aria-label={`Remove ${item.title} from cart`}
-                      >
+                      <button className="delete-btn" onClick={() => removeItem(item.bookId)} aria-label={`Remove ${item.title}`}>
                         <RiDeleteBin6Line />
                       </button>
-                      <div className="item-price" aria-label={`Price: ${item.price * item.quantity} pesos`}>
-                        ₱ {item.price * item.quantity}
-                      </div>
+                      <div className="item-price">₱ {item.price * item.quantity}</div>
                     </div>
                   </article>
                 ))
               )}
             </section>
 
-            <aside className="order-summary" aria-label="Order summary">
+            <aside className="order-summary">
               <h2 className="summary-title">Order Summary</h2>
 
               <div className="summary-row">
@@ -246,7 +233,7 @@ const updateQuantity = async (bookId, change) => {
 
               <button
                 className="checkout-btn"
-                disabled={cartItems.length === 0}
+                disabled={cartItems.length === 0 || selectedIds.size === 0}
                 onClick={handleProceedToCheckout}
               >
                 Proceed to Checkout
@@ -255,6 +242,8 @@ const updateQuantity = async (bookId, change) => {
           </div>
         </div>
       </div>
+      <InfoBanner />
+      <Footer />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default function Header() {
         return;
       }
       try {
-        const res = await axios.get(`${API}/api/cart/pending`, {
+        const res = await axios.get(`${API}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCartCount(res.data?.books?.length || 0);
@@ -95,7 +95,7 @@ export default function Header() {
     const handler = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-      axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } })
+      axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => setCartCount(res.data?.books?.length || 0))
         .catch(() => {});
     };

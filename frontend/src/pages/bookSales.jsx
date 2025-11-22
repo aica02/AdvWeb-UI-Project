@@ -130,7 +130,7 @@ const BookSales = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const cartRes = await axios.get(`${API}/api/cart/pending`, {
+      const cartRes = await axios.get(`${API}/api/cart`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

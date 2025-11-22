@@ -149,7 +149,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       // Refresh cart
-      const cartRes = await axios.get(`${API}/api/cart/pending`, { headers: { Authorization: `Bearer ${token}` } });
+      const cartRes = await axios.get(`${API}/api/cart`, { headers: { Authorization: `Bearer ${token}` } });
       const items = cartRes.data.books.map((item) => ({
         id: item.book._id,
         title: item.book.title,

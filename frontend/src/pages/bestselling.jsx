@@ -70,7 +70,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       if (!token) return;
 
       try {
-        const res = await axios.get(`${API}/api/cart/pending`, {
+        const res = await axios.get(`${API}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -183,7 +183,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       });
 
       // Refresh cart
-      const cartRes = await axios.get(`${API}/api/cart/pending`, {
+      const cartRes = await axios.get(`${API}/api/cart`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

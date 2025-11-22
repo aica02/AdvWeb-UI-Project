@@ -13,7 +13,7 @@ const BookCard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const scrollRef = useRef(null);
-  const { cartItems, setCartItems, fetchCart } = useCart();
+  //const { cartItems setCartItems, fetchCart } = useCart();
 
   const [book, setBook] = useState(null);
   const [relatedBooks, setRelatedBooks] = useState([]);

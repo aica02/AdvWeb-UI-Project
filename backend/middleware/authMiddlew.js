@@ -10,19 +10,21 @@ export const protect = async (req, res, next) => {
   const token = header.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
 
-      const user = await User.findById(decoded.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Fetch full user object
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
     req.user = user; // assign full user object
-
-
     next();
   } catch (err) {
-  console.error("Token verification failed:", err.message);
-  res.status(401).json({ message: "Invalid or expired token" });
+    console.error("Token verification failed:", err.message);
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+
 
 // Only admins can access these routes
 export const adminOnly = (req, res, next) => {
