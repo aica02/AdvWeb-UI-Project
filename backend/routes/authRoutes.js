@@ -21,24 +21,12 @@ const loginSchema = Joi.object({
 // Public Routes
 router.post("/register", validateUserInput(registerSchema), register);
 router.post("/login", validateUserInput(loginSchema), login);
+router.post("/check-email", checkEmail); // Check if email exists (for forgot password)
+router.post("/reset-password", resetPassword); // Reset password after OTP verified on client
 
-// Protected Routes
-router.get("/me", protect, getMe);
-router.put("/profile", protect, updateProfile);
-router.put("/change-password", protect, changePassword);
-
-// Get user by ID (for admin - protected)
-router.get("/:userId", protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId).select("firstName lastName email phone");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(user);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+router.post("/register", register);
+router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 export default router;
