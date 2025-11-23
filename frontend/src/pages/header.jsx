@@ -11,6 +11,7 @@ const API = import.meta.env.VITE_API_URL;
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("token"));
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -25,21 +26,17 @@ export default function Header() {
 
   // search
   const [searchTerm, setSearchTerm] = useState("");
-  // autocomplete results
   const [autoResults, setAutoResults] = useState([]);
   const [showAuto, setShowAuto] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // keep header input synced with `search` query param (so back/forward preserves the term)
   useEffect(() => {
     const q = new URLSearchParams(location.search).get("search") || "";
     setSearchTerm(prev => (prev === q ? prev : q));
   }, [location.search]);
 
-
-  // simple autocomplete fetch
   useEffect(() => {
     const q = searchTerm.trim();
     if (!q) {
@@ -56,11 +53,10 @@ export default function Header() {
       } catch (err) {
         console.error("Search error:", err);
       }
-    }, 200); 
+    }, 200);
 
     return () => clearTimeout(delay);
   }, [searchTerm]);
-
 
   useEffect(() => {
     const syncLoginState = () => setIsLoggedIn(!!localStorage.getItem("token"));
@@ -89,7 +85,6 @@ export default function Header() {
     else setCartCount(0);
   }, [isLoggedIn]);
 
-  // listen for in-page cart updates
   useEffect(() => {
     const handler = () => {
       const token = localStorage.getItem("token");
@@ -103,28 +98,24 @@ export default function Header() {
     return () => window.removeEventListener("cartUpdated", handler);
   }, []);
 
-  // Fetch stats for header (robust against different book schema variations)
+  // Fetch stats
   useEffect(() => {
     const fetchHeaderStats = async () => {
       try {
         const res = await axios.get(`${API}/api/books`);
         const books = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
 
-        // fallback thresholds and fields
         const now = new Date();
         const NEW_DAYS = 90;
         let best = 0, newly = 0, sales = 0;
 
         books.forEach((b) => {
-          // best seller detection
           const salesCount = Number(b.sales ?? b.soldCount ?? b.totalSold ?? 0);
           if (b.bestSeller === true || salesCount > 50) best += 1;
 
-          // new release detection: createdAt / releaseDate / dateAdded
           const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt;
-          if (b.isNew === true) {
-            newly += 1;
-          } else if (dateStr) {
+          if (b.isNew === true) newly += 1;
+          else if (dateStr) {
             const d = new Date(dateStr);
             if (!isNaN(d)) {
               const days = (now - d) / (1000 * 60 * 60 * 24);
@@ -132,7 +123,6 @@ export default function Header() {
             }
           }
 
-          // sale detection: newPrice < oldPrice or newPrice < price
           const oldP = Number(b.oldPrice ?? b.price ?? 0);
           const newP = Number(b.newPrice ?? 0);
           if (newP > 0 && oldP > 0 && newP < oldP) sales += 1;
@@ -141,9 +131,6 @@ export default function Header() {
         setBestCount(best);
         setNewCount(newly);
         setSaleCount(sales);
-
-        // debug output so you can verify
-        console.log("Header stats:", { best, newly, sales, fetched: books.length });
       } catch (err) {
         console.error("Error fetching header stats:", err);
       }
@@ -164,7 +151,12 @@ export default function Header() {
       setShowLoginModal(false);
       setLoginEmail("");
       setLoginPassword("");
-      navigate(data.role === "admin" ? "/admin" : "/profile", { replace: true });
+
+      if (data.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        setShowPrivacyModal(true); // show modal for non-admin
+      }
     } catch (err) {
       setLoginError(err.response?.data?.message || "Invalid credentials");
     }
@@ -179,6 +171,75 @@ export default function Header() {
     navigate("/");
   };
 
+  // Privacy Modal Component
+  const PrivacyModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div
+        className="modal-overlay"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+        }}
+        onClick={onClose}
+      >
+        <div
+          className="modal-content"
+          style={{
+            background: "#fff",
+            padding: "2rem",
+            width: "80%",
+            maxHeight: "90%",
+            overflowY: "auto",
+            borderRadius: "8px",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2>Privacy Policy & Terms of Use</h2>
+          <p>
+            Welcome to BookWise! This Privacy Policy outlines how we collect, use, 
+            and protect your personal information when you use our website.
+          </p>
+          <h3>Privacy Policy</h3>
+          <p>
+            We collect information to provide better services. Your email, name, 
+            and purchase history are kept secure and used only to improve your experience.
+          </p>
+          <h3>Terms & Conditions</h3>
+          <p>
+            By using BookWise, you agree to our terms. All purchases are subject 
+            to our sales policies. Unauthorized use of our content or website is prohibited.
+          </p>
+          <button
+            onClick={onClose}
+            style={{
+              position: "absolute",
+              marginTop: "1rem",
+              padding: "0.5rem 1rem",
+              background: "#333",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              zIndex: 9999,
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <header className="header">
@@ -191,27 +252,29 @@ export default function Header() {
         <div className="header-search">
           <div className="search-container">
             <input 
-            type="text" 
-            placeholder="Search Books" 
-            className="search-input" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              type="text" 
+              placeholder="Search Books" 
+              className="search-input" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const q = (searchTerm || "").trim();
+                  if (q) navigate(`/viewAll?search=${encodeURIComponent(q)}`);
+                  setShowAuto(false);
+                }
+              }}
+            />
+            <FiSearch 
+              className="search-icon" 
+              size={18} 
+              role="button"
+              onClick={() => {
                 const q = (searchTerm || "").trim();
                 if (q) navigate(`/viewAll?search=${encodeURIComponent(q)}`);
                 setShowAuto(false);
-              }
-            }}/>
-            <FiSearch 
-            className="search-icon" 
-            size={18} 
-            role="button"
-            onClick={() => {
-              const q = (searchTerm || "").trim();
-              if (q) navigate(`/viewAll?search=${encodeURIComponent(q)}`);
-              setShowAuto(false);
-            }}/>
+              }}
+            />
 
             {showAuto && autoResults.length > 0 && (
               <ul className="auto-dropdown">
@@ -312,6 +375,8 @@ export default function Header() {
             </div>
           </div>
         )}
+
+        <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
       </header>
 
       <nav className="sub-nav">

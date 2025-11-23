@@ -63,7 +63,7 @@ const AuthPage = () => {
 
   if (redirect) {
     const role = localStorage.getItem("role");
-    return <Navigate to={role === "admin" ? "/admin/dashboard" : "/profile"} replace />;
+    return <Navigate to={role === "admin" ? "/admin/dashboard" : "/"} replace />;
   }
 
   return (

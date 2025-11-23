@@ -42,7 +42,6 @@ const NewReleaseBooks = ({ embedded = false }) => {
     if (img.startsWith("uploads")) return `${API}/${img}`;
     return `${API}/uploads/${img}`;
   };
-
   // Fetch all books
   useEffect(() => {
     const fetchBooks = async () => {

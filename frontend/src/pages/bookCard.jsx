@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
 import "../css/bookcard.css";
 
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL; // backend URL
 
 const BookCard = () => {
   const { id } = useParams();
@@ -17,12 +17,10 @@ const BookCard = () => {
   const [cart, setCart] = useState([]);
   const token = localStorage.getItem("token");
 
-  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
-    if (!img) return fallback;
-    if (img.startsWith("http")) return img;
-    if (img.startsWith("/")) return `${API}${img}`;
-    if (img.startsWith("uploads")) return `${API}/${img}`;
-    return `${API}/uploads/${img}`;
+  // Convert filename to full URL
+  const getImageUrl = (filename) => {
+    if (!filename) return `../public/uploads/art1.png`;
+    return `../public/uploads/${filename}`;
   };
 
   useEffect(() => {
@@ -58,7 +56,7 @@ const BookCard = () => {
           quantity: 1,
           title: bookToAdd.title,
           author: bookToAdd.author,
-          image: getImageUrl(bookToAdd.coverImage || bookToAdd.image),
+          image: getImageUrl(bookToAdd.coverImage),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -73,7 +71,7 @@ const BookCard = () => {
         author: item.book.author,
         price: item.price,
         quantity: item.quantity,
-        image: getImageUrl(item.book.coverImage || item.book.image),
+        image: getImageUrl(item.book.coverImage),
       }));
       setCart(items);
       alert(`${bookToAdd.title} has been added to your cart!`);
