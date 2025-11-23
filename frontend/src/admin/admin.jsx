@@ -24,7 +24,15 @@ const AdminAccount = () => {
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
-        <div className="logo">L</div>
+        <div className="logo">
+          <img src="logo.png" alt="" 
+          style={{
+            borderRadius: "50%",
+            width: "50px",
+            height: "50px",
+            objectFit: "cover",
+          }} />
+        </div>
         <nav className="nav-links">
            <button className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`} onClick={() => navigate("/admin/dashboard")}>
                <MdDashboard />
