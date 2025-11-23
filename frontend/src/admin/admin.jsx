@@ -25,7 +25,7 @@ const AdminAccount = () => {
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
         <div className="logo">
-          <img src="logo.png" alt="" 
+          <img src="./logo.png" alt="" 
           style={{
             borderRadius: "50%",
             width: "50px",
