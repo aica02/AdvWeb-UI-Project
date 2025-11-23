@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../css/admin.css";
-
+const API = "https://bookwise-5dvu.onrender.com";
 const UserAccounts = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const UserAccounts = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/admin/useraccountsdelete", {
+        const response = await fetch(`${API}/api/admin/useraccountsdelete`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -39,7 +39,7 @@ const UserAccounts = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/admin/useraccountsdelete/${id}`, {
+      const response = await fetch(`${API}/api/admin/useraccountsdelete/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
