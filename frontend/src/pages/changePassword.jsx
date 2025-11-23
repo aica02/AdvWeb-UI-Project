@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/changepass.css";
+import "../css/modals.css";
 import axios from "axios";
 
 export default function ChangePassword() {
@@ -9,11 +10,23 @@ export default function ChangePassword() {
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  // ---add Trigger notification ---
+  const triggerNotification = (msg, type = "positive") => {
+  setNotification(msg);
+  setNotificationType(type);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     if (newPass !== confirm) {
-      setMessage("Passwords do not match");
+      triggerNotification("New password and confirm password do not match", "negative");
       return;
     }
     const token = localStorage.getItem("token");
@@ -23,19 +36,26 @@ export default function ChangePassword() {
         { currentPassword: current, newPassword: newPass },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage("Password changed successfully!");
+      triggerNotification("Password changed successfully", "positive");
       setCurrent("");
       setNewPass("");
       setConfirm("");
     } catch (err) {
       setMessage(
-        err.response?.data?.message || "Failed to change password"
+        err.response?.data?.message || triggerNotification("Failed to change password", "negative")
       );
     }
   };
 
   return (
     <>
+    {/* Notification toast */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
+
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>

@@ -51,8 +51,7 @@
 }
 
 .auth-logo {
-  width: 100px;
-  margin-bottom: 10px;
+  width: 100%;
 }
 
 .brand-name {
@@ -154,9 +153,8 @@ form input[type="password"] {
 
 .form-options {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.2rem;
   font-size: 0.85rem;
 }
 
@@ -209,6 +207,7 @@ form input[type="password"] {
 }
 
 .toggle-link {
+  margin-left: .3rem;
   color: var(--color-complementary);
   font-weight: 600;
   cursor: pointer;

@@ -1,10 +1,11 @@
 import React from "react";
-import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox} from "react-icons/fa";
-import { MdDashboard } from "react-icons/md";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox, FaBookMedical} from "react-icons/fa";
+import { MdBookmarkAdd, MdDashboard } from "react-icons/md";
 import { useState } from "react";
 import "../css/admin.css";
 import "../css/modals.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/bookwise-logoname.png";
 
 const AdminAccount = () => {
   const navigate = useNavigate();
@@ -24,14 +25,7 @@ const AdminAccount = () => {
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
-        <div className="logo">
-          <img src="/uploads/logo.png" alt="" 
-          style={{
-            borderRadius: "50%",
-            width: "50px",
-            height: "50px",
-            objectFit: "cover",
-          }} />
+        <div className="logo">BW
         </div>
         <nav className="nav-links">
            <button className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`} onClick={() => navigate("/admin/dashboard")}>
@@ -39,11 +33,11 @@ const AdminAccount = () => {
             </button>
 
           <button className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`} onClick={() => navigate("/admin/addbook")}>
-            <FaBookOpen />
+            <FaBookMedical/>
           </button>
 
           <button className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`} onClick={() => navigate("/admin/editdeletebook")}>
-            <FaClock />
+            <FaBookOpen />
           </button>
 
           <button className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`} onClick={() => navigate("/admin/useraccountsdelete")}>
@@ -55,7 +49,7 @@ const AdminAccount = () => {
           </button>
 
           <button className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`} onClick={() => navigate("/admin/logs")}>
-            <FaBell />
+            <FaClock />
           </button>
         </nav>
       </aside>

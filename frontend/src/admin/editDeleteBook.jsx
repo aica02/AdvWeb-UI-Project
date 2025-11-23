@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../css/admin.css";
+import "../css/modals.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -9,6 +10,20 @@ const EditDeleteBooksSection = () => {
   const [editingBook, setEditingBook] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [sortBy, setSortBy] = useState("Price");
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState(null);
+  
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   const fetchBooks = async () => {
     try {
@@ -29,7 +44,7 @@ const EditDeleteBooksSection = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this book?")) return;
+    // if (!window.confirm("Are you sure you want to delete this book?")) return;
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found. Please login.");
@@ -109,7 +124,7 @@ const EditDeleteBooksSection = () => {
       setShowModal(false);
       setEditingBook(null);
       fetchBooks();
-      alert("Book updated successfully!");
+      triggerNotification('Book updated successfully!', 'positive');
     } catch (err) {
       console.error('Edit failed', err);
       alert("Error updating book: " + (err.response?.data?.message || err.message));
@@ -130,6 +145,13 @@ const EditDeleteBooksSection = () => {
 
 
   return (
+    <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
     <section className="bookCollection-overview">
       <h2>Book Collection</h2>
       <p>Book Store Inventory</p>
@@ -165,23 +187,73 @@ const EditDeleteBooksSection = () => {
           </thead>
           <tbody>
             {sortedBooks.map((b, index) => (
-  <tr key={b._id}>
-    <td>{index + 1}</td>
-    <td>{b.title}</td>
-    <td>{b.stock || 0}</td>
-    <td>{Array.isArray(b.category) ? b.category.join(', ') : b.category}</td>
-    <td>{b.oldPrice ? `₱${Number(b.oldPrice).toFixed(2)}` : ''}</td>
-    <td>{b.onSale ? (b.newPrice ? `₱${Number(b.newPrice).toFixed(2)}` : '') : ''}</td>
-    <td>
-      <button className="edit-btn" onClick={() => openEdit(b)}>Edit</button>
-      <button className="delete-btn" onClick={() => handleDelete(b._id)}>Delete</button>
-    </td>
-  </tr>
-))}
-
+              <tr key={b._id}>
+                <td>{index + 1}</td>
+                <td>{b.title}</td>
+                <td>{b.stock || 0}</td>
+                <td>{Array.isArray(b.category) ? b.category.join(', ') : b.category}</td>
+                <td>{b.oldPrice ? `₱${Number(b.oldPrice).toFixed(2)}` : ''}</td>
+                <td>{b.onSale ? (b.newPrice ? `₱${Number(b.newPrice).toFixed(2)}` : '') : ''}</td>
+                <td>
+                  <button className="edit-btn" onClick={() => openEdit(b)}>Edit</button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => {
+                      setBookToDelete(b._id);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+      {/* DELETE MODAL */}
+      {showDeleteModal && (
+        <div className="logout-modal-overlay">
+          <div className="logout-modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this book?</p>
+
+            <div className="logout-modal-buttons">
+              <button
+                className="cancel-modal-btn"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="confirm-modal-btn"
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    await axios.delete(`${API}/api/books/${bookToDelete}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    triggerNotification("Book deleted successfully!", "positive");
+                    fetchBooks();
+                  } catch (err) {
+                    console.error(err);
+                    triggerNotification("Failed to delete book", "negative");
+                  }
+
+                  setShowDeleteModal(false);
+                  setBookToDelete(null);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+            
 
       {/* EDIT MODAL - Full Form Like Add Book */}
       {showModal && editingBook && (
@@ -362,6 +434,7 @@ const EditDeleteBooksSection = () => {
         </div>
       )}
     </section>
+  </>
   );
 };
 
