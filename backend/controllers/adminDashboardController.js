@@ -191,7 +191,15 @@ export const getSalesReport = async (req, res) => {
         $group: {
           _id: "$books.book",
           quantity: { $sum: "$books.quantity" },
-          total: { $sum: "$books.subtotal" }
+          // compute total per book as sum(quantity * price) - fallback to 0 if price missing
+          total: {
+            $sum: {
+              $multiply: [
+                { $ifNull: ["$books.quantity", 0] },
+                { $ifNull: ["$books.price", 0] }
+              ]
+            }
+          }
         }
       },
       {
@@ -213,6 +221,14 @@ export const getSalesReport = async (req, res) => {
       },
       { $sort: { quantity: -1 } }
     ]);
+
+    // Debug: log sales results to help verify totals
+    try {
+      const totalSum = sales.reduce((s, it) => s + (it.total || 0), 0);
+      console.log("[getSalesReport] period:", period, "rows:", sales.length, "totalSum:", totalSum);
+    } catch (e) {
+      console.log("[getSalesReport] logging error:", e);
+    }
 
     res.json(sales);
   } catch (err) {
