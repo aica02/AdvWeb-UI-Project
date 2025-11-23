@@ -251,7 +251,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       if (!token) triggerNotification("Please log in to add items to wishlist!" , "negative");
     }
   };
-
+  
   // --- add to cart ---
   const addToCart = async (book) => {
     if (!token) {
