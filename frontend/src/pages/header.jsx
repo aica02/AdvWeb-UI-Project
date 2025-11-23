@@ -177,31 +177,11 @@ export default function Header() {
 
     return (
       <div
-        className="modal-overlay"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "rgba(0,0,0,0.6)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000,
-        }}
+        className="header modal-overlay"
         onClick={onClose}
       >
         <div
-          className="modal-content"
-          style={{
-            background: "#fff",
-            padding: "2rem",
-            width: "80%",
-            maxHeight: "90%",
-            overflowY: "auto",
-            borderRadius: "8px",
-          }}
+          className="header privacy-content"
           onClick={(e) => e.stopPropagation()}
         >
           <h2>Privacy Policy & Terms of Use</h2>
@@ -219,22 +199,12 @@ export default function Header() {
             By using BookWise, you agree to our terms. All purchases are subject 
             to our sales policies. Unauthorized use of our content or website is prohibited.
           </p>
-          <button
+
+          <div className="header modal-button">
+            <button className="header modal-close-button"
             onClick={onClose}
-            style={{
-              position: "absolute",
-              marginTop: "1rem",
-              padding: "0.5rem 1rem",
-              background: "#333",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              zIndex: 9999,
-            }}
-          >
-            Close
-          </button>
+            >  Close </button>
+          </div>
         </div>
       </div>
     );
