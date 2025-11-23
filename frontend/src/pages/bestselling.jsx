@@ -19,140 +19,224 @@ const BestSellingBooks = ({ embedded = false }) => {
   const [selectedAges, setSelectedAges] = useState([]);
   const [onSale, setOnSale] = useState("");
 
+  // sorting
+  const [sortType, setSortType] = useState("default"); // default | highest-price | lowest-price
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const carouselRef = useRef(null);
+  const location = useLocation();
 
-  // nabago to
-  const bestItems = useMemo(() => {
-    return books
-      .filter((b) => {
-        const salesCount = Number(b.bookSold ?? b.sales ?? b.soldCount ?? b.totalSold ?? 0);
-        return b.bestSeller === true || salesCount > 0;
-      })
-      .sort((a, b) => {
-        const aSold = Number(a.bookSold ?? a.sales ?? 0);
-        const bSold = Number(b.bookSold ?? b.sales ?? 0);
-        return bSold - aSold;
-      })
-      .slice(0, 5);
-  }, [books]);
+  // Utility: safely parse numeric sales from a book object
+  const getSoldCount = (b) => {
+    const raw =
+      b.bookSold ??
+      b.sales ??
+      b.soldCount ??
+      b.totalSold ??
+      b.sold ??
+      b.count ??
+      b.orders ??
+      0;
+    // remove non-numeric characters if any, then parse
+    const parsed = Number(String(raw).replace(/[^0-9.-]+/g, ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const getPrice = (b) => {
+    // prefer newPrice then oldPrice then price
+    const p = b.newPrice ?? b.oldPrice ?? b.price ?? 0;
+    const parsed = Number(p);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
 
   const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
     return `../public/uploads/${filename}`;
   };
 
-  // --- Fetch all books ---
-  const location = useLocation();
-
+  // --- fetch books ---
   useEffect(() => {
+    let mounted = true;
     const fetchBooks = async () => {
       try {
         const res = await axios.get(`${API}/api/books`);
-        const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+        const data = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.books)
+          ? res.data.books
+          : Array.isArray(res.data?.data?.books)
+          ? res.data.data.books
+          : [];
+        if (!mounted) return;
         setBooks(data);
-        setFilteredBooks(data);
+        setFilteredBooks(data); // initial fallback; real filtering happens below
       } catch (err) {
         console.error("Error fetching books:", err);
+        if (!mounted) return;
+        setBooks([]);
+        setFilteredBooks([]);
       }
     };
     fetchBooks();
+    return () => {
+      mounted = false;
+    };
   }, [embedded, location.pathname]);
 
-  // --- Fetch current cart ---
+  // --- fetch cart ---
   useEffect(() => {
     const fetchCart = async () => {
       if (!token) return;
-
       try {
         const res = await axios.get(`${API}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const items = res.data.books.map((item) => ({
-          id: item.book._id,
-          title: item.book.title,
-          author: item.book.author,
+        const items = (res.data?.books || []).map((item) => ({
+          id: item.book?._id || item.book?.id,
+          title: item.book?.title,
+          author: item.book?.author,
           price: item.price,
           quantity: item.quantity,
-          image: getImageUrl(item.book.coverImage || item.book.image, `${API}/uploads/default.png`),
+          image: getImageUrl(item.book?.coverImage || item.book?.image || ""),
         }));
 
         setCart(items);
-        setTotal(res.data.totalAmount || 0);
+        setTotal(res.data?.totalAmount ?? 0);
       } catch (err) {
         console.error("Error fetching cart:", err);
+        setCart([]);
+        setTotal(0);
       }
     };
     fetchCart();
   }, [token]);
 
-  // --- Filter toggle ---
-  const toggleFilter = (value, setter) => {
-    setter((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
-  };
 
-  // --- Apply filters to bestItems only ---
+  const bestItems = useMemo(() => {
+    if (!Array.isArray(books) || books.length === 0) return [];
+
+    const soldList = books.map((b) => ({
+      book: b,
+      sold: getSoldCount(b),
+    }));
+
+    const anyNumericSales = soldList.some((s) => s.sold > 0);
+
+    if (anyNumericSales) {
+      const sortedBySold = [...soldList].sort((a, b) => b.sold - a.sold);
+      return sortedBySold.slice(0, 20).map((o) => o.book);
+    }
+
+    const booleanBest = books.filter((b) => b.bestSeller === true || b.isBestSeller === true);
+    if (booleanBest.length > 0) return booleanBest.slice(0, 20);
+
+    const byDate = [...books].sort((a, b) => {
+      const da = new Date(a.releaseDate ?? a.createdAt ?? a.dateAdded ?? a.addedAt ?? 0).getTime() || 0;
+      const db = new Date(b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt ?? 0).getTime() || 0;
+      return db - da;
+    });
+    return byDate.slice(0, 20);
+  }, [books]);
+
+  //filters + sorting ---
   useEffect(() => {
-    let filtered = bestItems;
+    let filtered = Array.isArray(bestItems) ? [...bestItems] : [];
 
+    // categories
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((book) => 
-        Array.isArray(book.category) 
-          ? book.category.some(c => selectedCategories.includes(c))
+      filtered = filtered.filter((book) =>
+        Array.isArray(book.category)
+          ? book.category.some((c) => selectedCategories.includes(c))
           : selectedCategories.includes(book.category)
       );
     }
 
+    // languages
     if (selectedLanguages.length > 0) {
-      filtered = filtered.filter((book) =>
-        book.bookLanguage?.some((lang) => selectedLanguages.includes(lang))
+      filtered = filtered.filter(
+        (book) =>
+          Array.isArray(book.bookLanguage) &&
+          book.bookLanguage.some((lang) => selectedLanguages.includes(lang))
       );
     }
 
+    // ages
     if (selectedAges.length > 0) {
-      filtered = filtered.filter((book) =>
-        book.recommendedAge?.some((age) => selectedAges.includes(age))
+      filtered = filtered.filter(
+        (book) =>
+          Array.isArray(book.recommendedAge) &&
+          book.recommendedAge.some((age) => selectedAges.includes(age))
       );
     }
 
+    // onSale
     if (onSale === "yes") {
-      filtered = filtered.filter(
-        (book) => book.newPrice && book.newPrice < book.oldPrice && book.newPrice !== 0
-      );
+      filtered = filtered.filter((book) => {
+        const oldP = Number(book.oldPrice ?? book.price ?? 0) || 0;
+        const newP = Number(book.newPrice ?? 0) || 0;
+        return newP > 0 && oldP > 0 && newP < oldP;
+      });
     } else if (onSale === "no") {
-      filtered = filtered.filter(
-        (book) => !book.newPrice || book.newPrice >= book.oldPrice
-      );
+      filtered = filtered.filter((book) => {
+        const oldP = Number(book.oldPrice ?? book.price ?? 0) || 0;
+        const newP = Number(book.newPrice ?? 0) || 0;
+        return !(newP > 0 && oldP > 0 && newP < oldP);
+      });
+    }
+
+    // Sorting (after all filters)
+    if (sortType === "highest-price") {
+      filtered.sort((a, b) => getPrice(b) - getPrice(a));
+    } else if (sortType === "lowest-price") {
+      filtered.sort((a, b) => getPrice(a) - getPrice(b));
+    } else {
+      // default = keep bestItems order (already by sold or boolean/date)
     }
 
     setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, onSale, bestItems]);
+  }, [
+    selectedCategories,
+    selectedLanguages,
+    selectedAges,
+    onSale,
+    bestItems,
+    sortType,
+  ]);
 
-  // --- Toggle like (wishlist) ---
+  // --- helper: toggle filter arrays ---
+  const toggleFilter = (value, setter) => {
+    setter((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]));
+  };
+
+  // --- toggle like (wishlist) ---
   const toggleLike = async (bookId) => {
     const inWishlist = likedBooks.includes(bookId);
-    
     try {
-      if (inWishlist) {
-        await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
-      } else {
-        await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+      if (!token) {
+        alert("Please log in to add items to wishlist");
+        return;
       }
-      
-      setLikedBooks((prev) =>
-        prev.includes(bookId) ? prev.filter((item) => item !== bookId) : [...prev, bookId]
-      );
+      if (inWishlist) {
+        await axios.delete(`${API}/api/wishlist/remove/${bookId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axios.post(
+          `${API}/api/wishlist/add`,
+          { bookId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+      setLikedBooks((prev) => (prev.includes(bookId) ? prev.filter((i) => i !== bookId) : [...prev, bookId]));
     } catch (err) {
-      console.error('Error toggling wishlist', err);
-      if (!token) alert('Please log in to add items to wishlist');
+      console.error("Error toggling wishlist", err);
+      alert(err.response?.data?.message || "Could not update wishlist");
     }
   };
 
-  // --- Add to cart ---
+  // --- add to cart ---
   const addToCart = async (book) => {
     if (!token) {
       alert("Please log in to add books to your cart.");
@@ -162,17 +246,12 @@ const BestSellingBooks = ({ embedded = false }) => {
     try {
       const payload = {
         bookId: book._id || book.id,
-        price: book.newPrice ?? book.oldPrice,
+        price: getPrice(book),
         quantity: 1,
         title: book.title,
         author: book.author,
-        image: book.coverImage || book.image || "",
+        image: getImageUrl(book.coverImage ?? book.image ?? ""),
       };
-
-      console.log("Add to cart payload:", payload);
-
-      // ensure backend receives full URL
-      payload.image = getImageUrl(payload.image, `${API}/uploads/default.png`);
 
       await axios.post(`${API}/api/cart/add`, payload, {
         headers: { Authorization: `Bearer ${token}` },
@@ -183,26 +262,26 @@ const BestSellingBooks = ({ embedded = false }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const items = cartRes.data.books.map((item) => ({
-        id: item.book._id,
-        title: item.book.title,
-        author: item.book.author,
+      const items = (cartRes.data?.books || []).map((item) => ({
+        id: item.book?._id || item.book?.id,
+        title: item.book?.title,
+        author: item.book?.author,
         price: item.price,
         quantity: item.quantity,
-        image: getImageUrl(item.book.coverImage || item.book.image, `${API}/uploads/default.png`),
+        image: getImageUrl(item.book?.coverImage || item.book?.image || ""),
       }));
 
       setCart(items);
-      setTotal(cartRes.data.totalAmount || 0);
+      setTotal(cartRes.data?.totalAmount ?? 0);
       window.dispatchEvent(new Event("cartUpdated"));
       alert(`${book.title} has been added to your cart!`);
     } catch (err) {
-      console.error("Error adding to cart:", err, err.response?.data);
+      console.error("Error adding to cart:", err, err?.response?.data);
       alert(err.response?.data?.message || err.message || "Server error: Could not add to cart");
     }
   };
 
-   return (
+  return (
     <>
       {!embedded && (
         <nav className="breadcrumb">
@@ -232,19 +311,19 @@ const BestSellingBooks = ({ embedded = false }) => {
                 <div className="no-found-labeled">No best sellers found.</div>
               ) : (
                 bestItems.map((book) => (
-                  <div key={book._id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
+                  <div key={book._id || book.id} className="book-card" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>
                     <div className="book-image">
                       <img src={getImageUrl(book.coverImage || book.image)} alt={book.title} />
                       <span className="badge">Best Seller</span>
-                      <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
-                        {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                      <div className="heart-overlay" onClick={(e) => { e.stopPropagation(); toggleLike(book._id || book.id); }}>
+                        {likedBooks.includes(book._id || book.id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
                       </div>
                     </div>
                     <div className="book-details">
                       <h3>{book.title}</h3>
                       <p className="author">{book.author}</p>
-                      <p className="price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                      <button className="add-btn" onClick={() => addToCart(book)}>Add to Cart</button>
+                      <p className="price">₱{(getPrice(book)).toFixed(2)}</p>
+                      <button className="add-btn" onClick={(e) => { e.stopPropagation(); addToCart(book); }}>Add to Cart</button>
                     </div>
                   </div>
                 ))
@@ -336,8 +415,8 @@ const BestSellingBooks = ({ embedded = false }) => {
             <h2>Best Sellers</h2>
             <div className="sort-section">
               <label htmlFor="sort">SORT BY</label>
-              <select id="sort">
-                <option value="in-stock">Default</option>
+              <select id="sort" value={sortType} onChange={(e) => setSortType(e.target.value)}>
+                <option value="default">Default</option>
                 <option value="highest-price">Highest-Lowest Price</option>
                 <option value="lowest-price">Lowest-Highest Price</option>
               </select>
@@ -349,38 +428,52 @@ const BestSellingBooks = ({ embedded = false }) => {
               <p>No books found.</p>
             ) : (
               filteredBooks.map((book) => (
-                <div className="book-card" key={book._id}>
+                <div className="book-card" key={book._id || book.id}>
                   <div className="book-image">
-                    <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title} />
+                    <img src={getImageUrl(book.coverImage || book.image || "")} alt={book.title} />
                     <span className="badge">Best Seller</span>
-                    <div className="heart-overlay" onClick={() => toggleLike(book._id)}>
-                      {likedBooks.includes(book._id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
+                    <div className="heart-overlay" onClick={() => toggleLike(book._id || book.id)}>
+                      {likedBooks.includes(book._id || book.id) ? <FaHeart className="heart-icon filled" /> : <FaRegHeart className="heart-icon" />}
                     </div>
                   </div>
 
                   <div className="book-info">
                     <p className="book-title" onClick={() => navigate(`/bookCard/${book._id || book.id}`)}>{book.title}</p>
                     <p className="book-author">{book.author}</p>
-                    
-                  <div className="book-sold-price">
-                    <div className="sold-only">
-                      <p className="book-sold">{book.bookSold || 0} sold</p>
-                    </div>
-                    <div className="price-only">
-                      <p className="book-price old" >₱{(book.oldPrice)?.toFixed(2)}</p>
-                      <p className="book-price">₱{(book.newPrice ?? book.oldPrice)?.toFixed(2)}</p>
-                    </div>
-                  </div>
 
-                  <button
+                    <div className="book-sold-price">
+                      <div className="sold-only">
+                        <p className="book-sold">{getSoldCount(book)} sold</p>
+                      </div>
+                      <div className="price-only">
+                        {Number(book.newPrice ?? 0) > 0 &&
+                         Number(book.oldPrice ?? book.price ?? 0) > 0 &&
+                         Number(book.newPrice) < Number(book.oldPrice ?? book.price) ? (
+                            <>
+                              <p className="book-price old">
+                                ₱{Number(book.oldPrice ?? book.price).toFixed(2)}
+                              </p>
+                              <p className="book-price">
+                                ₱{Number(book.newPrice).toFixed(2)}
+                              </p>
+                            </>
+                         ) : (
+                            <p className="book-price">
+                              ₱{Number(book.price ?? book.oldPrice ?? book.newPrice).toFixed(2)}
+                            </p>
+                         )}
+                      </div>
+
+                    </div>
+
+                    <button
                       className="add-to-cart"
                       disabled={(book.stock ?? 0) <= 0}
                       style={(book.stock ?? 0) <= 0 ? { background: "#ccc", cursor: "not-allowed" } : {}}
                       onClick={() => addToCart(book)}
                     >
                       {(book.stock ?? 0) <= 0 ? "Out of Stock" : "Add to Cart"}
-                    </button>    
-                  
+                    </button>
                   </div>
                 </div>
               ))
@@ -388,7 +481,6 @@ const BestSellingBooks = ({ embedded = false }) => {
           </div>
         </section>
       </div>
-      
       )}
     </>
   );
