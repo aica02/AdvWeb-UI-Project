@@ -7,7 +7,7 @@ import InfoBanner from './pages/services';
 
 function App() {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname.startsWith('/auth') || location.pathname.startsWith('/admin');
+  const hideHeaderFooter = location.pathname.startsWith('/auth') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/forgot-password');
 
   return (
     <>

@@ -4,6 +4,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../css/forgotPassword.css";
 import "../css/authpage.css";
+import "../css/modals.css";
+import logo from "../assets/bookwise-nobg.png";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -24,6 +26,17 @@ export default function ForgotPassword() {
   const [sendingOTP, setSendingOTP] = useState(false);
 
   const OTP_DURATION = 2 * 60 * 1000; // 2 minutes
+
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   // Timer countdown
   useEffect(() => {
@@ -55,39 +68,39 @@ export default function ForgotPassword() {
   };
 
   const checkEmailExists = async () => {
-    if (!email) return setMessage("Please enter your email.");
+    if (!email) return triggerNotification("Please enter your email.", "negative");
 
-    setMessage("Verifying email...");
+    triggerNotification("Checking email...", "positive");
     try {
       const res = await axios.post(`${API}/api/auth/check-email`, { email });
       setEmailVerified(true);
-      setMessage("Email verified. Click 'Send OTP' to continue.");
+      triggerNotification("Email verified. You can now request an OTP.", "positive");
     } catch (err) {
       setEmailVerified(false);
-      setMessage(err.response?.data?.message || "Email not found in our system.");
+      setMessage(err.response?.data?.message || triggerNotification("Email not found.", "negative"));
       setGeneratedOTP("");
       setOtpGeneratedAt(null);
     }
   };
 
   const sendOTP = async () => {
-    if (!emailVerified) return setMessage("Please verify your email first.");
-    if (!email) return setMessage("Email is missing.");
+    if (!emailVerified) return triggerNotification("Please verify your email first.", "negative");
+    if (!email) return triggerNotification("Email is missing.", "negative");
 
     setSendingOTP(true);
     const otp = generateOTP();
     setGeneratedOTP(otp);
     setOtpGeneratedAt(Date.now());
-    setMessage("Sending OTP...");
+    triggerNotification("Sending OTP...", "positive");
 
     const params = { email, otp_code: otp };
 
     try {
       // If you want backend to send OTP, replace this with axios.post(`${API}/api/auth/send-otp`, { email })
       await emailjs.send("service_fnv6yy9", "template_nhz1nbo", params, "6_oRF3euZ6rfiEpWB");
-      setMessage("OTP sent to your email.");
+      triggerNotification("OTP sent to your email.", "positive");
     } catch (err) {
-      setMessage("Failed to send OTP. Try again later.");
+      triggerNotification("Failed to send OTP. Please try again.", "negative");
       console.error(err);
       setGeneratedOTP("");
       setOtpGeneratedAt(null);
@@ -98,10 +111,10 @@ export default function ForgotPassword() {
 
   const verifyOTP = () => {
     if(!generatedOTP) 
-      return setMessage("Please request an OTP first.");
+      return triggerNotification("Please request an OTP first.", "negative");
 
     if(timeLeft <= 0){
-      return setMessage("OTP expired. Please resend.");
+      return triggerNotification("OTP has expired. Please request a new one.", "negative");
     }
 
     if(userOTP === generatedOTP){
@@ -109,38 +122,45 @@ export default function ForgotPassword() {
       setGeneratedOTP(""); // Clear OTP to hide "expired" message
       setOtpGeneratedAt(null);
       setTimeLeft(0);
-      return setMessage("OTP verified — you may reset your password now.");
+      return triggerNotification("OTP verified successfully. You may reset you password now", "positive");
     }
 
     // If OTP is incorrect
-    setMessage("Incorrect OTP. Please try again.");
+    triggerNotification("Incorrect OTP. Please try again.", "negative");
   };
 
 
   const submitPassword = async (e) => {
     e.preventDefault();
 
-    if (!otpVerified) return setMessage("Please verify OTP first.");
-    if (newPassword.length < 6) return setMessage("Password must be at least 6 characters.");
-    if (newPassword !== confirmPassword) return setMessage("Passwords do not match.");
+    if (!otpVerified) return triggerNotification("Please verify OTP first.", "negative");
+    if (newPassword.length < 6) return triggerNotification("Password must be at least 6 characters.", "negative");
+    if (newPassword !== confirmPassword) return triggerNotification("Passwords do not match.", "negative");
 
     try {
       // Backend endpoint — make sure it exists and accepts { email, newPassword }
       await axios.post(`${API}/api/auth/reset-password`, { email, newPassword });
-      setMessage("Password reset successfully. Redirecting to login...");
+      triggerNotification("Password updated successfully! Redirecting to login...", "positive");
       setTimeout(() => navigate("/auth"), 1200);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Error updating password");
+      setMessage(err.response?.data?.message || triggerNotification("Failed to update password.", "negative"));
     }
   };
 
   return (
+    <>
+    {/* notification */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
+    
     <div className={`auth-container login-active`}>
       <div className="auth-box">
         <div className="auth-image-side">
           <div className="logo-container">
-            <img alt="Bookstore Logo" className="auth-logo" />
-            <h2 className="brand-name">BooksStore</h2>
+            <img alt="Bookstore Logo" className="auth-logo" src={logo}/>
             <p className="auth-hero">Reset your account password securely</p>
           </div>
         </div>
@@ -151,7 +171,8 @@ export default function ForgotPassword() {
             <p>Enter your registered email to receive an OTP.</p>
 
             <div className="form-group">
-              <input
+              <div className="input-field">
+                <input
                 className={emailVerified ? "input-success" : ""}
                 type="email"
                 name="email"
@@ -161,7 +182,8 @@ export default function ForgotPassword() {
                 disabled={emailVerified}
                 required
               />
-              <div style={{ marginTop: 8 }}>
+              </div>
+              <div className="auth-button-group">
                 {!emailVerified ? (
                   <button className="auth-btn" onClick={checkEmailExists} type="button">Verify Email</button>
                 ) : (
@@ -172,8 +194,9 @@ export default function ForgotPassword() {
               </div>
             </div>
 
-            <div className="form-group" style={{ marginTop: 12 }}>
-              <input
+            <div className="form-group">
+              <div className="input-field">
+                <input
                 className={otpVerified ? "input-success" : ""}
                 type="text"
                 name="otp"
@@ -182,7 +205,9 @@ export default function ForgotPassword() {
                 onChange={(e) => setUserOTP(e.target.value)}
                 disabled={otpVerified || !generatedOTP}
               />
-              <div style={{ marginTop: 8 }}>
+              </div>
+              
+              <div className="auth-button-group">
                 <button className="auth-btn" onClick={verifyOTP} type="button" disabled={!generatedOTP || otpVerified}>Verify OTP</button>
               </div>
               {timeLeft > 0 && !otpVerified && <p className="auth-sub">Expires in: {formatTime(timeLeft)}</p>}
@@ -190,25 +215,26 @@ export default function ForgotPassword() {
             </div>
 
             <form onSubmit={submitPassword}>
-              <input
-                type="password"
-                name="newPassword"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={!otpVerified}
-                required
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm New Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={!otpVerified}
-                required
-              />
-
+              <div className="input-field">
+                <input
+                  type="password"
+                  name="newPassword"
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={!otpVerified}
+                  required
+                />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={!otpVerified}
+                  required
+                />
+              </div>
               <button type="submit" className="auth-btn" disabled={!otpVerified}>Reset Password</button>
             </form>
 
@@ -221,5 +247,6 @@ export default function ForgotPassword() {
         </div>
       </div>
     </div>
+  </>
   );
 }

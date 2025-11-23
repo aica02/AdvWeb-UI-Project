@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../css/authpage.css";
+import "../css/modals.css";
 import { Navigate, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import logo from "../assets/bookwise-nobg.png";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -16,6 +18,17 @@ const AuthPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
+
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -39,10 +52,10 @@ const AuthPage = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
-      setMessage("Logged in successfully!");
+      triggerNotification("Logged in successfully!", "positive");
       setTimeout(() => setRedirect(true), 500);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Login failed");
+      setMessage(triggerNotification("Invalid Credentials", "negative") || triggerNotification("Invalid Credentials", "negative"));
     }
   };
 
@@ -50,7 +63,7 @@ const AuthPage = () => {
     e.preventDefault();
     setMessage("");
     if (form.password !== form.confirmPassword) {
-      setMessage("Passwords do not match");
+      triggerNotification("Passwords do not match", "negative");
       return;
     }
     try {
@@ -58,10 +71,10 @@ const AuthPage = () => {
         email: form.email,
         password: form.password,
       });
-      setMessage("Registered successfully! Please log in.");
+      triggerNotification("Account created successfully! Please log in.", "positive");
       setIsLogin(true);
     } catch (err) {
-      setMessage(err.response?.data?.message || "Signup failed");
+      setMessage(triggerNotification("Signup failed", "negative") || triggerNotification("Signup failed", "negative"));
     }
   };
 
@@ -72,6 +85,12 @@ const AuthPage = () => {
 
   return (
     <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
     <div className={`auth-container ${isLogin ? "login-active" : "signup-active"}`}>
       <div className="back-to-home-button" style={{ padding: "1rem", cursor: "pointer" }} onClick={() => navigate("/")}>
         <FaArrowLeft size={20} style={{ marginRight: "0.5rem" }} />
@@ -81,8 +100,7 @@ const AuthPage = () => {
       <div className="auth-box">
         <div className="auth-image-side">
           <div className="logo-container">
-            <img alt="Bookstore Logo" className="auth-logo" />
-            <h2 className="brand-name">BooksStore Logo</h2>
+            <img alt="Bookstore Logo" className="auth-logo" src={logo} />
           </div>
         </div>
 
@@ -96,17 +114,17 @@ const AuthPage = () => {
                 <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                 <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
 
+{/* nilagay ko lang sa loob ng div yung forget pass */}
                 <div className="form-options">
                   <label>
                     <input type="checkbox" /> Remember me
                   </label>
+                  <p>
+                    <span onClick={() => navigate("/forgot-password")} className="toggle-link">
+                      Forgot Password?
+                    </span>
+                  </p>
                 </div>
-                
-                <p className="toggle-text">
-                  <span onClick={() => navigate("/forgot-password")} className="toggle-link">
-                    Forgot Password?
-                  </span>
-                </p>
 
                 <button type="submit" className="auth-btn">Log In</button>
               </form>

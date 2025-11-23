@@ -1,10 +1,26 @@
 import React, { useEffect, useState } from "react";
 import "../css/admin.css";
+import "../css/modals.css";
+
 const API = "https://bookwise-5dvu.onrender.com";
 const UserAccounts = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -34,8 +50,8 @@ const UserAccounts = () => {
     fetchUsers();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Do you really want to delete this user?")) return;
+  const handleDeleteConfirmed = async () => {
+    if (!userToDelete) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -44,16 +60,29 @@ const UserAccounts = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (response.ok) setUsers(users.filter((u) => u._id !== id));
+      if (response.ok) {
+        setUsers((prev) => prev.filter((u) => u._id !== userToDelete));
+      }
+      triggerNotification("User deleted successfully", "positive");
     } catch (err) {
       console.error("Delete failed:", err);
     }
+
+    setShowDeleteModal(false);
+    setUserToDelete(null);
   };
 
   if (loading) return <p>Loading users...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
+    <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
     <section className="dashboard-overview user-accounts">
       <h2>User Account</h2>
       <p className="subheading">Book Store All User Accounts</p>
@@ -72,15 +101,28 @@ const UserAccounts = () => {
           {users.length > 0 ? (
             users.map((user, index) => (
               <tr key={user._id}>
-                  <td>{index + 1}</td>
-                  <td>{user.firstName} {user.lastName}</td>
-                  <td>{user.email} <div style={{fontSize: '0.85rem', color:'#666'}}>Orders: {user.totalOrders ?? 0}</div></td>
-                  <td>
-                    <button className="delete-btn" onClick={() => handleDelete(user._id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                <td>{index + 1}</td>
+                <td>
+                  {user.firstName} {user.lastName}
+                </td>
+                <td>
+                  {user.email}
+                  <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "4px" }}>
+                    Orders: {user.totalOrders ?? 0}
+                  </div>
+                </td>
+                <td>
+                  <button
+                    className="delete-btn"
+                    onClick={() => {
+                      setUserToDelete(user._id);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
             ))
           ) : (
             <tr>
@@ -89,7 +131,31 @@ const UserAccounts = () => {
           )}
         </tbody>
       </table>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="logout-modal-overlay">
+          <div className="logout-modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this user?</p>
+
+            <div className="logout-modal-buttons">
+              <button
+                className="cancel-modal-btn"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button className="confirm-modal-btn" onClick={handleDeleteConfirmed}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
+    </>
   );
 };
 

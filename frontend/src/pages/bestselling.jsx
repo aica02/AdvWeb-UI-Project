@@ -227,9 +227,12 @@ const BestSellingBooks = ({ embedded = false }) => {
     const toggleLike = async (bookId) => {
     const inWishlist = likedBooks.includes(bookId);
     try {
-      if (!token) {
-        alert("Please log in to add items to wishlist");
-        return;
+      if (inWishlist) {
+        await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You removed a book from your wishlist!", "negative");
+      } else {
+        await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You added a new book to your wishlist!", "positive");
       }
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, {
@@ -244,12 +247,11 @@ const BestSellingBooks = ({ embedded = false }) => {
       }
       setLikedBooks((prev) => (prev.includes(bookId) ? prev.filter((i) => i !== bookId) : [...prev, bookId]));
     } catch (err) {
-      console.error("Error toggling wishlist", err);
-      alert(err.response?.data?.message || "Could not update wishlist");
+      console.error('Error toggling wishlist', err);
+      if (!token) triggerNotification("Please log in to add items to wishlist!" , "negative");
     }
   };
-
-
+  
   // --- add to cart ---
   const addToCart = async (book) => {
     if (!token) {
