@@ -303,9 +303,9 @@ const EditDeleteBooksSection = () => {
                 {/* Category - allow multiple */}
                 <div className="form-group">
                   <label>Category<span className="asterisk">*</span></label>
-                  <div className="form-checkbox">
-                    {["Fiction","Non-Fiction","Romance","Thriller","Coding"].map(cat => (
-                      <label key={cat}>
+                  <div>
+                    {["Fiction","Non-Fiction","Humanities","Romance","Thriller","Coding"].map(cat => (
+                      <label key={cat} style={{display:'inline-block', marginRight:12}}>
                         <input type="checkbox" name="category" value={cat} checked={(editingBook.category || []).includes(cat)} onChange={handleEditChange} /> {cat}
                       </label>
                     ))}
