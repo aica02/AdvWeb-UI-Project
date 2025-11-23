@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import { FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox } from "react-icons/fa";
+import React from "react";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "../css/admin.css";
-import "../css/modals.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const AdminAccount = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showModal, setShowModal] = useState(false);
 
   const handleLogout = () => {
+    // Clear auth token and navigate to auth page
     localStorage.removeItem("token");
     navigate("/auth");
   };
 
+  // Check if a route is active
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -23,27 +23,45 @@ const AdminAccount = () => {
       <aside className="dashboard-sidebar">
         <div className="logo">L</div>
         <nav className="nav-links">
-          <button className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`} onClick={() => navigate("/admin/dashboard")}>
+          <button
+            className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`}
+            onClick={() => navigate("/admin/dashboard")}
+          >
             <MdDashboard />
           </button>
 
-          <button className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`} onClick={() => navigate("/admin/addbook")}>
+          <button
+            className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`}
+            onClick={() => navigate("/admin/addbook")}
+          >
             <FaBookOpen />
           </button>
 
-          <button className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`} onClick={() => navigate("/admin/editdeletebook")}>
+          <button
+            className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`}
+            onClick={() => navigate("/admin/editdeletebook")}
+          >
             <FaClock />
           </button>
 
-          <button className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`} onClick={() => navigate("/admin/useraccountsdelete")}>
+          <button
+            className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`}
+            onClick={() => navigate("/admin/useraccountsdelete")}
+          >
             <FaUserMinus />
           </button>
 
-          <button className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`} onClick={() => navigate("/admin/orders")}>
+          <button
+            className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`}
+            onClick={() => navigate("/admin/orders")}
+          >
             <FaBox />
           </button>
 
-          <button className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`} onClick={() => navigate("/admin/logs")}>
+          <button
+            className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`}
+            onClick={() => navigate("/admin/logs")}
+          >
             <FaBell />
           </button>
         </nav>
@@ -67,41 +85,15 @@ const AdminAccount = () => {
                 <FaUser />
               </div>
             </div>
-
             <hr className="wall" />
 
-            {/* Logout Button */}
-            <button
-              className="logout-btn"
-              onClick={() => setShowModal(true)}
-              aria-label="Logout"
-            >
+            <button className="logout-btn" onClick={handleLogout} aria-label="Logout">
               <FaSignOutAlt />
             </button>
           </div>
         </header>
 
-        {/* Modal */}
-        {showModal && (
-          <div className="logout-modal-overlay">
-            <div className="logout-modal">
-              <h3>Confirm Logout</h3>
-              <p>Are you sure you want to log out?</p>
-
-              <div className="logout-modal-buttons">
-                <button className="cancel-modal-btn" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-
-                <button className="confirm-modal-btn" onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Nested Routes */}
+        {/* Render nested routes */}
         <div className="dashboard-section">
           <Outlet />
         </div>
