@@ -1,9 +1,9 @@
 import express from "express";
 import Joi from "joi";
 import User from "../models/userModel.js";
-import {register,login,getMe,updateProfile,changePassword} from "../controllers/authControl.js";
 import { protect } from "../middleware/authMiddlew.js";
 import { validateUserInput } from "../middleware/validateInput.js";
+import { register, login, checkEmail, resetPassword, getMe, updateProfile, changePassword } from "../controllers/authControl.js";
 
 const router = express.Router();
 
@@ -26,7 +26,6 @@ router.post("/reset-password", resetPassword); // Reset password after OTP verif
 
 router.post("/register", register);
 router.post("/login", login);
-router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
 export default router;
