@@ -8,10 +8,14 @@ import {
   FaBox,
   FaClock,
   FaSyncAlt,
-  FaMoneyBillWave
+  FaMoneyBillWave,
+  FaSearch
 } from "react-icons/fa";
 import "../css/admin.css";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const DashboardSection = () => {
   const navigate = useNavigate();
@@ -21,13 +25,21 @@ const DashboardSection = () => {
 
   const handleDownloadPDF = async () => {
     const token = localStorage.getItem("token");
-    const url = "http://localhost:5000/api/admin/sales?period=" + pdfPeriod;
+    const url = `${API}/admin/sales?period=${encodeURIComponent(pdfPeriod)}`;
 
     try {
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error("Failed to fetch sales data");
+
+      if (!res.ok) {
+        let errMsg = `Status ${res.status}`;
+        try {
+          const body = await res.json();
+          errMsg = body.message || JSON.stringify(body);
+        } catch (e) {}
+        throw new Error(errMsg);
+      }
 
       const sales = await res.json();
       const doc = new jsPDF();
@@ -53,9 +65,11 @@ const DashboardSection = () => {
 
       doc.save(`sales-${pdfPeriod}.pdf`);
     } catch (err) {
+      console.error("Download PDF error:", err);
       alert("Failed to download PDF: " + (err.message || err));
     }
   };
+
 
   // Dashboard states
   const [stats, setStats] = useState({
@@ -68,6 +82,45 @@ const DashboardSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [bookSales, setBookSales] = useState([]);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const searchTimeout = React.useRef();
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchTerm) {
+      setSearchResults([]);
+      setShowSuggestions(false);
+      setSearchError("");
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError("");
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        // Filter bookSales based on search term (local filtering)
+        const filtered = bookSales.filter(book =>
+          book.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setSearchResults(filtered);
+        setShowSuggestions(true);
+        console.log("[ADMIN SEARCH] Filtered results:", filtered);
+      } catch (err) {
+        console.error("[ADMIN SEARCH] Error:", err.message);
+        setSearchError(err.message || "Error searching books");
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 350);
+    return () => clearTimeout(searchTimeout.current);
+  }, [searchTerm, bookSales]);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -83,9 +136,12 @@ const DashboardSection = () => {
         if (!token) throw new Error("No token found. Please login.");
 
         // Fetch stats
-        const statsRes = await fetch("http://localhost:5000/api/admin/dashboard", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const statsRes = await fetch(
+          "http://localhost:5000/api/admin/dashboard",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         if (!statsRes.ok)
           throw new Error(`Failed to fetch dashboard stats: ${statsRes.status}`);
 
@@ -245,6 +301,112 @@ const DashboardSection = () => {
       <section className="dashboard-overview">
         <h2 className="user-table-title">Best Selling Books</h2>
 
+        {/* Book Search Bar */}
+        <div
+          style={{
+            margin: "24px 0 16px 0",
+            position: "relative",
+            maxWidth: 400
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type="text"
+              placeholder="Search books by title..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() =>
+                searchResults.length > 0 && setShowSuggestions(true)
+              }
+              onBlur={() =>
+                setTimeout(() => setShowSuggestions(false), 150)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchResults.length > 0) {
+                  setShowSuggestions(true);
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "8px 36px 8px 12px",
+                borderRadius: 4,
+                border: "1px solid #ccc"
+              }}
+            />
+            <FaSearch
+              style={{
+                position: "absolute",
+                right: 12,
+                top: 12,
+                color: "#888"
+              }}
+            />
+          </div>
+          {showSuggestions && (
+            <ul
+              style={{
+                position: "absolute",
+                top: 38,
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                zIndex: 10,
+                maxHeight: 200,
+                overflowY: "auto",
+                listStyle: "none",
+                margin: 0,
+                padding: 0
+              }}
+            >
+              {searchResults.length > 0 ? (
+                searchResults.map((book) => (
+                  <li
+                    key={book._id || book.id}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #eee"
+                    }}
+                    onMouseDown={() => {
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {book.title}
+                  </li>
+                ))
+              ) : (
+                <li style={{ padding: "8px 12px", color: "#888" }}>
+                  No results found
+                </li>
+              )}
+            </ul>
+          )}
+          {searchLoading && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#888",
+                marginTop: 2
+              }}
+            >
+              Searching...
+            </div>
+          )}
+          {searchError && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#c0392b",
+                marginTop: 2
+              }}
+            >
+              {searchError}
+            </div>
+          )}
+        </div>
+
         <table className="user-table">
           <thead>
             <tr>
@@ -255,7 +417,21 @@ const DashboardSection = () => {
           </thead>
 
           <tbody>
-            {bookSales.length > 0 ? (
+            {searchTerm ? (
+              searchResults.length > 0 ? (
+                searchResults.map((book, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{book.title}</td>
+                    <td>{book.totalSold}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3">No matching books found.</td>
+                </tr>
+              )
+            ) : bookSales.length > 0 ? (
               bookSales.map((book, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>

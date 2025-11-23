@@ -95,13 +95,22 @@ const AuthPage = () => {
               <form onSubmit={handleLogin}>
                 <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                 <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+
                 <div className="form-options">
                   <label>
                     <input type="checkbox" /> Remember me
                   </label>
                 </div>
+                
+                <p className="toggle-text">
+                  <span onClick={() => navigate("/forgot-password")} className="toggle-link">
+                    Forgot Password?
+                  </span>
+                </p>
+
                 <button type="submit" className="auth-btn">Log In</button>
               </form>
+
               {message && <p className="auth-message">{message}</p>}
               <p className="toggle-text">
                 Not a member?{" "}

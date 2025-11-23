@@ -6,6 +6,7 @@ import Home from "../pages/home.jsx";
 import AuthPage from "../pages/authpage.jsx";
 import BookCard from "../pages/bookCard.jsx";
 import ViewAll from "../pages/viewall.jsx";
+import ForgotPassword from "../pages/forgotPassword.jsx";
 import Wishlists from "../pages/wishlist.jsx";
 import Profile from "../pages/profile.jsx";
 import EditProfile from "../pages/editProfile.jsx";
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
       { path: "/header", element: <Header />},
       { path: "/footer", element: <Footer />},
       { path: "/services", element: <InfoBanner />},
+      {path: "/forgot-password", element: <ForgotPassword />},
       // User protected routes
       {path: "/wishlist",element: (<ProtectedUserRoute> <Wishlists /></ProtectedUserRoute>),},
       {path: "/cart",element: (<ProtectedUserRoute> <Cart /></ProtectedUserRoute>),},
