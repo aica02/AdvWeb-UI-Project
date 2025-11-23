@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
-const API = "https://bookwise-frontend.onrender.com";
+const API = "https://bookwise-5dvu.onrender.com";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
