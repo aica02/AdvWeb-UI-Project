@@ -224,7 +224,7 @@ const BestSellingBooks = ({ embedded = false }) => {
   };
 
   // --- toggle like (wishlist) ---
-  const toggleLike = async (bookId) => {
+    const toggleLike = async (bookId) => {
     const inWishlist = likedBooks.includes(bookId);
     try {
       if (inWishlist) {
