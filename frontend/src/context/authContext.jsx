@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL;
+const API = "https://bookwise-frontend.onrender.com";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
