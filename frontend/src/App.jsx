@@ -1,21 +1,23 @@
-import { useState } from 'react'
-import { Outlet} from 'react-router-dom'
-import './App.css'
-import ScrollToTop from './components/scrollToTop'
-import Header from './pages/header'
-import Footer from './pages/footer'
-import InfoBanner from './pages/services'
+// App.jsx
+import { Outlet, useLocation } from 'react-router-dom';
+import Header from './pages/header';
+import Footer from './pages/footer';
+import ScrollToTop from './components/scrollToTop';
+import InfoBanner from './pages/services';
 
 function App() {
+  const location = useLocation();
+  const hideHeaderFooter = location.pathname.startsWith('/auth') || location.pathname.startsWith('/admin');
 
   return (
     <>
-      <ScrollToTop/>
-      <Header/>
-      <Outlet/>
-      <InfoBanner/>
-      <Footer/>
+      <ScrollToTop />
+      {!hideHeaderFooter && <Header />}
+      <Outlet />
+      {!hideHeaderFooter && <InfoBanner />}
+      {!hideHeaderFooter && <Footer />}
     </>
-  )
+  );
 }
-export default App
+
+export default App;

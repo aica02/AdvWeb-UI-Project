@@ -6,9 +6,20 @@ import helmet from "helmet";
 import xss from "xss";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoute.js";
+import bookRoutes from "./routes/bookRoute.js";
+import cartRoutes from "./routes/cartRoute.js";
+import logRoutes from "./routes/logRoute.js";
+import wishlistRoutes from "./routes/wishlistRoute.js";
+import { trackVisit } from "./middleware/visitMiddlew.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
 
 dotenv.config();
 const app = express();
+
+const __dirname = path.resolve();
+
 
 //  Middleware 
 app.use(helmet());
@@ -56,6 +67,15 @@ mongoose.connect(process.env.MONGO_URI)
 //  Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/logs", logRoutes);
+app.use(trackVisit);
+
+
+// Serve static uploads
+app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
 
 // Start Server 
 const PORT = process.env.PORT || 5000;

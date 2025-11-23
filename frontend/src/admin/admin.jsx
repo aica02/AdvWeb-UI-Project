@@ -1,34 +1,24 @@
-import React, { useState } from "react";
-import {
-  FaUser,
-  FaBookOpen,
-  FaClock,
-  FaBell,
-  FaSignOutAlt,
-  FaSearch,
-} from "react-icons/fa";
+import React from "react";
+import {FaUser, FaBookOpen, FaClock, FaBell, FaSignOutAlt, FaSearch, FaUserMinus, FaBox} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
+import { useState } from "react";
 import "../css/admin.css";
-import DashboardSection from "./dashboard";
-import AddBooksSection from "./addBook";
-import EditDeleteBooksSection from "./editDeleteBook";
-
+import "../css/modals.css";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const AdminAccount = () => {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showModal, setShowModal] = useState(false);
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "dashboard":
-        return <DashboardSection/>;
-      case "addbooks":
-        return <AddBooksSection/>;
-      case "editbooks":
-        return <EditDeleteBooksSection/>;
-      default:
-        return <DashboardSection />;
-    }
+  const handleLogout = () => {
+    // Clear auth token and navigate to auth page
+    localStorage.removeItem("token");
+    navigate("/auth");
   };
+
+  // Check if a route is active
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="dashboard-container">
@@ -36,23 +26,28 @@ const AdminAccount = () => {
       <aside className="dashboard-sidebar">
         <div className="logo">L</div>
         <nav className="nav-links">
-          <button
-            className={`nav-item ${activeSection === "dashboard" ? "active" : ""}`}
-            onClick={() => setActiveSection("dashboard")}
-          >
-            <MdDashboard />
-          </button>
-          <button
-            className={`nav-item ${activeSection === "addbooks" ? "active" : ""}`}
-            onClick={() => setActiveSection("addbooks")}
-          >
+           <button className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`} onClick={() => navigate("/admin/dashboard")}>
+               <MdDashboard />
+            </button>
+
+          <button className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`} onClick={() => navigate("/admin/addbook")}>
             <FaBookOpen />
           </button>
-          <button
-            className={`nav-item ${activeSection === "editbooks" ? "active" : ""}`}
-            onClick={() => setActiveSection("editbooks")}
-          >
+
+          <button className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`} onClick={() => navigate("/admin/editdeletebook")}>
             <FaClock />
+          </button>
+
+          <button className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`} onClick={() => navigate("/admin/useraccountsdelete")}>
+            <FaUserMinus />
+          </button>
+
+          <button className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`} onClick={() => navigate("/admin/orders")}>
+            <FaBox />
+          </button>
+
+          <button className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`} onClick={() => navigate("/admin/logs")}>
+            <FaBell />
           </button>
         </nav>
       </aside>
@@ -60,36 +55,50 @@ const AdminAccount = () => {
       <main className="main-content">
         {/* Header */}
         <header className="dashboard-header">
-          <div className="admin-search-bar">
-            <input type="text" placeholder="Search Book" />
-            <FaSearch className="admin-search-icon" />
-          </div>
+         
 
           <div className="header-right">
             <div className="user-info-icon">
-                <div className="user-info">
-                <p className="username">Manlapig, Angelo R.</p>
+              <div className="user-info">
+                <p className="username">Book Admin</p>
                 <span className="role">Admin</span>
-                </div>
-                <div className="user-avatar">
+              </div>
+              <div className="user-avatar">
                 <FaUser />
-                </div>
+              </div>
             </div>
             <hr className="wall" />
 
-            <div className="notifications">
-              <FaBell className="icon" />
-              <span className="badge">2</span>
-            </div>
-
-            <button className="logout-btn">
+             <button className="logout-btn" onClick={() => setShowModal(true)} aria-label="Logout" >
               <FaSignOutAlt />
             </button>
           </div>
         </header>
 
-        {/* Dynamically Loaded Section */}
-        <div className="dashboard-section">{renderSection()}</div>
+         {/* Modal */}
+        {showModal && (
+          <div className="logout-modal-overlay">
+            <div className="logout-modal">
+              <h3>Confirm Logout</h3>
+              <p>Are you sure you want to log out?</p>
+
+              <div className="logout-modal-buttons">
+                <button className="cancel-modal-btn" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+
+                <button className="confirm-modal-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nested Routes */}
+        <div className="dashboard-section">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

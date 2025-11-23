@@ -37,7 +37,6 @@ export default function EditProfile() {
       }
     };
     fetchUser();
-    // eslint-disable-next-line
   }, []);
 
   const handleChange = e => {
@@ -61,12 +60,20 @@ export default function EditProfile() {
   };
 
   return (
+    <>
+      <nav className="breadcrumb">
+        <Link to="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-separator">/</span>
+        <Link to="/profile" className="breadcrumb-link">Personal Information</Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-link active">Edit Profile</span>
+      </nav>
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="edit-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
-          <Link to="/auth">Log Out</Link>
+
         </div>
       </div>
       <div className="profile-content">
@@ -94,7 +101,7 @@ export default function EditProfile() {
                 </div>
                 <div style={{ gridColumn: '1 / 2' }}>
                   <label>Gender*</label><br />
-                  <label style={{ marginRight: 16 }}><input type="radio" name="gender" value="Male" checked={form.gender === "Male"} onChange={handleChange} /> Male</label>
+                  <label><input type="radio" name="gender" value="Male" checked={form.gender === "Male"} onChange={handleChange} /> Male</label>
                   <label><input type="radio" name="gender" value="Female" checked={form.gender === "Female"} onChange={handleChange} /> Female</label>
                 </div>
                 <div style={{ gridColumn: '2 / 3' }}>
@@ -134,5 +141,6 @@ export default function EditProfile() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -35,12 +35,20 @@ export default function ChangePassword() {
   };
 
   return (
+    <>
+      <nav className="breadcrumb">
+        <Link to="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-separator">/</span>
+        <Link to="/profile" className="breadcrumb-link">Personal Information</Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-link active">Change Password</span>
+      </nav>
+      
     <div className="profile-container">
       <div className="profile-sidebar">
         <div className="changepass-profile-menu">
           <Link to="/profile">Account Information</Link>
           <Link to="/orders">My Orders</Link>
-          <Link to="/auth">Log Out</Link>
         </div>
       </div>
       <div className="profile-content">
@@ -65,5 +73,6 @@ export default function ChangePassword() {
         </div>
       </div>
     </div>
+    </>
   );
 }

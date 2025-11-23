@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Secure MERN backend with JWT, password hashing, and input validation",
   "main": "server.js",
+
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
@@ -24,6 +25,7 @@
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
     "xss": "^1.0.15"
   },

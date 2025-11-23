@@ -8,7 +8,6 @@ import express from "express";
 
 const router = express.Router();
 
-// 🟩 REGISTER USER
 export const register = async (req, res) => {
   try {
     const schema = Joi.object({
@@ -25,7 +24,6 @@ export const register = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
-    // 🧩 Default role = user unless admin explicitly set
     const user = await User.create({ email, password, role: role || "user" });
 
     const token = jwt.sign(
@@ -41,7 +39,7 @@ export const register = async (req, res) => {
   }
 };
 
-// 🟨 LOGIN USER
+// LOGIN USER
 export const login = async (req, res) => {
   try {
     const schema = Joi.object({
@@ -72,7 +70,7 @@ export const login = async (req, res) => {
   }
 };
 
-// 🟦 GET CURRENT USER
+// GET CURRENT USER
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -83,7 +81,7 @@ export const getMe = async (req, res) => {
   }
 };
 
-// 🟪 UPDATE PROFILE
+// UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
     const updates = req.body;
@@ -94,7 +92,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// 🟥 CHANGE PASSWORD
+// CHANGE PASSWORD
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -109,6 +107,48 @@ export const changePassword = async (req, res) => {
 
     res.json({ message: "Password updated successfully" });
   } catch (err) {
+     console.error("Change password error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// CHECK EMAIL (for forgot password flow) - secure endpoint
+export const checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: "Email not found in our system" });
+
+    // Return only that email exists (no user data leaked)
+    res.json({ exists: true, message: "Email verified. You may proceed." });
+  } catch (err) {
+    console.error("Check email error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// RESET PASSWORD (called after client-side OTP verification)
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword)
+      return res.status(400).json({ message: "Email and new password are required" });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    // To avoid revealing whether an email exists, respond with success even when user not found.
+    if (!user) return res.json({ message: "Password reset successfully" });
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+  } catch (err) {
+    console.error("Reset password error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
