@@ -147,7 +147,6 @@ const EditDeleteBooksSection = () => {
             >
               <option>Price</option>
               <option>Title</option>
-              <option>Category</option>
             </select>
           </div>
         </div>
