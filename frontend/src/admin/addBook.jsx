@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "../css/modals.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -18,6 +19,17 @@ const AddBooksSection = () => {
     bookLanguage: [],
     stock: 0,
   });
+
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -71,7 +83,7 @@ const AddBooksSection = () => {
     // Get token from localStorage
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("No authentication token found. Please log in again.");
+      triggerNotification("No authentication token found. Please log in again.", "negative");
       return;
     }
 
@@ -89,7 +101,7 @@ const AddBooksSection = () => {
     );
 
     console.log("Added book:", response.data);
-    alert("Book added successfully!");
+    triggerNotification("Book added successfully!", "positive");
 
     // Optionally reset form
     setForm({
@@ -114,7 +126,15 @@ const AddBooksSection = () => {
   }
 };
 
+
   return (
+    <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
     <section className="addbook-overview">
       <h2>Add Books</h2>
       <p>Here you can add books.</p>
@@ -165,9 +185,9 @@ const AddBooksSection = () => {
               {/* Category - allow multiple */}
               <div className="form-group">
                 <label>Category<span className="asterisk">*</span></label>
-                <div>
+                <div className="form-checkbox">
                   {["Fiction","Non-Fiction","Humanities","Romance","Thriller","Coding"].map(cat => (
-                    <label key={cat} style={{display:'inline-block', marginRight:12}}>
+                    <label key={cat}>
                       <input type="checkbox" name="category" value={cat} checked={form.category.includes(cat)} onChange={handleChange} /> {cat}
                     </label>
                   ))}
@@ -292,6 +312,7 @@ const AddBooksSection = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

@@ -23,6 +23,18 @@ export default function EditProfile() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  // ---add Trigger notification ---
+  const triggerNotification = (msg, type = "positive") => {
+  setNotification(msg);
+  setNotificationType(type);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
@@ -33,7 +45,7 @@ export default function EditProfile() {
         });
         setForm({ ...form, ...data.user, birthDate: data.user.birthDate ? data.user.birthDate.slice(0,10) : "" });
       } catch {
-        setMessage("Failed to load user info");
+        triggerNotification("Failed to fetch user data", "negative");
       }
     };
     fetchUser();
@@ -52,15 +64,23 @@ export default function EditProfile() {
       await axios.put(`${API}/api/auth/profile`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessage("Profile updated!");
+      triggerNotification("Profile updated successfully", "positive");
       setTimeout(() => navigate("/profile"), 1000);
     } catch {
-      setMessage("Failed to update profile");
+      triggerNotification("Failed to update profile", "negative");
     }
   };
 
   return (
     <>
+
+    {/* Notification toast */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
+
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>

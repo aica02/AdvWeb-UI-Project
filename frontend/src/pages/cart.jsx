@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/cart.css';
 import "../css/modals.css";
-import InfoBanner from './services';
-import Footer from './footer';
 const API = import.meta.env.VITE_API_URL;
 
 function Cart() {
@@ -270,8 +268,8 @@ function Cart() {
           </div>
         </div>
       </div>
-      <InfoBanner />
-      <Footer />
+
+      {/* tinanggal ko lang infobanner at footer */}
     </div>
   </>
   );

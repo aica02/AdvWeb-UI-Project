@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../css/wishlists.css";
+import "../css/modals.css";
 import { FaTrash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
@@ -12,6 +13,17 @@ const Wishlists = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
  const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
@@ -47,15 +59,16 @@ const Wishlists = () => {
     try {
       await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
       setBooks((prev) => prev.filter((b) => b._id !== bookId));
+      triggerNotification('Book removed from wishlist', 'negative');
     } catch (err) {
       console.error('Error removing from wishlist', err);
-      alert('Unable to remove item');
+      triggerNotification('Could not remove item from wishlist', 'negative');
     }
   };
 
   const addToCart = async (book) => {
     if (!token) {
-      alert('Please log in to add books to your cart.');
+      triggerNotification("Please log in to add items to your cart.", "negative");
       return;
     }
     if ((book.stock ?? 0) <= 0) return;
@@ -72,10 +85,10 @@ const Wishlists = () => {
 
       await axios.post(`${API}/api/cart/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
       window.dispatchEvent(new Event('cartUpdated'));
-      alert(`${book.title} added to cart`);
+      triggerNotification('Book added to cart successfully!', 'positive');
     } catch (err) {
       console.error('Error adding to cart from wishlist', err);
-      alert(err.response?.data?.message || 'Could not add to cart');
+      alert(err.response?.data?.message || triggerNotification('Failed to add book to cart', 'negative'));
     }
   };
 
@@ -83,6 +96,13 @@ const Wishlists = () => {
 
   return (
     <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
+      
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
