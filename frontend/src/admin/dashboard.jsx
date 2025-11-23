@@ -104,10 +104,12 @@ const DashboardSection = () => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(async () => {
       try {
-        // Filter bookSales based on search term (local filtering)
-        const filtered = bookSales.filter(book =>
-          book.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        // Local filtering: trim input and perform case-insensitive match
+        const q = (searchTerm || "").toString().trim().toLowerCase();
+        const filtered = bookSales
+          .filter((book) => (book.title || "").toLowerCase().includes(q))
+          .slice()
+          .sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
         setSearchResults(filtered);
         setShowSuggestions(true);
         console.log("[ADMIN SEARCH] Filtered results:", filtered);
@@ -165,7 +167,10 @@ const DashboardSection = () => {
           throw new Error(`Failed to fetch book sales: ${booksRes.status}`);
 
         const booksData = await booksRes.json();
-        setBookSales(booksData.booksSold || []);
+        // sort best-selling books by totalSold desc for consistent display
+        const loaded = (booksData.booksSold || []).slice();
+        loaded.sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
+        setBookSales(loaded);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -323,7 +328,14 @@ const DashboardSection = () => {
               }
               onKeyDown={(e) => {
                 if (e.key === "Enter" && searchResults.length > 0) {
-                  setShowSuggestions(true);
+                  // select first suggestion on Enter
+                  e.preventDefault();
+                  const first = searchResults[0];
+                  if (first) {
+                    setSearchTerm(first.title || "");
+                    setSearchResults([first]);
+                  }
+                  setShowSuggestions(false);
                 }
               }}
               style={{
@@ -369,7 +381,11 @@ const DashboardSection = () => {
                       cursor: "pointer",
                       borderBottom: "1px solid #eee"
                     }}
-                    onMouseDown={() => {
+                    onMouseDown={(e) => {
+                      // select this book title into the input and hide suggestions
+                      e.preventDefault();
+                      setSearchTerm(book.title || "");
+                      setSearchResults([book]);
                       setShowSuggestions(false);
                     }}
                   >
