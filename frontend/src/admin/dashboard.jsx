@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; 
 import {
   FaUser,
   FaBookOpen,
@@ -15,7 +16,8 @@ import "../css/admin.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// Build a reliable API base URL that works whether VITE_API_URL includes `/api` or not
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
 const DashboardSection = () => {
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ const DashboardSection = () => {
 
   const handleDownloadPDF = async () => {
     const token = localStorage.getItem("token");
-    const url = `${API}/admin/sales?period=${encodeURIComponent(pdfPeriod)}`;
+    const url = `${API_BASE}/api/admin/sales?period=${encodeURIComponent(pdfPeriod)}`;
 
     try {
       const res = await fetch(url, {
@@ -42,36 +44,173 @@ const DashboardSection = () => {
       }
 
       const sales = await res.json();
-      const doc = new jsPDF();
+      const doc = new jsPDF("p", "pt", "a4"); // portrait, points, A4
 
-      doc.setFontSize(16);
-      doc.text(
-        `Sales Report (${pdfPeriod.charAt(0).toUpperCase() + pdfPeriod.slice(1)})`,
-        10,
-        15
-      );
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
 
-      doc.setFontSize(12);
-      let y = 30;
-
-      sales.forEach((sale, idx) => {
-        doc.text(
-          `${idx + 1}. ${sale.title} - Qty: ${sale.quantity} - ₱${sale.total}`,
-          10,
-          y
-        );
-        y += 8;
+      const now = new Date();
+      const formattedDate = now.toLocaleString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Manila"
       });
 
-      doc.save(`sales-${pdfPeriod}.pdf`);
+      const headerHeight = 90;
+      const headerPaddingX = 40;
+      const headerPaddingY = 30;
+
+      // dark blue bar
+      doc.setFillColor(1, 32, 63); // #070F2B
+      doc.rect(0, 0, pageWidth, headerHeight + 10, "F");
+
+      // light text
+      doc.setTextColor(255, 49, 49);
+
+      // "Report | <date>"
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(
+        `Report | ${formattedDate}`,
+        headerPaddingX,
+        headerPaddingY
+      );
+
+      // "Summary Report"
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text(
+        "Summary Report",
+        headerPaddingX,
+        headerPaddingY + 25
+      );
+
+      // Right side: Company name (you can add logo via addImage if you want)
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      const companyText = "Book Store";
+      const companyTextWidth =
+        doc.getTextWidth(companyText) || 0;
+      doc.text(
+        companyText,
+        pageWidth - headerPaddingX - companyTextWidth,
+        headerPaddingY + 10
+      );
+
+      // === Subtitle / Period under header ===
+      const contentStartY = headerHeight + 30; // first content line
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Overview", headerPaddingX, contentStartY);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      const prettyPeriod =
+        pdfPeriod.charAt(0).toUpperCase() + pdfPeriod.slice(1);
+      doc.text(
+        `Sales Period: ${prettyPeriod}`,
+        headerPaddingX,
+        contentStartY + 16
+      );
+
+      // === TABLE DATA ===
+      // Use 'PHP' text instead of the '₱' glyph (some PDF fonts substitute it with ±)
+      const tableData = sales.map((sale, idx) => [
+        idx + 1,
+        sale.title,
+        sale.quantity,
+        `PHP ${Number(sale.total || 0).toFixed(2)}`
+      ]);
+
+      const totalAmount = sales.reduce((sum, sale) => sum + Number(sale.total || 0), 0);
+
+      // === autoTable with header & zebra rows ===
+      autoTable(doc, {
+        startY: contentStartY + 30,
+        head: [["#", "Item", "Quantity", "Total"]],
+        body: tableData,
+        styles: {
+          font: "helvetica",
+          fontSize: 9,
+          cellPadding: 6
+        },
+        headStyles: {
+          fillColor: [1, 32, 63], // dark bar color
+          textColor: [255, 255, 255],
+          halign: "center"
+        },
+        bodyStyles: { halign: "center", valign: "middle" },
+        columnStyles: {
+          0: { halign: "center", cellWidth: 30 },
+          1: { halign: "left" },
+          2: { halign: "center", cellWidth: 70 },
+          3: { halign: "center", cellWidth: 90 }
+        },
+        margin: { left: headerPaddingX, right: 40 },
+        didDrawPage: (data) => {
+          // Re-draw header on each page (like thead in template)
+          if (data.pageNumber > 1) {
+            doc.setFillColor(1, 32, 63);
+            doc.rect(0, 0, pageWidth, headerHeight + 10, "F");
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text(`Report | ${formattedDate}`, headerPaddingX, headerPaddingY);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("Summary Report", headerPaddingX, headerPaddingY + 25);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            const companyTextWidth2 = doc.getTextWidth(companyText) || 0;
+            doc.text(companyText, pageWidth - headerPaddingX - companyTextWidth2, headerPaddingY + 10);
+            doc.setTextColor(0, 0, 0);
+          }
+
+          // Footer: page X of Y
+          const str = `Page ${data.pageNumber}`;
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "normal");
+          const strWidth = doc.getTextWidth(str);
+          doc.text(str, pageWidth - strWidth - headerPaddingX, pageHeight - 20);
+        }
+      });
+
+      // === TOTAL SALES TEXT AFTER TABLE ===
+      const finalY = doc.lastAutoTable?.finalY || (contentStartY + 30);
+      if (finalY + 30 < pageHeight - 40) {
+        // still on same page
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(
+          `Total Sales: PHP ${totalAmount.toFixed(2)}`,
+          headerPaddingX,
+          finalY + 20
+        );
+      } else {
+        // new page if no space
+        doc.addPage();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(
+          `Total Sales: PHP ${totalAmount.toFixed(2)}`,
+          headerPaddingX,
+          60
+        );
+      }
+
+      // === SAVE PDF (same filename style) ===
+      doc.save(`Book Wise Sales-${pdfPeriod}.pdf`);
     } catch (err) {
       console.error("Download PDF error:", err);
       alert("Failed to download PDF: " + (err.message || err));
     }
   };
 
-
-  // Dashboard states
   const [stats, setStats] = useState({
     productCount: 0,
     totalSales: 0,
@@ -104,10 +243,12 @@ const DashboardSection = () => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(async () => {
       try {
-        // Filter bookSales based on search term (local filtering)
-        const filtered = bookSales.filter(book =>
-          book.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        // Local filtering: trim input and perform case-insensitive match
+        const q = (searchTerm || "").toString().trim().toLowerCase();
+        const filtered = bookSales
+          .filter((book) => (book.title || "").toLowerCase().includes(q))
+          .slice()
+          .sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
         setSearchResults(filtered);
         setShowSuggestions(true);
         console.log("[ADMIN SEARCH] Filtered results:", filtered);
@@ -136,12 +277,9 @@ const DashboardSection = () => {
         if (!token) throw new Error("No token found. Please login.");
 
         // Fetch stats
-        const statsRes = await fetch(
-          "http://localhost:5000/api/admin/dashboard",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+        const statsRes = await fetch(`${API_BASE}/api/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (!statsRes.ok)
           throw new Error(`Failed to fetch dashboard stats: ${statsRes.status}`);
 
@@ -155,17 +293,17 @@ const DashboardSection = () => {
         });
 
         // Fetch best-selling books
-        const booksRes = await fetch(
-          "http://localhost:5000/api/admin/booksales",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+        const booksRes = await fetch(`${API_BASE}/api/admin/booksales`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (!booksRes.ok)
           throw new Error(`Failed to fetch book sales: ${booksRes.status}`);
 
         const booksData = await booksRes.json();
-        setBookSales(booksData.booksSold || []);
+        // sort best-selling books by totalSold desc for consistent display
+        const loaded = (booksData.booksSold || []).slice();
+        loaded.sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0));
+        setBookSales(loaded);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -296,15 +434,10 @@ const DashboardSection = () => {
           </button>
         </div>
       </section>
-
-      {/* Best Selling Books */}
-      <section className="dashboard-overview">
-        <h2 className="user-table-title">Best Selling Books</h2>
-
-        {/* Book Search Bar */}
+       {/* Book Search Bar */}
         <div
           style={{
-            margin: "24px 0 16px 0",
+            margin: "24px 0 16px 40px",
             position: "relative",
             maxWidth: 400
           }}
@@ -323,7 +456,14 @@ const DashboardSection = () => {
               }
               onKeyDown={(e) => {
                 if (e.key === "Enter" && searchResults.length > 0) {
-                  setShowSuggestions(true);
+                  // select first suggestion on Enter
+                  e.preventDefault();
+                  const first = searchResults[0];
+                  if (first) {
+                    setSearchTerm(first.title || "");
+                    setSearchResults([first]);
+                  }
+                  setShowSuggestions(false);
                 }
               }}
               style={{
@@ -337,7 +477,7 @@ const DashboardSection = () => {
               style={{
                 position: "absolute",
                 right: 12,
-                top: 12,
+                top: 8,
                 color: "#888"
               }}
             />
@@ -369,7 +509,11 @@ const DashboardSection = () => {
                       cursor: "pointer",
                       borderBottom: "1px solid #eee"
                     }}
-                    onMouseDown={() => {
+                    onMouseDown={(e) => {
+                      // select this book title into the input and hide suggestions
+                      e.preventDefault();
+                      setSearchTerm(book.title || "");
+                      setSearchResults([book]);
                       setShowSuggestions(false);
                     }}
                   >
@@ -406,6 +550,11 @@ const DashboardSection = () => {
             </div>
           )}
         </div>
+      {/* Best Selling Books */}
+      <section className="dashboard-overview">
+        <h2 className="user-table-title">Best Selling Books</h2>
+
+        
 
         <table className="user-table">
           <thead>

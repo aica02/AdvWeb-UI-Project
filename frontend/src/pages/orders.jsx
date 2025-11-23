@@ -184,12 +184,18 @@ export default function Orders() {
                         Status:{" "}
                         <span
                           style={{
-                            color: order.status === "Complete" ? "green" : "orange",
+                            color:
+                              order.status === "Complete"
+                                ? "green"
+                                : order.status === "Cancelled"
+                                ? "red"
+                                : "orange",
                             fontWeight: "bold",
-                          }}
+                         }}
                         >
                           {order.status || "Pending"}
                         </span>
+
                       </p>
                     </div>
 

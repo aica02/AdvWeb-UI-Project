@@ -40,9 +40,19 @@ function Payment() {
 
   // Load selected cart items from localStorage
   useEffect(() => {
-    const selected = localStorage.getItem('selectedCartItems');
+    const selected = localStorage.getItem("selectedCartItems");
     if (selected) {
-      setCartItems(JSON.parse(selected));
+      try {
+        const parsed = JSON.parse(selected);
+        const sanitized = parsed.map((item) => ({
+          ...item,
+          id: item.id || item.bookId,
+        }));
+        setCartItems(sanitized);
+      } catch (err) {
+        console.error("Failed to parse selectedCartItems:", err);
+        setCartItems([]);
+      }
     }
     setLoading(false);
   }, []);
@@ -119,10 +129,12 @@ function Payment() {
     if (!paymentMethod) return alert("Select a payment method");
     if (paymentMethod === "card" && !validateCard()) return;
     if (!isShippingComplete) return alert("Please complete your shipping details.");
+    
+
     if (cartItems.length === 0) return alert("No items selected for checkout.");
 
     try {
-      const selectedBookIds = cartItems.map(i => i.bookId || i.id);
+      const selectedBookIds = cartItems.map((i) => i.bookId || i.id);
 
       const checkoutData = {
         paymentMethod,
@@ -268,8 +280,9 @@ function Payment() {
             <h2 className="summary-title">Order Summary</h2>
             {cartItems.length === 0 ? (
               <p>No items selected for checkout.</p>
+              
             ) : (
-              cartItems.map(item => (
+              cartItems.map((item) => (
                 <article key={item.bookId || item.id} className="cart-item">
                   <div className="item-details">
                     <h3 className="item-title">{item.title}</h3>

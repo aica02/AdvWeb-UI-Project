@@ -4,7 +4,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
 import "../css/bookcard.css";
 
-const API = import.meta.env.VITE_API_URL; // backend URL
+const API = import.meta.env.VITE_API_URL;
 
 const BookCard = () => {
   const { id } = useParams();
@@ -14,22 +14,19 @@ const BookCard = () => {
   const [book, setBook] = useState(null);
   const [relatedBooks, setRelatedBooks] = useState([]);
   const [likedBooks, setLikedBooks] = useState([]);
-  const [cart, setCart] = useState([]);
   const token = localStorage.getItem("token");
 
   const [notification, setNotification] = useState("");
   const [showNotification, setShowNotification] = useState(false);
   const [notificationType, setNotificationType] = useState("positive");
 
-  // --- Trigger notification ---
   const triggerNotification = (msg, type = "positive") => {
-  setNotification(msg);
-  setNotificationType(type);
-  setShowNotification(true);
-  setTimeout(() => setShowNotification(false), 3000);
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
   };
 
-  // Convert filename to full URL
   const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
     return `../public/uploads/${filename}`;
@@ -73,24 +70,29 @@ const BookCard = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const cartRes = await axios.get(`${API}/api/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const items = (cartRes.data.books || []).map((item) => ({
-        id: item.book._id,
-        title: item.book.title,
-        author: item.book.author,
-        price: item.price,
-        quantity: item.quantity,
-        image: getImageUrl(item.book.coverImage),
-      }));
-      setCart(items);
       triggerNotification("Book added to cart successfully!", "positive");
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");
     }
+  };
+
+  const handleBuyNow = (bookToBuy) => {
+    if (!token) return triggerNotification("Please log in to buy", "negative");
+    if ((bookToBuy.stock ?? 0) <= 0) return;
+
+    const buyNowItem = {
+      bookId: bookToBuy._id,
+      id: bookToBuy._id,
+      title: bookToBuy.title,
+      author: bookToBuy.author,
+      price: bookToBuy.newPrice ?? bookToBuy.oldPrice,
+      quantity: 1,
+      image: getImageUrl(bookToBuy.coverImage),
+    };
+
+    localStorage.setItem("selectedCartItems", JSON.stringify([buyNowItem]));
+    navigate("/payment");
   };
 
   const toggleLike = async (bookId) => {
@@ -132,14 +134,11 @@ const BookCard = () => {
 
   return (
     <>
-
-    {/* Notification toast */}
       {showNotification && (
         <div className={`top-popup ${notificationType}`}>
           {notification}
         </div>
       )}
-      
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -183,12 +182,18 @@ const BookCard = () => {
             </div>
 
             <div className="action-buttons">
-              <button className={`add-cart ${book.stock === 0 ? "out-of-stock" : ""}`}
-                      disabled={book.stock === 0} onClick={() => addToCart(book)}>
+              <button
+                className={`add-cart ${book.stock === 0 ? "out-of-stock" : ""}`}
+                disabled={book.stock === 0}
+                onClick={() => addToCart(book)}
+              >
                 {book.stock === 0 ? "Out of Stock" : "Add to Cart"}
               </button>
-              <button className={`buy-now ${book.stock === 0 ? "out-of-stock" : ""}`}
-                      disabled={book.stock === 0} onClick={() => addToCart(book)}>
+              <button
+                className={`buy-now ${book.stock === 0 ? "out-of-stock" : ""}`}
+                disabled={book.stock === 0}
+                onClick={() => handleBuyNow(book)}
+              >
                 {book.stock === 0 ? "Not Available" : "Buy Now"}
               </button>
             </div>
@@ -228,8 +233,11 @@ const BookCard = () => {
                       )}
                     </div>
                   </div>
-                  <button className={`add-btn ${relBook.stock === 0 ? "out-of-stock" : ""}`}
-                          disabled={relBook.stock === 0} onClick={() => addToCart(relBook)}>
+                  <button
+                    className={`add-btn ${relBook.stock === 0 ? "out-of-stock" : ""}`}
+                    disabled={relBook.stock === 0}
+                    onClick={() => addToCart(relBook)}
+                  >
                     {relBook.stock === 0 ? "Out of Stock" : "Add to Cart"}
                   </button>
                 </div>
