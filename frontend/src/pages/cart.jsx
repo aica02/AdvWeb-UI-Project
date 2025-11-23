@@ -60,9 +60,10 @@ function Cart() {
         setSelectedIds(all);
         setSelectAll(true);
 
-        const totalAmount = data.totalAmount || 0;
+        const totalAmount = Number((data.totalAmount || 0).toFixed(2));
         setSubtotal(totalAmount);
-        setTotal(totalAmount + shipping);
+        setTotal(Number((totalAmount + shipping).toFixed(2)));
+
       } catch (err) {
         console.error("Error fetching cart:", err);
       }
@@ -118,12 +119,17 @@ function Cart() {
   };
 
   // Recalculate subtotal & total
-  const recalcTotal = (items, selected) => {
-    const selectedItems = items.filter(i => selected.has(i.bookId));
-    const newSubtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    setSubtotal(newSubtotal);
-    setTotal(newSubtotal + shipping);
-  };
+ const recalcTotal = (items, selected) => {
+  const selectedItems = items.filter(i => selected.has(i.bookId));
+  const newSubtotal = selectedItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+
+  const roundedSubtotal = Number(newSubtotal.toFixed(2));
+  const roundedTotal = Number((roundedSubtotal + shipping).toFixed(2));
+
+  setSubtotal(roundedSubtotal);
+  setTotal(roundedTotal);
+};
+
 
   const toggleSelect = (bookId) => {
     const next = new Set(selectedIds);
@@ -226,7 +232,7 @@ function Cart() {
                       <button className="delete-btn" onClick={() => removeItem(item.bookId)}>
                         <RiDeleteBin6Line />
                       </button>
-                      <div className="item-price">₱ {item.price * item.quantity}</div>
+                      <div className="item-price">₱ {(item.price * item.quantity).toFixed(2)}</div>
                     </div>
                   </article>
                 ))
@@ -238,7 +244,7 @@ function Cart() {
 
               <div className="summary-row">
                 <span className="summary-label">Subtotal</span>
-                <span className="summary-value">₱ {subtotal}</span>
+                <span className="summary-value">₱ {subtotal.toFixed(2)}</span>
               </div>
 
               <div className="summary-row">

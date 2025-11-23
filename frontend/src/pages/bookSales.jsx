@@ -158,7 +158,7 @@ const BookSales = () => {
 
       window.dispatchEvent(new Event('cartUpdated'));
 
-      triggerNotification(`${book.title} hasbeen added to your cart!`, "positive");
+      triggerNotification(`${book.title} has been added to your cart!`, "positive");
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");

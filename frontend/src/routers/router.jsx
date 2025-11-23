@@ -14,6 +14,7 @@ import ChangePassword from "../pages/changePassword.jsx";
 import Orders from "../pages/orders.jsx";
 import Cart from "../pages/cart.jsx";
 import Payment from "../pages/payment.jsx";
+import HelpPage from "../pages/help.jsx";
 
 import BestSellingBooks from "../pages/bestselling.jsx";
 import NewReleaseBooks from "../pages/newrelease.jsx";
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
       { path: "/bestSelling", element: <BestSellingBooks /> },
       { path: "/newReleases", element: <NewReleaseBooks /> },
       { path: "/bookSales", element: <BookSales />},
+      {path: "/help", element: <HelpPage />},
       { path: "/header", element: <Header />},
       { path: "/footer", element: <Footer />},
       { path: "/services", element: <InfoBanner />},

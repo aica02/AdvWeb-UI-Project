@@ -56,7 +56,7 @@ const UserAccounts = () => {
   return (
     <section className="dashboard-overview user-accounts">
       <h2>User Account</h2>
-      <p className="subheading">Book Store Inventory</p>
+      <p className="subheading">Book Store All User Accounts</p>
 
       <h3 className="user-table-title">All Accounts</h3>
       <table className="user-table">

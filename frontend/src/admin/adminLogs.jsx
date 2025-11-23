@@ -28,8 +28,8 @@ const AdminLogs = () => {
 
   return (
     <section className="orders-overview">
-      <h2>Admin Activity Logs</h2>
-      <p>Recent administrative actions and time stamps.</p>
+      <h2>Activity Logs</h2>
+      <p style={{marginLeft: "20px",}}>  Recent administrative actions and time stamps.</p>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -52,25 +52,27 @@ const AdminLogs = () => {
               </tr>
             ) : (
               logs.map((l) => {
-                // FIX the actor name logic
-                const actorName =
-                  l.actorName && l.actorName !== "" && l.actorName !== "undefined"
-                    ? l.actorName
-                    : l.actor
-                    ? `${l.actor.firstName} ${l.actor.lastName}`
-                    : "Admin";
+              let actorName = "Admin"; // default
 
-                return (
-                  <tr key={l._id}>
-                    <td>{new Date(l.createdAt).toLocaleString()}</td>
-                    <td>{actorName}</td>
-                    <td>{l.action}</td>
-                    <td style={{ maxWidth: 300 }}>
-                      {l.meta ? JSON.stringify(l.meta) : ""}
-                    </td>
-                  </tr>
-                );
-              })
+              if (l.actorName && l.actorName.trim() !== "") {
+                actorName = l.actorName;
+              } else if (l.actor && (l.actor.firstName || l.actor.lastName)) {
+                actorName = `${l.actor.firstName || ""} ${l.actor.lastName || ""}`.trim();
+              }
+
+              return (
+                <tr key={l._id}>
+                  <td>{new Date(l.createdAt).toLocaleString()}</td>
+                  <td>{actorName}</td>
+                  <td>{l.action}</td>
+                  <td style={{ maxWidth: 300 }}>
+                    {l.meta ? JSON.stringify(l.meta) : ""}
+                  </td>
+                </tr>
+              );
+            })
+
+
             )}
           </tbody>
 
