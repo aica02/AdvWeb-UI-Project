@@ -3,6 +3,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/cart.css';
+import "../css/modals.css";
 import InfoBanner from './services';
 import Footer from './footer';
 const API = import.meta.env.VITE_API_URL;
@@ -17,9 +18,24 @@ function Cart() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-const getImageUrl = (filename) => {
-    if (!filename) return `../public/uploads/art1.png`;
-    return `../public/uploads/${filename}`;
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+
+  const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith("http")) return img;
+    if (img.includes("://")) return img; 
+    if (img.startsWith("/uploads/")) return `${API}${img}`;
+    if (img.startsWith("uploads/")) return `${API}/${img}`;
+    if (img.startsWith("/")) return `${API}${img}`;
+    return `${API}/uploads/${img}`;
+  };
+
+  // --- Trigger notification ---
+  const triggerNotification = (msg) => {
+  setNotification(msg);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
   };
 
   // Fetch cart from backend
@@ -86,6 +102,7 @@ const getImageUrl = (filename) => {
     try {
       await axios.delete(`${API}/api/cart/remove/${bookId}`, {
         headers: { Authorization: `Bearer ${token}` }
+        
       });
 
       const updatedItems = cartItems.filter(item => item.bookId !== bookId);
@@ -94,6 +111,9 @@ const getImageUrl = (filename) => {
       const updatedSelected = new Set(selectedIds);
       updatedSelected.delete(bookId);
       setSelectedIds(updatedSelected);
+
+      // notification
+      triggerNotification("You removed an item from your cart!");
 
       recalcTotal(updatedItems, updatedSelected);
     } catch (err) {
@@ -139,6 +159,8 @@ const getImageUrl = (filename) => {
   };
 
   return (
+    <>
+    {showNotification && <div className="top-popup negative">{notification}</div>}
     <div className="cart-page-wrapper">
       <div className="cart-page">
         <nav className="breadcrumb">
@@ -243,6 +265,7 @@ const getImageUrl = (filename) => {
       <InfoBanner />
       <Footer />
     </div>
+  </>
   );
 }
 

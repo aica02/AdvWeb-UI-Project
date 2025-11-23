@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import "../css/viewall.css";
+import "../css/modals.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
 
@@ -19,14 +20,27 @@ const NewReleaseBooks = ({ embedded = false }) => {
   const [onSale, setOnSale] = useState("");
   const [sortOption, setSortOption] = useState("");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+
   const carouselRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
 
- const getImageUrl = (filename) => {
-    if (!filename) return `../public/uploads/art1.png`;
-    return `../public/uploads/${filename}`;
+  // --- Trigger notification ---
+  const triggerNotification = (msg) => {
+  setNotification(msg);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith("http")) return img;
+    if (img.startsWith("/")) return `${API}${img}`;
+    if (img.startsWith("uploads")) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
   };
   // Fetch all books
   useEffect(() => {
@@ -111,15 +125,17 @@ const NewReleaseBooks = ({ embedded = false }) => {
 
   // Toggle wishlist
   const toggleLike = async (bookId) => {
-    if (!token) return alert('Please log in to add items to wishlist');
+    if (!token) return triggerNotification("Please log in to add items to wishlist!");
     try {
       if (likedBooks.includes(bookId)) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You removed a book from your wishlist!");
       } else {
         await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You added a new book to your wishlist!");    
       }
       setLikedBooks((prev) =>
-        prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+        prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]     
       );
     } catch (err) {
       console.error('Error toggling wishlist', err);
@@ -128,7 +144,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
 
   // Add to cart
   const addToCart = async (book) => {
-    if (!token) return alert("Please log in to add books to your cart.");
+    if (!token) return triggerNotification("Please log in to add books to your cart!");
     if ((book.stock ?? 0) <= 0) return;
 
     try {
@@ -153,7 +169,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
       }));
       setCart(items);
       setTotal(cartRes.data.totalAmount || 0);
-      alert(`${book.title} has been added to your cart!`);
+      triggerNotification(`${book.title} has been added to your cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");
@@ -162,6 +178,9 @@ const NewReleaseBooks = ({ embedded = false }) => {
 
   return (
     <>
+
+      {showNotification && <div className="top-popup negative">{notification}</div>}
+
       {!embedded && (
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
@@ -281,6 +300,8 @@ const NewReleaseBooks = ({ embedded = false }) => {
               </li>
             </ul>
           </aside>
+
+          {showNotification && <div className="top-popup positive">{notification}</div>}
 
           {/* Main Content */}
           <section className="main-content">
