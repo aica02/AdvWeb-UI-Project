@@ -434,15 +434,10 @@ const DashboardSection = () => {
           </button>
         </div>
       </section>
-
-      {/* Best Selling Books */}
-      <section className="dashboard-overview">
-        <h2 className="user-table-title">Best Selling Books</h2>
-
-        {/* Book Search Bar */}
+       {/* Book Search Bar */}
         <div
           style={{
-            margin: "24px 0 16px 0",
+            margin: "24px 0 16px 40px",
             position: "relative",
             maxWidth: 400
           }}
@@ -482,7 +477,7 @@ const DashboardSection = () => {
               style={{
                 position: "absolute",
                 right: 12,
-                top: 12,
+                top: 8,
                 color: "#888"
               }}
             />
@@ -555,6 +550,11 @@ const DashboardSection = () => {
             </div>
           )}
         </div>
+      {/* Best Selling Books */}
+      <section className="dashboard-overview">
+        <h2 className="user-table-title">Best Selling Books</h2>
+
+        
 
         <table className="user-table">
           <thead>

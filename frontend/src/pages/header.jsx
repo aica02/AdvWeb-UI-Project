@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaHeart, FaShoppingCart, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaUser, FaHeart, FaShoppingCart, FaUserCircle, FaSignOutAlt, FaQuestionCircle  } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -349,9 +349,9 @@ useEffect(() => {
                       <span>Wishlist</span>
                     </li>
 
-                    <li onClick={() => { navigate("/cart"); setIsOpen(false); }}>
-                      <FaShoppingCart className="dropdown-icon" />
-                      <span>Cart</span>
+                    <li onClick={() => { navigate("/help"); setIsOpen(false); }}>
+                      <FaQuestionCircle  ppingCart className="dropdown-icon" />
+                      <span>Help</span>
                     </li>
 
                     <li onClick={() => setShowModal(true)}>
