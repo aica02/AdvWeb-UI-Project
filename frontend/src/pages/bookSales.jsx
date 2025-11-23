@@ -35,12 +35,9 @@ const BookSales = () => {
   setTimeout(() => setShowNotification(false), 3000);
   };
 
-  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
-    if (!img) return fallback;
-    if (img.startsWith("http")) return img;
-    if (img.startsWith("/")) return `${API}${img}`;
-    if (img.startsWith("uploads")) return `${API}/${img}`;
-    return `${API}/uploads/${img}`;
+ const getImageUrl = (filename) => {
+    if (!filename) return `../public/uploads/art1.png`;
+    return `../public/uploads/${filename}`;
   };
 
   useEffect(() => {
