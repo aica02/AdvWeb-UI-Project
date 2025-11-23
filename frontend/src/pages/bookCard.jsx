@@ -194,15 +194,15 @@ const BookCard = () => {
                   <h3 onClick={() => navigate(`/bookCard/${relBook._id}`)}>{relBook.title}</h3>
                   <p className="author">{relBook.author}</p>
                   <div className="book-sold-price">
-                    <div className="sold-only">{relBook.bookSold || 0} sold</div>
+                    <div className="sold-count">{relBook.bookSold || 0} sold</div>
                     <div className="price-only">
                       {relBook.onSale && relBook.newPrice < relBook.oldPrice ? (
                         <>
                           <span className="old-price">₱{Number(relBook.oldPrice).toFixed(2)}</span>
-                          <span className="new-price">₱{Number(relBook.newPrice).toFixed(2)}</span>
+                          <span className="price">₱{Number(relBook.newPrice).toFixed(2)}</span>
                         </>
                       ) : (
-                        <span className="normal-price">₱{Number(relBook.oldPrice).toFixed(2)}</span>
+                        <span className="price">₱{Number(relBook.oldPrice).toFixed(2)}</span>
                       )}
                     </div>
                   </div>

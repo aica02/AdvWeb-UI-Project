@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../css/viewall.css";
+import "../css/modals.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -19,12 +20,25 @@ const BookSales = () => {
   const [selectedAges, setSelectedAges] = useState([]);
   const [sortOption, setSortOption] = useState("in-stock");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-const getImageUrl = (filename) => {
-    if (!filename) return `../public/uploads/art1.png`;
-    return `../public/uploads/${filename}`;
+  // --- Trigger notification ---
+  const triggerNotification = (msg) => {
+  setNotification(msg);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  const getImageUrl = (img, fallback = `${API}/uploads/art1.png`) => {
+    if (!img) return fallback;
+    if (img.startsWith("http")) return img;
+    if (img.startsWith("/")) return `${API}${img}`;
+    if (img.startsWith("uploads")) return `${API}/${img}`;
+    return `${API}/uploads/${img}`;
   };
 
   useEffect(() => {
@@ -90,13 +104,15 @@ const getImageUrl = (filename) => {
   }, [selectedCategories, selectedLanguages, selectedAges, books, sortOption]);
 
   const toggleLike = async (bookId) => {
-    if (!token) return alert('Please log in to add items to wishlist');
+    if (!token) return triggerNotification("Please log in to add items to wishlist!");
     const inWishlist = likedBooks.includes(bookId);
     try {
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You removed a book from your wishlist!");
       } else {
         await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You added a new book to your wishlist!"); 
       }
 
       setLikedBooks((prev) =>
@@ -108,7 +124,7 @@ const getImageUrl = (filename) => {
   };
 
   const addToCart = async (book) => {
-    if (!token) return alert("Please log in to add books to your cart.");
+    if (!token) return triggerNotification("Please log in to add books to your cart!");
     if ((book.stock ?? 0) <= 0) return;
 
     try {
@@ -143,7 +159,7 @@ const getImageUrl = (filename) => {
 
       window.dispatchEvent(new Event('cartUpdated'));
 
-      alert(`${book.title} has been added to your cart!`);
+      triggerNotification(`${book.title} hasbeen added to your cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");
@@ -159,6 +175,8 @@ const getImageUrl = (filename) => {
 
   return (
     <>
+      {showNotification && <div className="top-popup negative">{notification}</div>}
+      
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -215,6 +233,8 @@ const getImageUrl = (filename) => {
             ))}
           </ul>
         </aside>
+            
+        {showNotification && <div className="top-popup positive">{notification}</div>}
 
         <section className="main-content">
           <div className="view-all-header">
@@ -235,6 +255,7 @@ const getImageUrl = (filename) => {
             ) : (
               filteredBooks.map((book) => (
                 <div className="book-card" key={book._id}>
+
                   <div className="book-image">
                     <img src={getImageUrl(book.coverImage || book.image, `${API}/uploads/art1.png`)} alt={book.title}/>
                     <span className="badge">{discountPercent(book)}%</span>

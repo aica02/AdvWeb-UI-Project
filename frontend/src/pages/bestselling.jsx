@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
+import "../css/modals.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -19,9 +20,19 @@ const BestSellingBooks = ({ embedded = false }) => {
   const [selectedAges, setSelectedAges] = useState([]);
   const [onSale, setOnSale] = useState("");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const carouselRef = useRef(null);
+
+  // --- Trigger notification ---
+  const triggerNotification = (msg) => {
+  setNotification(msg);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
 
   // nabago to
   const bestItems = useMemo(() => {
@@ -139,8 +150,10 @@ const BestSellingBooks = ({ embedded = false }) => {
     try {
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You removed a book from your wishlist!");
       } else {
         await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("You added a new book to your wishlist!");
       }
       
       setLikedBooks((prev) =>
@@ -148,14 +161,14 @@ const BestSellingBooks = ({ embedded = false }) => {
       );
     } catch (err) {
       console.error('Error toggling wishlist', err);
-      if (!token) alert('Please log in to add items to wishlist');
+      if (!token) triggerNotification("Please log in to add items to wishlist!");
     }
   };
 
   // --- Add to cart ---
   const addToCart = async (book) => {
     if (!token) {
-      alert("Please log in to add books to your cart.");
+      triggerNotification("Please log in to add books to your cart!");
       return;
     }
 
@@ -195,7 +208,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       setCart(items);
       setTotal(cartRes.data.totalAmount || 0);
       window.dispatchEvent(new Event("cartUpdated"));
-      alert(`${book.title} has been added to your cart!`);
+      triggerNotification(`${book.title} has been added to your cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err, err.response?.data);
       alert(err.response?.data?.message || err.message || "Server error: Could not add to cart");
@@ -204,6 +217,10 @@ const BestSellingBooks = ({ embedded = false }) => {
 
    return (
     <>
+
+      {/* Notification toast */}
+      {showNotification && <div className="top-popup negative">{notification}</div>}
+
       {!embedded && (
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
@@ -329,6 +346,8 @@ const BestSellingBooks = ({ embedded = false }) => {
             </li>
           </ul>
         </aside>
+
+        {showNotification && <div className="top-popup positive">{notification}</div>}    
 
         {/* --- Main Content --- */}
         <section className="main-content">
