@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import "../App.css";
+import "../css/modals.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -21,6 +22,8 @@ const BestSellingBooks = ({ embedded = false }) => {
 
   // sorting
   const [sortType, setSortType] = useState("default"); // default | highest-price | lowest-price
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -49,6 +52,14 @@ const BestSellingBooks = ({ embedded = false }) => {
     const parsed = Number(p);
     return Number.isFinite(parsed) ? parsed : 0;
   };
+  // --- Trigger notification ---
+  const triggerNotification = (msg) => {
+  setNotification(msg);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  // nabago to
 
   const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
@@ -239,7 +250,7 @@ const BestSellingBooks = ({ embedded = false }) => {
   // --- add to cart ---
   const addToCart = async (book) => {
     if (!token) {
-      alert("Please log in to add books to your cart.");
+      triggerNotification("Please log in to add books to your cart!");
       return;
     }
 
@@ -274,7 +285,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       setCart(items);
       setTotal(cartRes.data?.totalAmount ?? 0);
       window.dispatchEvent(new Event("cartUpdated"));
-      alert(`${book.title} has been added to your cart!`);
+      triggerNotification(`${book.title} has been added to your cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err, err?.response?.data);
       alert(err.response?.data?.message || err.message || "Server error: Could not add to cart");
@@ -283,6 +294,10 @@ const BestSellingBooks = ({ embedded = false }) => {
 
   return (
     <>
+
+      {/* Notification toast */}
+      {showNotification && <div className="top-popup negative">{notification}</div>}
+
       {!embedded && (
         <nav className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
@@ -408,6 +423,8 @@ const BestSellingBooks = ({ embedded = false }) => {
             </li>
           </ul>
         </aside>
+
+        {showNotification && <div className="top-popup positive">{notification}</div>}    
 
         {/* --- Main Content --- */}
         <section className="main-content">

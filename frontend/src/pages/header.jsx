@@ -4,6 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../css/loginmodal.css";
+import "../css/modals.css";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -15,8 +16,9 @@ export default function Header() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  
   const [cartCount, setCartCount] = useState(0);
-
   // dynamic counters
   const [bestCount, setBestCount] = useState(0);
   const [newCount, setNewCount] = useState(0);
@@ -218,7 +220,8 @@ useEffect(() => {
     localStorage.removeItem("role");
     setIsLoggedIn(false);
     setIsOpen(false);
-    navigate("/auth");
+    setShowModal(false);
+    navigate("/");
   };
 
   // Privacy Modal Component
@@ -381,7 +384,7 @@ useEffect(() => {
                       <span>Cart</span>
                     </li>
 
-                    <li onClick={handleLogout}>
+                    <li onClick={() => setShowModal(true)}>
                       <FaSignOutAlt className="dropdown-icon" />
                       <span>Log Out</span>
                     </li>
@@ -391,6 +394,26 @@ useEffect(() => {
             </div>
           )}
         </div>
+
+        {/* Modals */}
+        {showModal && (
+          <div className="logout-modal-overlay">
+            <div className="logout-modal">
+              <h3>Confirm Logout</h3>
+              <p>Are you sure you want to log out?</p>
+
+              <div className="logout-modal-buttons">
+                <button className="cancel-modal-btn" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+
+                <button className="confirm-modal-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showLoginModal && (
           <div className="login-modal-overlay" onClick={() => setShowLoginModal(false)}>
