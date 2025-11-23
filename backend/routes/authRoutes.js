@@ -17,7 +17,9 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
-
+router.get("/me", protect, getMe);
+router.put("/profile", protect, updateProfile);
+router.put("/change-password", protect, changePassword);
 // Public Routes
 router.post("/register", validateUserInput(registerSchema), register);
 router.post("/login", validateUserInput(loginSchema), login);
