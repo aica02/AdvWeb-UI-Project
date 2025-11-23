@@ -1,14 +1,14 @@
 import express from "express";
-import { validateUserInput } from "../middleware/validateInput.js";
 import Joi from "joi";
+import User from "../models/userModel.js";
+import {register,login,getMe,updateProfile,changePassword} from "../controllers/authControl.js";
+import { protect } from "../middleware/authMiddlew.js";
+import { validateUserInput } from "../middleware/validateInput.js";
 
 const router = express.Router();
 
-import {register, login, forgotPassword, resetPassword} from "../controllers/authControl.js";
-
-
+// Validation Schemas
 const registerSchema = Joi.object({
-  name: Joi.string().min(2).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 });
