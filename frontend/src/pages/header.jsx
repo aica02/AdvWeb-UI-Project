@@ -99,45 +99,98 @@ export default function Header() {
   }, []);
 
   // Fetch stats
-  useEffect(() => {
-    const fetchHeaderStats = async () => {
-      try {
-        const res = await axios.get(`${API}/api/books`);
-        const books = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
+useEffect(() => {
+  const fetchHeaderStats = async () => {
+    try {
+      const res = await axios.get(`${API}/api/books`);
+      // robustly find the array of books across common response shapes
+      const books =
+        Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.books)
+          ? res.data.books
+          : Array.isArray(res.data?.data?.books)
+          ? res.data.data.books
+          : [];
 
-        const now = new Date();
-        const NEW_DAYS = 90;
-        let best = 0, newly = 0, sales = 0;
+      console.debug("Header stats: fetched books length =", books.length);
 
-        books.forEach((b) => {
-          const salesCount = Number(b.sales ?? b.soldCount ?? b.totalSold ?? 0);
-          if (b.bestSeller === true || salesCount > 50) best += 1;
+      // ---- configuration ----
+      const NEW_DAYS = 90;
+      const SALES_THRESHOLD = 5; // change this to whatever you want
+      const topN = null; // set to a number (e.g. 10) to count only top N sellers; otherwise keep null to use threshold
 
-          const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt;
-          if (b.isNew === true) newly += 1;
-          else if (dateStr) {
-            const d = new Date(dateStr);
-            if (!isNaN(d)) {
-              const days = (now - d) / (1000 * 60 * 60 * 24);
-              if (days <= NEW_DAYS) newly += 1;
-            }
-          }
+      // ---- prepare arrays ----
+      const now = new Date();
+      let newly = 0;
+      let sales = 0;
 
-          const oldP = Number(b.oldPrice ?? b.price ?? 0);
-          const newP = Number(b.newPrice ?? 0);
-          if (newP > 0 && oldP > 0 && newP < oldP) sales += 1;
-        });
+      // build array of objects { book, sold } for computing best sellers
+      const soldList = books.map((b) => {
+        // try multiple fields (string/number) and coerce to number
+        const raw = b.sales ?? b.soldCount ?? b.totalSold ?? b.sold ?? b.count ?? 0;
+        const sold = Number(String(raw || 0).replace(/[^0-9.-]+/g, "")) || 0;
+        return { book: b, sold };
+      });
 
-        setBestCount(best);
-        setNewCount(newly);
-        setSaleCount(sales);
-      } catch (err) {
-        console.error("Error fetching header stats:", err);
+      // ----- count best sellers ----
+      let best = 0;
+      if (topN && Number(topN) > 0) {
+
+        const sorted = [...soldList].sort((a, b) => b.sold - a.sold);
+        const top = sorted.slice(0, Number(topN));
+        best = top.filter((o) => o.sold > 5).length;
+        console.debug(`Header stats: using topN = ${topN}, best counted = ${best}`, top.map(t => t.sold));
+      } else {
+        best = soldList.filter((o) => o.sold > SALES_THRESHOLD).length;
+        const anyNumericSales = soldList.some((o) => o.sold > 0);
+        if (!anyNumericSales) {
+          best = books.filter((b) => b.bestSeller === true || b.isBestSeller === true).length;
+          console.debug("Header stats: no numeric sales found, falling back to boolean bestSeller, count =", best);
+        } else {
+          console.debug(`Header stats: using threshold ${SALES_THRESHOLD}, numeric best count =`, best);
+        }
       }
-    };
 
-    fetchHeaderStats();
-  }, []);
+      // ---- count new arrivals ----
+      soldList.forEach(({ book: b }) => {
+        const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt ?? b.publishedAt;
+        if (b.isNew === true) {
+          newly++;
+        } else if (dateStr) {
+          const d = new Date(dateStr);
+          if (!isNaN(d)) {
+            const days = (now - d) / (1000 * 60 * 60 * 24);
+            if (days <= NEW_DAYS) newly++;
+          }
+        }
+      });
+
+      // ---- count sale items ----
+      books.forEach((b) => {
+        const oldP = Number(b.oldPrice ?? b.price ?? 0) || 0;
+        const newP = Number(b.newPrice ?? 0) || Number(b.salePrice ?? 0) || 0;
+        if (newP > 0 && oldP > 0 && newP < oldP) sales++;
+      });
+
+      // ---- set state ----
+      setBestCount(best);
+      setNewCount(newly);
+      setSaleCount(sales);
+
+    } catch (err) {
+      console.error("Error fetching header stats:", err);
+      // ensure counts reset on failure
+      setBestCount(0);
+      setNewCount(0);
+      setSaleCount(0);
+    }
+  };
+
+  fetchHeaderStats();
+}, []);
+
+
 
   const handleCartClick = () => navigate("/cart");
 
