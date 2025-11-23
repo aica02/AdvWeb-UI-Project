@@ -18,6 +18,11 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+// Public Routes
+router.post("/register", validateUserInput(registerSchema), register);
+router.post("/login", validateUserInput(loginSchema), login);
+router.post("/check-email", checkEmail); // Check if email exists (for forgot password)
+router.post("/reset-password", resetPassword); // Reset password after OTP verified on client
 
 router.post("/register", register);
 router.post("/login", login);
