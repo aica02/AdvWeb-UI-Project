@@ -45,18 +45,35 @@ const AdminLogs = () => {
           </thead>
           <tbody>
             {logs.length === 0 ? (
-              <tr><td colSpan="4" style={{ textAlign:'center', padding:20 }}>No logs found</td></tr>
+              <tr>
+                <td colSpan="4" style={{ textAlign: "center", padding: 20 }}>
+                  No logs found
+                </td>
+              </tr>
             ) : (
-              logs.map((l) => (
-                <tr key={l._id}>
-                  <td>{new Date(l.createdAt).toLocaleString()}</td>
-                  <td>{l.actorName || (l.actor && `${l.actor.firstName} ${l.actor.lastName}`) || 'System'}</td>
-                  <td>{l.action}</td>
-                  <td style={{maxWidth:300}}>{l.meta ? JSON.stringify(l.meta) : ''}</td>
-                </tr>
-              ))
+              logs.map((l) => {
+                // FIX the actor name logic
+                const actorName =
+                  l.actorName && l.actorName !== "" && l.actorName !== "undefined"
+                    ? l.actorName
+                    : l.actor
+                    ? `${l.actor.firstName} ${l.actor.lastName}`
+                    : "Admin";
+
+                return (
+                  <tr key={l._id}>
+                    <td>{new Date(l.createdAt).toLocaleString()}</td>
+                    <td>{actorName}</td>
+                    <td>{l.action}</td>
+                    <td style={{ maxWidth: 300 }}>
+                      {l.meta ? JSON.stringify(l.meta) : ""}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
+
         </table>
       </div>
     </section>

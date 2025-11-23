@@ -22,9 +22,23 @@ router.get("/", asyncHandler(async (req, res) => {
 // GET search books 
 router.get("/search", asyncHandler(async (req, res) => {
   const query = req.query.q || "";
-  const books = await Book.find({ title: { $regex: query, $options: "i" } });
+
+  console.log("[SEARCH] ===== SEARCH ROUTE HIT =====");
+  console.log("[SEARCH] Query received:", query);
+  console.log("[SEARCH] Query type:", typeof query);
+  console.log("[SEARCH] Query length:", query.length);
+
+  const books = await Book.find({
+    title: { $regex: query, $options: "i" }
+  });
+
+  console.log("[SEARCH] Books found:", books.length);
+  console.log("[SEARCH] Results:", books.map(b => b.title));
+  console.log("[SEARCH] ===== RETURNING RESPONSE =====");
+
   res.json(books);
 }));
+
 
 // GET a single book
 router.get("/:id", asyncHandler(async (req, res) => {

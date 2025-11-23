@@ -156,3 +156,67 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Failed to delete user" });
   }
 };
+
+export const getSalesReport = async (req, res) => {
+  try {
+    const period = req.query.period || "daily";
+
+    // Determine date range
+    const now = new Date();
+    let start;
+
+    if (period === "daily") {
+      start = new Date();
+      start.setHours(0, 0, 0, 0);
+    } else if (period === "weekly") {
+      start = new Date();
+      start.setDate(now.getDate() - 7);
+    } else if (period === "monthly") {
+      start = new Date();
+      start.setMonth(now.getMonth() - 1);
+    } else {
+      return res.status(400).json({ message: "Invalid period" });
+    }
+
+    // Fetch completed orders only
+    const sales = await Order.aggregate([
+      {
+        $match: {
+          status: { $in: ["Complete", "complete", "Completed"] },
+          createdAt: { $gte: start }
+        }
+      },
+      { $unwind: "$books" },
+      {
+        $group: {
+          _id: "$books.book",
+          quantity: { $sum: "$books.quantity" },
+          total: { $sum: "$books.subtotal" }
+        }
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: "book"
+        }
+      },
+      { $unwind: "$book" },
+      {
+        $project: {
+          _id: 0,
+          title: "$book.title",
+          quantity: 1,
+          total: 1
+        }
+      },
+      { $sort: { quantity: -1 } }
+    ]);
+
+    res.json(sales);
+  } catch (err) {
+    console.error("Sales report error:", err);
+    res.status(500).json({ message: "Failed to fetch sales report" });
+  }
+};
