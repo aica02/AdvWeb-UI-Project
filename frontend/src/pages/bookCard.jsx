@@ -17,6 +17,18 @@ const BookCard = () => {
   const [cart, setCart] = useState([]);
   const token = localStorage.getItem("token");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  // --- Trigger notification ---
+  const triggerNotification = (msg, type = "positive") => {
+  setNotification(msg);
+  setNotificationType(type);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
+
   // Convert filename to full URL
   const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
@@ -44,7 +56,7 @@ const BookCard = () => {
   }, [id]);
 
   const addToCart = async (bookToAdd) => {
-    if (!token) return alert("Please log in to add books to your cart.");
+    if (!token) return triggerNotification("Please log in to add items to cart", "negative");
     if ((bookToAdd.stock ?? 0) <= 0) return;
 
     try {
@@ -74,7 +86,7 @@ const BookCard = () => {
         image: getImageUrl(item.book.coverImage),
       }));
       setCart(items);
-      alert(`${bookToAdd.title} has been added to your cart!`);
+      triggerNotification("Book added to cart successfully!", "positive");
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");
@@ -82,13 +94,15 @@ const BookCard = () => {
   };
 
   const toggleLike = async (bookId) => {
-    if (!token) return alert("Please log in to add items to wishlist");
+    if (!token) return triggerNotification("Please log in to manage your wishlist", "negative");
     const inWishlist = likedBooks.includes(bookId);
     try {
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("Book removed from wishlist", "positive");
       } else {
         await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
+        triggerNotification("Book added to wishlist", "positive");
       }
       setLikedBooks((prev) =>
         prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
@@ -118,6 +132,14 @@ const BookCard = () => {
 
   return (
     <>
+
+    {/* Notification toast */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
+      
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>

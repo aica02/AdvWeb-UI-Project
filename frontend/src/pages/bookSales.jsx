@@ -22,13 +22,15 @@ const BookSales = () => {
 
   const [notification, setNotification] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   // --- Trigger notification ---
-  const triggerNotification = (msg) => {
+  const triggerNotification = (msg, type = "positive") => {
   setNotification(msg);
+  setNotificationType(type);
   setShowNotification(true);
   setTimeout(() => setShowNotification(false), 3000);
   };
@@ -104,15 +106,15 @@ const BookSales = () => {
   }, [selectedCategories, selectedLanguages, selectedAges, books, sortOption]);
 
   const toggleLike = async (bookId) => {
-    if (!token) return triggerNotification("Please log in to add items to wishlist!");
+    if (!token) return triggerNotification("Please log in to add items to wishlist!", "negative");
     const inWishlist = likedBooks.includes(bookId);
     try {
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, { headers: { Authorization: `Bearer ${token}` } });
-        triggerNotification("You removed a book from your wishlist!");
+        triggerNotification("You removed a book from your wishlist!", "negative");
       } else {
         await axios.post(`${API}/api/wishlist/add`, { bookId }, { headers: { Authorization: `Bearer ${token}` } });
-        triggerNotification("You added a new book to your wishlist!"); 
+        triggerNotification("You added a new book to your wishlist!", "positive"); 
       }
 
       setLikedBooks((prev) =>
@@ -124,7 +126,7 @@ const BookSales = () => {
   };
 
   const addToCart = async (book) => {
-    if (!token) return triggerNotification("Please log in to add books to your cart!");
+    if (!token) return triggerNotification("Please log in to add books to your cart!", "negative");
     if ((book.stock ?? 0) <= 0) return;
 
     try {
@@ -159,7 +161,7 @@ const BookSales = () => {
 
       window.dispatchEvent(new Event('cartUpdated'));
 
-      triggerNotification(`${book.title} hasbeen added to your cart!`);
+      triggerNotification(`${book.title} hasbeen added to your cart!`, "positive");
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(err.response?.data?.message || "Server error: Could not add to cart");
@@ -175,7 +177,12 @@ const BookSales = () => {
 
   return (
     <>
-      {showNotification && <div className="top-popup negative">{notification}</div>}
+      {/* Notification toast */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
       
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
@@ -233,8 +240,6 @@ const BookSales = () => {
             ))}
           </ul>
         </aside>
-            
-        {showNotification && <div className="top-popup positive">{notification}</div>}
 
         <section className="main-content">
           <div className="view-all-header">

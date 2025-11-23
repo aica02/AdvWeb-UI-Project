@@ -20,6 +20,7 @@ function Cart() {
 
   const [notification, setNotification] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
 
   const getImageUrl = (img, fallback = `${API}/uploads/default.png`) => {
     if (!img) return fallback;
@@ -32,8 +33,9 @@ function Cart() {
   };
 
   // --- Trigger notification ---
-  const triggerNotification = (msg) => {
+  const triggerNotification = (msg, type = "positive") => {
   setNotification(msg);
+  setNotificationType(type);
   setShowNotification(true);
   setTimeout(() => setShowNotification(false), 3000);
   };
@@ -113,7 +115,7 @@ function Cart() {
       setSelectedIds(updatedSelected);
 
       // notification
-      triggerNotification("You removed an item from your cart!");
+      triggerNotification("You removed an item from your cart!", "negative");
 
       recalcTotal(updatedItems, updatedSelected);
     } catch (err) {
@@ -160,7 +162,13 @@ function Cart() {
 
   return (
     <>
-    {showNotification && <div className="top-popup negative">{notification}</div>}
+    {/* Notification toast */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
+
     <div className="cart-page-wrapper">
       <div className="cart-page">
         <nav className="breadcrumb">

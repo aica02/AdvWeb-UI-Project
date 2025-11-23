@@ -18,9 +18,21 @@ const ViewAll = () => {
   const [onSale, setOnSale] = useState("");  // added onSale state here
   const [sortOption, setSortOption] = useState("default");
 
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
+
+  // --- Trigger notification ---
+  const triggerNotification = (msg, type = "positive") => {
+  setNotification(msg);
+  setNotificationType(type);
+  setShowNotification(true);
+  setTimeout(() => setShowNotification(false), 3000);
+  };
 
  const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
@@ -109,19 +121,21 @@ const ViewAll = () => {
   }, [books, selectedCategories, selectedLanguages, selectedAges, onSale, sortOption]);
 
   const toggleLike = async (bookId) => {
-    if (!token) return alert("Please log in to add items to wishlist");
+    if (!token) return triggerNotification("Please log in to manage your wishlist.", "negative");
     try {
       const inWishlist = likedBooks.includes(bookId);
       if (inWishlist) {
         await axios.delete(`${API}/api/wishlist/remove/${bookId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        triggerNotification("Book removed from your wishlist.", "negative");
       } else {
         await axios.post(
           `${API}/api/wishlist/add`,
           { bookId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        triggerNotification("Book added to your wishlist!", "positive");
       }
       setLikedBooks((prev) =>
         prev.includes(bookId)
@@ -134,7 +148,7 @@ const ViewAll = () => {
   };
 
   const addToCart = async (book) => {
-    if (!token) return alert("Please log in to add books to your cart.");
+    if (!token) return triggerNotification("Please log in to add items to your cart.", "negative");
     if ((book.stock ?? 0) <= 0) return;
 
     try {
@@ -151,7 +165,7 @@ const ViewAll = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       window.dispatchEvent(new Event("cartUpdated"));
-      alert(`${book.title} has been added to your cart!`);
+      triggerNotification(`${book.title} has been added to your cart!`, "positive");
     } catch (err) {
       console.error(err);
       alert("Failed to add to cart.");
@@ -169,6 +183,14 @@ const ViewAll = () => {
 
   return (
     <>
+
+    {/* Notification toast */}
+      {showNotification && (
+        <div className={`top-popup ${notificationType}`}>
+          {notification}
+        </div>
+      )}
+      
       <nav className="breadcrumb">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
