@@ -15,7 +15,7 @@ const Wishlists = () => {
 
  const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
-    return `../public/uploads/${filename}`;
+    return `/uploads/${filename}`;
   };
 
   const fetchWishlist = async () => {

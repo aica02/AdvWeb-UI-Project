@@ -44,7 +44,7 @@ export default function Orders() {
                 (item.book && (item.book.coverImage || item.book.image))
                   ? item.image?.startsWith("http")
                     ? item.image
-                    : `../public/uploads/${item.image || item.book.coverImage || item.book.image}`
+                    : `/uploads/${item.image || item.book.coverImage || item.book.image}`
                   : `${API}/uploads/default.png`,
             })),
           }))

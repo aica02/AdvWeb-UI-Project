@@ -36,7 +36,7 @@ const ViewAll = () => {
 
  const getImageUrl = (filename) => {
     if (!filename) return `../public/uploads/art1.png`;
-    return `../public/uploads/${filename}`;
+    return `/uploads/${filename}`;
   };
   useEffect(() => {
     const params = new URLSearchParams(location.search);
