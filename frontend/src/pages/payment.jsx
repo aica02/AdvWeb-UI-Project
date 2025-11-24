@@ -105,25 +105,36 @@ function Payment() {
 
   // Apply Coupon
   const handleApplyCoupon = async () => {
-    if (!couponCode) return;
-    try {
-      const res = await axios.post(
-        `${API}/apply-coupon`,
-        { code: couponCode },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        setDiscount(res.data.discount);
-        alert(`Coupon applied! Discount: ₱${res.data.discount}`);
-      } else {
-        setDiscount(0);
-        alert("Invalid coupon code.");
-      }
-    } catch (err) {
-      console.error("Error applying coupon:", err);
-      alert("Failed to apply coupon.");
+  if (!couponCode) return;
+
+  // LOCAL COUPON: BookWise = ₱100 off
+  if (couponCode.trim().toLowerCase() === "bookwise".toLowerCase()) {
+    setDiscount(100);
+    alert("Coupon applied! ₱100 discount.");
+    return;
+  }
+
+  // Otherwise, call backend for other coupons
+  try {
+    const res = await axios.post(
+      `${API}/apply-coupon`,
+      { code: couponCode },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (res.data.success) {
+      setDiscount(res.data.discount);
+      alert(`Coupon applied! Discount: ₱${res.data.discount}`);
+    } else {
+      setDiscount(0);
+      alert("Invalid coupon code.");
     }
-  };
+  } catch (err) {
+    console.error("Error applying coupon:", err);
+    alert("Failed to apply coupon.");
+  }
+};
+
 
   const handleCheckout = async () => {
     if (!paymentMethod) return alert("Select a payment method");
