@@ -51,26 +51,30 @@ const UserAccounts = () => {
   }, []);
 
   const handleDeleteConfirmed = async () => {
-    if (!userToDelete) return;
+  if (!userToDelete) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API}/api/admin/useraccountsdelete/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  try {
+    const token = localStorage.getItem("token");
 
-      if (response.ok) {
-        setUsers((prev) => prev.filter((u) => u._id !== userToDelete));
-      }
+    const response = await fetch(`${API}/api/admin/useraccountsdelete/${userToDelete}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      setUsers((prev) => prev.filter((u) => u._id !== userToDelete));
       triggerNotification("User deleted successfully", "positive");
-    } catch (err) {
-      console.error("Delete failed:", err);
+    } else {
+      triggerNotification("Failed to delete user", "negative");
     }
+  } catch (err) {
+    console.error("Delete failed:", err);
+    triggerNotification("An error occurred", "negative");
+  }
 
-    setShowDeleteModal(false);
-    setUserToDelete(null);
-  };
+  setShowDeleteModal(false);
+  setUserToDelete(null);
+};
 
   if (loading) return <div className="loading">Loading users...</div>;
   if (error) return <p>Error: {error}</p>;
