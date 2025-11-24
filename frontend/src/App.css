@@ -833,6 +833,7 @@ body{
 
   .header-logo {
     margin-left: 20px;
+    margin-bottom: 20px;
   }
   .searchbar-profile {
     display: flex;
@@ -907,6 +908,40 @@ body{
   }
   .email-signup .signup-form {
     flex-wrap: wrap;
+  }
+
+  .footer .modal-overlay {
+    width: 100% ;
+    height: 100% ;
+    left: 0;
+    top: 0;
+    padding: 0;
+    flex-direction: column;
+  }
+
+  .header.privacy-content {
+    width: 90vw; 
+    height: auto;
+    min-height: 45vh;
+    border-radius: 8px;
+    align-items: flex-start;
+  }
+
+  .header .privacy-content p {
+    font-size: 0.85rem;
+  }
+
+  .header.modal-button {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  .header.modal-close-button {
+    align-self: flex-end;
   }
 }
 

@@ -72,7 +72,7 @@ const UserAccounts = () => {
     setUserToDelete(null);
   };
 
-  if (loading) return <p>Loading users...</p>;
+  if (loading) return <div className="loading">Loading users...</div>;
   if (error) return <p>Error: {error}</p>;
 
   return (

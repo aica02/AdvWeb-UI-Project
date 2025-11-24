@@ -27,27 +27,27 @@ const AdminAccount = () => {
         <div className="logo">BW</div>
         <nav className="nav-links">
            <button className={`nav-item ${isActive("/admin/dashboard") ? "active" : ""}`} onClick={() => navigate("/admin/dashboard")}>
-               <MdDashboard />
+               <MdDashboard className="navIcons"/>
             </button>
 
           <button className={`nav-item ${isActive("/admin/addbook") ? "active" : ""}`} onClick={() => navigate("/admin/addbook")}>
-            <FaBookMedical/>
+            <FaBookMedical className="navIcons"/>
           </button>
 
           <button className={`nav-item ${isActive("/admin/editdeletebook") ? "active" : ""}`} onClick={() => navigate("/admin/editdeletebook")}>
-            <FaBookOpen />
+            <FaBookOpen className="navIcons"/>
           </button>
 
           <button className={`nav-item ${isActive("/admin/useraccountsdelete") ? "active" : ""}`} onClick={() => navigate("/admin/useraccountsdelete")}>
-            <FaUserMinus />
+            <FaUserMinus className="navIcons"/>
           </button>
 
           <button className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`} onClick={() => navigate("/admin/orders")}>
-            <FaBox />
+            <FaBox className="navIcons"/>
           </button>
 
           <button className={`nav-item ${isActive("/admin/logs") ? "active" : ""}`} onClick={() => navigate("/admin/logs")}>
-            <FaClock />
+            <FaClock className="navIcons"/>
           </button>
         </nav>
       </aside>
@@ -64,13 +64,13 @@ const AdminAccount = () => {
                 <span className="role">Admin</span>
               </div>
               <div className="user-avatar">
-                <FaUser />
+                <FaUser/>
               </div>
             </div>
             <hr className="wall" />
 
              <button className="logout-btn" onClick={() => setShowModal(true)} aria-label="Logout" >
-              <FaSignOutAlt />
+              <FaSignOutAlt className="navIcons"/>
             </button>
           </div>
         </header>
