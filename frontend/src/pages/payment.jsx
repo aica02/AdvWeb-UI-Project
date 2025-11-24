@@ -13,7 +13,6 @@ function Payment() {
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [cardInfo, setCardInfo] = useState({ cardNumber: "", expiry: "", cvc: "" });
-  const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -98,33 +97,7 @@ function Payment() {
   const isShippingComplete = shippingFields.every((f) => f && f.trim() !== "");
   const handleEditShipping = () => navigate("/profile/edit");
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode) return;
-
-    if (couponCode.trim().toLowerCase() === "bookwise") {
-      setDiscount(100);
-      alert("Coupon applied! ₱100 discount.");
-      return;
-    }
-
-    try {
-      const res = await axios.post(
-        `${API}/apply-coupon`,
-        { code: couponCode },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        setDiscount(res.data.discount);
-        alert(`Coupon applied! Discount: ₱${res.data.discount}`);
-      } else {
-        setDiscount(0);
-        alert("Invalid coupon code.");
-      }
-    } catch (err) {
-      console.error("Error applying coupon:", err);
-      alert("Failed to apply coupon.");
-    }
-  };
+  
 
   const handleCheckout = async () => {
     if (!paymentMethod) return alert("Select a payment method");
@@ -305,20 +278,6 @@ function Payment() {
               </article>
             ))
           )}
-
-          {/* COUPON */}
-          <div className="coupon-section">
-            <input
-              type="text"
-              placeholder="Coupon Code"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              className="coupon-input"
-            />
-            <button onClick={handleApplyCoupon} className="coupon-button">
-              Apply
-            </button>
-          </div>
 
           {/* PRICE DETAILS */}
           <div className="pricing-details">
