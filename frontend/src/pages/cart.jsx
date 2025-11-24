@@ -230,7 +230,7 @@ function Cart() {
                       <button className="delete-btn" onClick={() => removeItem(item.bookId)}>
                         <RiDeleteBin6Line />
                       </button>
-                      <div className="item-price">₱ {(item.price * item.quantity).toFixed(2)}</div>
+                      <div className="item-price">₱ {(item.price ).toFixed(2)}</div>
                     </div>
                   </article>
                 ))
