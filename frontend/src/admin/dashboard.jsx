@@ -407,7 +407,7 @@ const DashboardSection = () => {
             </div>
           </div>
 
-          <div className="stat-card orange">
+          {/* <div className="stat-card orange">
             <div className="icon-circle">
               <FaSyncAlt />
             </div>
@@ -415,7 +415,7 @@ const DashboardSection = () => {
               <h3>{stats.websiteVisits}</h3>
               <p>Website Visits (today)</p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Buttons */}
