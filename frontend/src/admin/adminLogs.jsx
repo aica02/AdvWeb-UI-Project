@@ -29,7 +29,7 @@ const AdminLogs = () => {
   return (
     <section className="orders-overview">
       <h2>Activity Logs</h2>
-      <p style={{marginLeft: "20px",}}>  Recent administrative actions and time stamps.</p>
+      <p>  Recent administrative actions and time stamps.</p>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -46,7 +46,7 @@ const AdminLogs = () => {
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center", padding: 20 }}>
+                <td>
                   No logs found
                 </td>
               </tr>
@@ -65,7 +65,7 @@ const AdminLogs = () => {
                   <td>{new Date(l.createdAt).toLocaleString()}</td>
                   <td>{actorName}</td>
                   <td>{l.action}</td>
-                  <td style={{ maxWidth: 300 }}>
+                  <td className='MetaColumn'>
                     {l.meta ? JSON.stringify(l.meta) : ""}
                   </td>
                 </tr>

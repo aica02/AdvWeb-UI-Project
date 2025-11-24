@@ -75,7 +75,6 @@
 }
 
 /* notification */
-
 .top-popup.negative, .top-popup.positive {
   position: fixed;
   top: 20px;

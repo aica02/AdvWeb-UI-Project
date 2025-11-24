@@ -691,55 +691,6 @@
   justify-content: center;
 }
 
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .dashboard-header {
-        flex-direction: column-reverse;
-        gap: 1rem;
-    }
-
-    .dashboard-header .admin-search-bar {
-        width: 100%;
-    }
-     
-    .dashboard-header .user-info-icon{
-        flex-direction: row-reverse;
-        gap: 0;
-    }
-
-    .dashboard-header .user-info {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .dashboard-overview .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .dashboard-sidebar {
-        width: 60px;
-    }
-
-    .book-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .book-table th,
-    .book-table td {
-        font-size: 0.85rem;
-        padding: 0.7rem;
-    }
-
-    .delete-btn {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.85rem;
-        border-radius: 3px;
-    }
-}
-
 /* Admin Orders Page Styles */
 .orders-overview {
   padding: 2rem;
@@ -826,11 +777,11 @@
 }
 
 .orders-table tbody tr {
-  transition: background 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .orders-table tbody tr:hover {
-  background: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
 .orders-table tbody tr:last-child td {
@@ -882,6 +833,54 @@
   font-size: 1rem;
 }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-header {
+      flex-direction: column-reverse;
+      gap: 1rem;
+  }
+
+  .dashboard-header .admin-search-bar {
+      width: 100%;
+  }
+    
+  .dashboard-header .user-info-icon{
+      flex-direction: row-reverse;
+      gap: 0;
+  }
+
+  .dashboard-header .user-info {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+
+  .dashboard-overview .stats-grid {
+      grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+      width: 60px;
+  }
+
+  .book-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+  }
+
+  .book-table th,
+  .book-table td {
+      font-size: 0.85rem;
+      padding: 0.7rem;
+  }
+
+  .delete-btn {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+      border-radius: 3px;
+  }
+}
+
 @media (max-width: 768px) {
   .filters-container {
     grid-template-columns: 1fr;
@@ -901,5 +900,71 @@
   .status-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.7rem;
+  }
+  .dashboard-sidebar .nav-item {
+    font-size: 2rem;
+    padding: 5px;
+    margin-bottom: 10px;
+  }
+  .dashboard-sidebar .navIcons, .header-right .navIcons {
+    width: 20px;
+    height: 20px;
+  }
+
+  .add-books-container .add-book-form .book-form{
+    flex-direction: column;
+  }
+
+
+  .book-collection-container .book-header{
+    flex-direction: row;
+    align-items: center;
+  }
+  .book-collection-container .book-table th,
+  .book-collection-container .book-table td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .book-collection-container .book-table .edit-btn,
+  .book-collection-container .book-table .delete-btn {
+    padding: 0.25rem 1rem;
+    font-size: 0.75rem;
+    margin-bottom: 3px;
+    border-radius: 2px;
+  }
+  .book-collection-container .book-table .edit-btn{
+    padding: 0.20rem 1.3rem;
+  }
+
+  .admin-section{
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .admin-section .table-container .orders-table th,
+  .admin-section .table-container .orders-table td {
+    font-size: .75rem;
+    padding: 0.5rem;
+  }
+
+  .orders-overview{
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .orders-overview .table-container .orders-table th,
+  .orders-overview .table-container .orders-table td {
+    font-size: .75rem;
+    padding: 0.5rem;
+  }
+  .orders-overview .MetaColumn {
+    max-width: 160px;
+    width: 160px;   
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
