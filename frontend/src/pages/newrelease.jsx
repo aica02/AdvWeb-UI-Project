@@ -318,8 +318,8 @@ const NewReleaseBooks = ({ embedded = false }) => {
                   onChange={(e) => setSortOption(e.target.value)}
                 >
                   <option value="">Default</option>
-                  <option value="highest-price">Highest Price</option>
-                  <option value="lowest-price">Lowest Price</option>
+                  <option value="highest-price">Highest → Lowest Price</option>
+                  <option value="lowest-price">Lowest → Highest Price</option>
                 </select>
               </div>
             </div>

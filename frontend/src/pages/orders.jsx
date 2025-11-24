@@ -18,8 +18,6 @@ export default function Orders() {
   const [receiveCountdown, setReceiveCountdown] = useState({});
   const [cancelCountdown, setCancelCountdown] = useState({});
 
-  const SHIPPING_FEE = 100;
-
   const fetchOrders = async () => {
     if (!token) {
       setError("You are not logged in.");
@@ -48,6 +46,9 @@ export default function Orders() {
                     : `/uploads/${item.image || item.book.coverImage || item.book.image}`
                   : `${API}/uploads/default.png`,
             })),
+            // read discount and shipping from localStorage
+            couponDiscount: parseFloat(localStorage.getItem(`order-${order._id}-discount`)) || 0,
+            shippingFee: parseFloat(localStorage.getItem(`order-${order._id}-shipping`)) || 100,
           }))
         : [];
 
@@ -172,146 +173,105 @@ export default function Orders() {
               {orders.length === 0 ? (
                 <div style={{ textAlign: "center", color: "#888" }}>No orders found.</div>
               ) : (
-                orders.map((order) => {
-                  const subtotal = order.books.reduce(
-                    (acc, item) => acc + item.price * item.quantity,
-                    0
-                  );
+                orders.map((order) => (
+                  <div key={order._id} className="order-item">
+                    <div className="order-header">
+                      <h3>Order #{order._id}</h3>
+                      <p>Status: <span style={{
+                        color: order.status === "Complete" ? "green" : order.status === "Cancelled" ? "red" : "orange",
+                        fontWeight: "bold",
+                      }}>{order.status || "Pending"}</span></p>
+                    </div>
 
-                  const discount = Math.max(0, subtotal + SHIPPING_FEE - order.totalAmount);
+                    {order.books.map((item, idx) => (
+                      <div key={`${order._id}-${idx}`} className="order-item-detail">
+                        <div className="order-item-media">
+                          <img src={item.image} alt={item.title} loading="lazy" style={{ maxWidth: "100%", height: "auto" }} />
+                        </div>
 
-                  return (
-                    <div key={order._id} className="order-item">
-                      <div className="order-header">
-                        <h3>Order #{order._id}</h3>
+                        <div className="order-item-info">
+                          <div className="order-item-title"><strong>{item.title}</strong></div>
+                          <div className="order-item-author">{item.author}</div>
+                          <div className="order-item-qty">Quantity: {item.quantity}</div>
+                        </div>
 
-                        <p>
-                          Status:{" "}
-                          <span
+                        <div className="order-item-price">
+                          ₱{formatCurrency(item.price * item.quantity)}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Order Summary */}
+                    <div className="order-summary-details" style={{ marginTop: "10px", borderTop: "1px solid #ccc", paddingTop: "10px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span>Subtotal</span>
+                        <span>₱{formatCurrency(order.books.reduce((acc, item) => acc + item.price * item.quantity, 0))}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span>Shipping</span>
+                        <span>₱{formatCurrency(order.shippingFee)}</span>
+                      </div>
+                      {order.couponDiscount > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", color: "green" }}>
+                          <span>Discount</span>
+                          <span>-₱{formatCurrency(order.couponDiscount)}</span>
+                        </div>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
+                        <span>Total</span>
+                        <span>₱{formatCurrency(order.books.reduce((acc, item) => acc + item.price * item.quantity, 0) + order.shippingFee - order.couponDiscount)}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    {order.status === "Pending" && !receivedOrders[order._id] && (
+                      <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #ddd" }}>
+                        <div style={{ display: "flex", gap: 12 }}>
+                          <button
+                            onClick={() => handleReceiveOrder(order._id)}
+                            disabled={!enabledReceiveButtons[order._id]}
                             style={{
-                              color:
-                                order.status === "Complete"
-                                  ? "green"
-                                  : order.status === "Cancelled"
-                                  ? "red"
-                                  : "orange",
-                              fontWeight: "bold",
+                              padding: "10px 20px",
+                              backgroundColor: enabledReceiveButtons[order._id] ? "#007bff" : "#ccc",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: enabledReceiveButtons[order._id] ? "pointer" : "not-allowed",
+                              fontSize: "14px",
+                              fontWeight: "600",
                             }}
                           >
-                            {order.status || "Pending"}
-                          </span>
-                        </p>
-                      </div>
+                            {enabledReceiveButtons[order._id] ? "Receive Order" : `Enable in ${receiveCountdown[order._id]}s`}
+                          </button>
 
-                      {/* DISCOUNT ABOVE PRICE */}
-                      {discount > 0 && (
-                        <p style={{ color: "green", fontWeight: "bold", marginBottom: "10px" }}>
-                          Discount Applied: -₱{formatCurrency(discount)}
-                        </p>
-                      )}
-
-                      {order.books.map((item, idx) => (
-                        <div key={`${order._id}-${idx}`} className="order-item-detail">
-                          <div className="order-item-media">
-                            <img
-                              src={item.image}
-                              alt={item.title}
-                              loading="lazy"
-                              style={{ maxWidth: "100%", height: "auto" }}
-                            />
-                          </div>
-
-                          <div className="order-item-info">
-                            <div className="order-item-title">
-                              <strong>{item.title}</strong>
-                            </div>
-                            <div className="order-item-author">{item.author}</div>
-                            <div className="order-item-qty">Quantity: {item.quantity}</div>
-                          </div>
-
-                          {/* PRICE WITHOUT EXTRA CALCULATION */}
-                          <div className="order-item-price">
-                            ₱{formatCurrency(item.price * item.quantity)}
-                          </div>
-                        </div>
-                      ))}
-
-                      {/* SUMMARY */}
-                      <div style={{ marginTop: "10px", fontWeight: "600" }}>
-                        <p>Shipping Fee: ₱{formatCurrency(SHIPPING_FEE)}</p>
-                        <p>Total Paid: ₱{formatCurrency(order.totalAmount)}</p>
-                      </div>
-
-                      {/* ACTION BUTTONS */}
-                      {order.status === "Pending" && !receivedOrders[order._id] && (
-                        <div
-                          style={{
-                            marginTop: "15px",
-                            paddingTop: "15px",
-                            borderTop: "1px solid #ddd",
-                          }}
-                        >
-                          <div style={{ display: "flex", gap: 12 }}>
+                          {enabledCancelButtons[order._id] && (
                             <button
-                              onClick={() => handleReceiveOrder(order._id)}
-                              disabled={!enabledReceiveButtons[order._id]}
+                              onClick={() => handleCancelOrder(order._id)}
                               style={{
                                 padding: "10px 20px",
-                                backgroundColor: enabledReceiveButtons[order._id]
-                                  ? "#007bff"
-                                  : "#ccc",
+                                backgroundColor: "#dc3545",
                                 color: "white",
                                 border: "none",
                                 borderRadius: "4px",
-                                cursor: enabledReceiveButtons[order._id]
-                                  ? "pointer"
-                                  : "not-allowed",
+                                cursor: "pointer",
                                 fontSize: "14px",
                                 fontWeight: "600",
                               }}
                             >
-                              {enabledReceiveButtons[order._id]
-                                ? "Receive Order"
-                                : `Enable in ${receiveCountdown[order._id]}s`}
+                              Cancel Order ({cancelCountdown[order._id]}s)
                             </button>
-
-                            {enabledCancelButtons[order._id] && (
-                              <button
-                                onClick={() => handleCancelOrder(order._id)}
-                                style={{
-                                  padding: "10px 20px",
-                                  backgroundColor: "#dc3545",
-                                  color: "white",
-                                  border: "none",
-                                  borderRadius: "4px",
-                                  cursor: "pointer",
-                                  fontSize: "14px",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                Cancel Order ({cancelCountdown[order._id]}s)
-                              </button>
-                            )}
-                          </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {(receivedOrders[order._id] || order.status === "Complete") && (
-                        <div
-                          style={{
-                            marginTop: "15px",
-                            paddingTop: "15px",
-                            borderTop: "1px solid #ddd",
-                            color: "green",
-                            fontWeight: "600",
-                          }}
-                        >
-                          ✓ Order Received
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
+                    {(receivedOrders[order._id] || order.status === "Complete") && (
+                      <div style={{ marginTop: "15px", paddingTop: "15px", borderTop: "1px solid #ddd", color: "green", fontWeight: "600" }}>
+                        ✓ Order Received
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
             </div>
           </div>
