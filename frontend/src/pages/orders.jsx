@@ -219,8 +219,11 @@ export default function Orders() {
                         </div>
 
                         <div className="order-item-price">
-                          ₱{formatCurrency(item.price * item.quantity + 100)}
+                          ₱{formatCurrency(
+                            (item.price * item.quantity) - (order.couponDiscount || 0)
+                          )}
                         </div>
+
                       </div>
                     ))}
 
