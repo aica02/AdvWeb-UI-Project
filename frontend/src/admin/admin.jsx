@@ -5,7 +5,6 @@ import { useState } from "react";
 import "../css/admin.css";
 import "../css/modals.css";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/bookwise-logoname.png";
 
 const AdminAccount = () => {
   const navigate = useNavigate();
