@@ -139,7 +139,7 @@ const AuthPage = () => {
             </div>
           ) : (
             <div className="form-container signup-form">
-              <h2>Logo</h2>
+              <h2>Sign Up</h2>
               <p>Sign Up to use all feature’s of the Application</p>
 
               <form onSubmit={handleSignup}>

@@ -18,6 +18,7 @@ export default function Orders() {
   const [receiveCountdown, setReceiveCountdown] = useState({});
   const [cancelCountdown, setCancelCountdown] = useState({});
 
+  const SHIPPING_FEE = 100;
 
   const fetchOrders = async () => {
     if (!token) {
@@ -92,12 +93,10 @@ export default function Orders() {
         const created = new Date(order.createdAt).getTime();
         const diff = now - created;
 
-        // Receive (60s)
         const receiveRemaining = Math.max(0, 60000 - diff);
         receiveMap[order._id] = receiveRemaining === 0;
         receiveTime[order._id] = Math.ceil(receiveRemaining / 1000);
 
-        // Cancel (10s)
         const cancelRemaining = Math.max(0, 10000 - diff);
         cancelMap[order._id] = cancelRemaining > 0;
         cancelTime[order._id] = Math.ceil(cancelRemaining / 1000);
@@ -112,7 +111,6 @@ export default function Orders() {
     return () => clearInterval(interval);
   }, [orders]);
 
-  
   const handleReceiveOrder = async (orderId) => {
     try {
       await axios.put(`${API}/api/cart/orders/receive/${orderId}`, {}, {
@@ -146,24 +144,23 @@ export default function Orders() {
 
   const formatCurrency = (amount) => amount.toFixed(2);
 
-
   if (loading) return <div className="loading">Loading orders...</div>;
 
   return (
     <>
       <nav className="breadcrumb">
-      <Link to="/" className="breadcrumb-link">Home</Link>
-      <span className="breadcrumb-separator">/</span>
-      <span className="breadcrumb-link active">My Order</span>
-    </nav>
-    
-    <div className="profile-container">
-      <div className="profile-sidebar">
-        <div className="info-profile-menu">
-          <Link to="/profile">Account Information</Link>
-          <Link to="/orders">My Orders</Link>
+        <Link to="/" className="breadcrumb-link">Home</Link>
+        <span className="breadcrumb-separator">/</span>
+        <span className="breadcrumb-link active">My Order</span>
+      </nav>
+
+      <div className="profile-container">
+        <div className="profile-sidebar">
+          <div className="info-profile-menu">
+            <Link to="/profile">Account Information</Link>
+            <Link to="/orders">My Orders</Link>
+          </div>
         </div>
-      </div>
 
         <div className="profile-content">
           <div className="profile-card">
@@ -175,129 +172,146 @@ export default function Orders() {
               {orders.length === 0 ? (
                 <div style={{ textAlign: "center", color: "#888" }}>No orders found.</div>
               ) : (
-                orders.map((order) => (
-                  <div key={order._id} className="order-item">
-                    <div className="order-header">
-                      <h3>Order #{order._id}</h3>
+                orders.map((order) => {
+                  const subtotal = order.books.reduce(
+                    (acc, item) => acc + item.price * item.quantity,
+                    0
+                  );
 
-                      <p>
-                        Status:{" "}
-                        <span
-                          style={{
-                            color:
-                              order.status === "Complete"
-                                ? "green"
-                                : order.status === "Cancelled"
-                                ? "red"
-                                : "orange",
-                            fontWeight: "bold",
-                         }}
-                        >
-                          {order.status || "Pending"}
-                        </span>
+                  const discount = Math.max(0, subtotal + SHIPPING_FEE - order.totalAmount);
 
-                      </p>
-                    </div>
+                  return (
+                    <div key={order._id} className="order-item">
+                      <div className="order-header">
+                        <h3>Order #{order._id}</h3>
 
-                    {order.books.map((item, idx) => (
-                      <div key={`${order._id}-${idx}`} className="order-item-detail">
-                        <div className="order-item-media">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            loading="lazy"
-                            style={{ maxWidth: "100%", height: "auto" }}
-                          />
-                        </div>
-
-                        <div className="order-item-info">
-                          <div className="order-item-title">
-                            <strong>{item.title}</strong>
-                          </div>
-                          <div className="order-item-author">{item.author}</div>
-                          <div className="order-item-qty">Quantity: {item.quantity}</div>
-                        </div>
-
-                        <div className="order-item-price">
-                          ₱{formatCurrency(
-                            (item.price * item.quantity) - (order.couponDiscount || 0)
-                          )}
-                        </div>
-
-                      </div>
-                    ))}
-
-                    {/* ACTION BUTTONS */}
-                    {order.status === "Pending" && !receivedOrders[order._id] && (
-                      <div
-                        style={{
-                          marginTop: "15px",
-                          paddingTop: "15px",
-                          borderTop: "1px solid #ddd",
-                        }}
-                      >
-                        <div style={{ display: "flex", gap: 12 }}>
-                          {/* RECEIVE BUTTON */}
-                          <button
-                            onClick={() => handleReceiveOrder(order._id)}
-                            disabled={!enabledReceiveButtons[order._id]}
+                        <p>
+                          Status:{" "}
+                          <span
                             style={{
-                              padding: "10px 20px",
-                              backgroundColor: enabledReceiveButtons[order._id]
-                                ? "#007bff"
-                                : "#ccc",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: enabledReceiveButtons[order._id]
-                                ? "pointer"
-                                : "not-allowed",
-                              fontSize: "14px",
-                              fontWeight: "600",
+                              color:
+                                order.status === "Complete"
+                                  ? "green"
+                                  : order.status === "Cancelled"
+                                  ? "red"
+                                  : "orange",
+                              fontWeight: "bold",
                             }}
                           >
-                            {enabledReceiveButtons[order._id]
-                              ? "Receive Order"
-                              : `Enable in ${receiveCountdown[order._id]}s`}
-                          </button>
+                            {order.status || "Pending"}
+                          </span>
+                        </p>
+                      </div>
 
-                          {/* CANCEL BUTTON — disappears when timer ends */}
-                          {enabledCancelButtons[order._id] && (
+                      {/* DISCOUNT ABOVE PRICE */}
+                      {discount > 0 && (
+                        <p style={{ color: "green", fontWeight: "bold", marginBottom: "10px" }}>
+                          Discount Applied: -₱{formatCurrency(discount)}
+                        </p>
+                      )}
+
+                      {order.books.map((item, idx) => (
+                        <div key={`${order._id}-${idx}`} className="order-item-detail">
+                          <div className="order-item-media">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              loading="lazy"
+                              style={{ maxWidth: "100%", height: "auto" }}
+                            />
+                          </div>
+
+                          <div className="order-item-info">
+                            <div className="order-item-title">
+                              <strong>{item.title}</strong>
+                            </div>
+                            <div className="order-item-author">{item.author}</div>
+                            <div className="order-item-qty">Quantity: {item.quantity}</div>
+                          </div>
+
+                          {/* PRICE WITHOUT EXTRA CALCULATION */}
+                          <div className="order-item-price">
+                            ₱{formatCurrency(item.price * item.quantity)}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* SUMMARY */}
+                      <div style={{ marginTop: "10px", fontWeight: "600" }}>
+                        <p>Shipping Fee: ₱{formatCurrency(SHIPPING_FEE)}</p>
+                        <p>Total Paid: ₱{formatCurrency(order.totalAmount)}</p>
+                      </div>
+
+                      {/* ACTION BUTTONS */}
+                      {order.status === "Pending" && !receivedOrders[order._id] && (
+                        <div
+                          style={{
+                            marginTop: "15px",
+                            paddingTop: "15px",
+                            borderTop: "1px solid #ddd",
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: 12 }}>
                             <button
-                              onClick={() => handleCancelOrder(order._id)}
+                              onClick={() => handleReceiveOrder(order._id)}
+                              disabled={!enabledReceiveButtons[order._id]}
                               style={{
                                 padding: "10px 20px",
-                                backgroundColor: "#dc3545",
+                                backgroundColor: enabledReceiveButtons[order._id]
+                                  ? "#007bff"
+                                  : "#ccc",
                                 color: "white",
                                 border: "none",
                                 borderRadius: "4px",
-                                cursor: "pointer",
+                                cursor: enabledReceiveButtons[order._id]
+                                  ? "pointer"
+                                  : "not-allowed",
                                 fontSize: "14px",
                                 fontWeight: "600",
                               }}
                             >
-                              Cancel Order ({cancelCountdown[order._id]}s)
+                              {enabledReceiveButtons[order._id]
+                                ? "Receive Order"
+                                : `Enable in ${receiveCountdown[order._id]}s`}
                             </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
 
-                    {(receivedOrders[order._id] || order.status === "Complete") && (
-                      <div
-                        style={{
-                          marginTop: "15px",
-                          paddingTop: "15px",
-                          borderTop: "1px solid #ddd",
-                          color: "green",
-                          fontWeight: "600",
-                        }}
-                      >
-                        ✓ Order Received
-                      </div>
-                    )}
-                  </div>
-                ))
+                            {enabledCancelButtons[order._id] && (
+                              <button
+                                onClick={() => handleCancelOrder(order._id)}
+                                style={{
+                                  padding: "10px 20px",
+                                  backgroundColor: "#dc3545",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                Cancel Order ({cancelCountdown[order._id]}s)
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {(receivedOrders[order._id] || order.status === "Complete") && (
+                        <div
+                          style={{
+                            marginTop: "15px",
+                            paddingTop: "15px",
+                            borderTop: "1px solid #ddd",
+                            color: "green",
+                            fontWeight: "600",
+                          }}
+                        >
+                          ✓ Order Received
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
