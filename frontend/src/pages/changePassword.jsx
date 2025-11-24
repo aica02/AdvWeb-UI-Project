@@ -88,7 +88,6 @@ export default function ChangePassword() {
               <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} required />
             </div>
             <button className="profile-btn">Save Changes</button>
-            
           </form>
         </div>
       </div>

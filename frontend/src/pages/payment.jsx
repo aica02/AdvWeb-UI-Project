@@ -4,6 +4,7 @@ import { IoCashOutline } from "react-icons/io5";
 import { FaCreditCard } from "react-icons/fa";
 import { BsBank } from "react-icons/bs";
 import "../css/PaymentPage.css";
+import "../css/modals.css";
 import { useNavigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_API_URL;
@@ -17,6 +18,17 @@ function Payment() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  
+  const [notification, setNotification] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState("positive");
+
+  const triggerNotification = (msg, type = "positive") => {
+    setNotification(msg);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
 
   const token = localStorage.getItem("token");
   const shipping = 100;
@@ -67,15 +79,15 @@ function Payment() {
     const cvcRegex = /^\d{3,4}$/;
 
     if (!cardRegex.test(cardNumber.replace(/\s+/g, ""))) {
-      setErrorMessage("Invalid card number. Must be 16 digits.");
+      triggerNotification("Invalid card number. Must be 16 digits.", "negative");
       return false;
     }
     if (!expiryRegex.test(expiry)) {
-      setErrorMessage("Invalid expiry date. Format MM/YY.");
+      triggerNotification("Invalid expiry date. Use MM/YY format.", "negative");
       return false;
     }
     if (!cvcRegex.test(cvc)) {
-      setErrorMessage("Invalid CVC. Must be 3 or 4 digits.");
+      triggerNotification("Invalid CVC. Must be 3 or 4 digits.", "negative");
       return false;
     }
     setErrorMessage("");
@@ -100,10 +112,10 @@ function Payment() {
   
 
   const handleCheckout = async () => {
-    if (!paymentMethod) return alert("Select a payment method");
+    if (!paymentMethod) return triggerNotification("Please select a payment method.", "negative");
     if (paymentMethod === "card" && !validateCard()) return;
-    if (!isShippingComplete) return alert("Please complete your shipping details.");
-    if (cartItems.length === 0) return alert("No items selected for checkout.");
+    if (!isShippingComplete) return triggerNotification("Please complete your shipping details.", "negative");
+    if (cartItems.length === 0) return triggerNotification("No items selected for checkout.", "negative");
 
     try {
       const selectedBookIds = cartItems.map((i) => i.bookId || i.id);
@@ -130,16 +142,19 @@ function Payment() {
           JSON.stringify({ discount, shipping })
         );
 
-        alert(`Order placed successfully! Your order ID: ${data.order._id}`);
+        
+        triggerNotification("Order placed successfully!", "positive");
         window.dispatchEvent(new Event("cartUpdated"));
         localStorage.removeItem("selectedCartItems");
-        navigate("/orders");
+        setTimeout(() => {
+          navigate("/orders");
+        }, 2000); 
       } else {
-        alert("Failed to place order. Try again.");
+        triggerNotification("Checkout failed. Please try again.", "negative");
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert(err.response?.data?.message || "Checkout failed");
+      triggerNotification("Checkout failed. Please try again.", "negative");
     }
   };
 
@@ -152,6 +167,14 @@ function Payment() {
   if (loading) return <p>Loading...</p>;
 
   return (
+    <>
+    {/* notification */}
+    {showNotification && (
+      <div className={`top-popup ${notificationType}`}>
+        {notification}
+      </div>
+    )}
+    
     <div className="payment-page">
       <div className="content-wrapper">
         {/* LEFT SIDE - Shipping & Payment */}
@@ -314,6 +337,7 @@ function Payment() {
         </aside>
       </div>
     </div>
+  </>
   );
 }
 
