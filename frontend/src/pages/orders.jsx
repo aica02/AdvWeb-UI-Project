@@ -98,7 +98,7 @@ export default function Orders() {
         receiveMap[order._id] = receiveRemaining === 0;
         receiveTime[order._id] = Math.ceil(receiveRemaining / 1000);
 
-        const cancelRemaining = Math.max(0, 10000 - diff);
+        const cancelRemaining = Math.max(0, 20000 - diff);
         cancelMap[order._id] = cancelRemaining > 0;
         cancelTime[order._id] = Math.ceil(cancelRemaining / 1000);
       });
