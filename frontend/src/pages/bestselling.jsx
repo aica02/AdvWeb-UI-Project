@@ -441,8 +441,8 @@ const BestSellingBooks = ({ embedded = false }) => {
               <label htmlFor="sort">SORT BY</label>
               <select id="sort" value={sortType} onChange={(e) => setSortType(e.target.value)}>
                 <option value="default">Default</option>
-                <option value="highest-price">Highest-Lowest Price</option>
-                <option value="lowest-price">Lowest-Highest Price</option>
+                <option value="highest-price">Highest → Lowest Price</option>
+                <option value="lowest-price">Lowest → Highest Price</option>
               </select>
             </div>
           </div>
