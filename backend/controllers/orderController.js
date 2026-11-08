@@ -31,6 +31,9 @@ export const receiveOrder = async (req, res) => {
     if (order.status === "Complete")
       return res.json({ message: "Already completed", order });
 
+    if (order.status !== "Pending")
+      return res.status(400).json({ message: "Only pending orders can be received" });
+
     // check stock
     for (const item of order.books) {
       const book = await Book.findById(item.book);
@@ -104,6 +107,16 @@ export const updateOrderStatus = async (req, res) => {
       for (const item of order.books) {
         await Book.findByIdAndUpdate(item.book, {
           $inc: { stock: -item.quantity, bookSold: item.quantity }
+        });
+      }
+    }
+
+    // Reopening or cancelling a completed order puts its stock back,
+    // so completing it again doesn't subtract the stock twice
+    if (status !== "Complete" && order.status === "Complete") {
+      for (const item of order.books) {
+        await Book.findByIdAndUpdate(item.book, {
+          $inc: { stock: item.quantity, bookSold: -item.quantity }
         });
       }
     }

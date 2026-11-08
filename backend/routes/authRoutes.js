@@ -3,9 +3,19 @@ import Joi from "joi";
 import User from "../models/userModel.js";
 import { protect } from "../middleware/authMiddlew.js";
 import { validateUserInput } from "../middleware/validateInput.js";
-import { register, login, checkEmail, resetPassword, getMe, updateProfile, changePassword } from "../controllers/authControl.js";
+import rateLimit from "express-rate-limit";
+import { register, login, checkEmail, sendResetOtp, verifyResetOtp, resetPassword, getMe, updateProfile, changePassword } from "../controllers/authControl.js";
 
 const router = express.Router();
+
+// Throttle the forgot-password endpoints (per IP)
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { message: "Too many requests. Please try again later." },
+});
 
 // Validation Schemas
 const registerSchema = Joi.object({
@@ -23,11 +33,9 @@ router.put("/change-password", protect, changePassword);
 // Public Routes
 router.post("/register", validateUserInput(registerSchema), register);
 router.post("/login", validateUserInput(loginSchema), login);
-router.post("/check-email", checkEmail); // Check if email exists (for forgot password)
-router.post("/reset-password", resetPassword); // Reset password after OTP verified on client
-
-router.post("/register", register);
-router.post("/login", login);
-router.post("/reset-password/:token", resetPassword);
+router.post("/check-email", resetLimiter, checkEmail); // Check if email exists (for forgot password)
+router.post("/forgot-password/send-otp", resetLimiter, sendResetOtp); // Server generates + emails OTP
+router.post("/forgot-password/verify-otp", resetLimiter, verifyResetOtp); // Returns one-time reset token
+router.post("/reset-password", resetLimiter, resetPassword); // Requires reset token from verify-otp
 
 export default router;

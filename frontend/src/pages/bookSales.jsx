@@ -4,7 +4,6 @@ import "../css/modals.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import InfoBanner from './services';
 
 const API = import.meta.env.VITE_API_URL;
 

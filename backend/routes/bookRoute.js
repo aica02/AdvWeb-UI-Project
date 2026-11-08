@@ -21,20 +21,13 @@ router.get("/", asyncHandler(async (req, res) => {
 
 // GET search books 
 router.get("/search", asyncHandler(async (req, res) => {
-  const query = req.query.q || "";
-
-  console.log("[SEARCH] ===== SEARCH ROUTE HIT =====");
-  console.log("[SEARCH] Query received:", query);
-  console.log("[SEARCH] Query type:", typeof query);
-  console.log("[SEARCH] Query length:", query.length);
+  const query = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
+  // Treat the search text as plain text, not as a regular expression
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const books = await Book.find({
-    title: { $regex: query, $options: "i" }
+    title: { $regex: escaped, $options: "i" }
   });
-
-  console.log("[SEARCH] Books found:", books.length);
-  console.log("[SEARCH] Results:", books.map(b => b.title));
-  console.log("[SEARCH] ===== RETURNING RESPONSE =====");
 
   res.json(books);
 }));

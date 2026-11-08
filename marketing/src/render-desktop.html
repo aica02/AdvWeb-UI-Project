@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>BookWise promo — desktop</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Brand tokens taken from frontend/src/App.css */
+  :root {
+    --primary: #035c96;
+    --secondary: #01203f;
+    --accent: #ff3131;
+    --ink: #0a1830;
+    --heading: 'Montserrat', sans-serif;
+    --body: 'Nunito Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body {
+    font-family: var(--body);
+    color: #fff;
+    background:
+      radial-gradient(1200px 820px at 76% 52%, rgba(3, 92, 150, 0.55), transparent 70%),
+      radial-gradient(700px 500px at 10% 100%, rgba(255, 49, 49, 0.10), transparent 70%),
+      linear-gradient(135deg, #020d1c 0%, var(--secondary) 55%, #031a33 100%);
+    position: relative;
+  }
+  body::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(900px 700px at 75% 50%, #000 20%, transparent 75%);
+  }
+
+  /* ---------- Left copy (same system as render.html) ---------- */
+  .copy { position: absolute; left: 130px; top: 0; bottom: 0; width: 760px; display: flex; flex-direction: column; justify-content: center; z-index: 5; }
+  .brand { display: flex; align-items: center; gap: 26px; margin-bottom: 64px; }
+  .brand-mark {
+    width: 92px; height: 92px; border-radius: 24px;
+    background: linear-gradient(145deg, var(--accent), #c81d1d);
+    display: grid; place-items: center;
+    box-shadow: 0 18px 40px rgba(255, 49, 49, 0.35);
+  }
+  .brand-name { font-family: var(--heading); font-weight: 800; font-size: 54px; letter-spacing: 0.5px; line-height: 1; }
+  .brand-name span { color: var(--accent); }
+  .brand-sub { font-family: var(--heading); font-weight: 600; font-size: 19px; letter-spacing: 6px; color: #7fb7dd; margin-top: 10px; }
+
+  .eyebrow { font-family: var(--heading); font-weight: 700; font-size: 25px; letter-spacing: 7px; color: var(--accent); margin-bottom: 26px; }
+  h1 { font-family: var(--heading); font-weight: 900; font-size: 88px; line-height: 1.04; letter-spacing: -2px; white-space: nowrap; }
+  h1 .hl { color: #4fb3ff; display: block; }
+  .lede { font-size: 31px; line-height: 1.45; color: #c4d4e6; margin-top: 38px; max-width: 680px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 50px; max-width: 760px; }
+  .chip {
+    font-family: var(--heading); font-weight: 600; font-size: 22px;
+    padding: 13px 24px; border-radius: 999px;
+    border: 1.5px solid rgba(79, 179, 255, 0.55);
+    background: rgba(3, 92, 150, 0.18);
+    color: #e9f3fb;
+  }
+
+  /* ---------- Browser windows ---------- */
+  .win {
+    position: absolute; border-radius: 16px; overflow: hidden; background: #fff;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 40px 80px rgba(0,0,0,0.5), 0 14px 28px rgba(0,0,0,0.3);
+  }
+  .win .bar {
+    height: 38px; background: #eef1f5; display: flex; align-items: center; gap: 8px; padding: 0 16px;
+    border-bottom: 1px solid #dde2e8;
+  }
+  .win .bar i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .win .bar i:nth-child(1) { background: #ff5f57; }
+  .win .bar i:nth-child(2) { background: #febc2e; }
+  .win .bar i:nth-child(3) { background: #28c840; }
+  .win .url {
+    margin-left: 18px; flex: 1; height: 26px; border-radius: 13px; background: #fff; border: 1px solid #dde2e8;
+    font: 600 13px/24px var(--body); color: #51627a; padding: 0 16px;
+  }
+  .win img { display: block; width: 100%; height: auto; }
+
+  .win.back-top { width: 560px; left: 1260px; top: 70px; transform: rotate(3deg); filter: brightness(0.78); z-index: 1; }
+  .win.back-bottom { width: 560px; left: 1300px; top: 640px; transform: rotate(-2deg); filter: brightness(0.85); z-index: 2; }
+
+  /* ---------- Laptop ---------- */
+  .laptop { position: absolute; left: 905px; top: 230px; width: 960px; z-index: 3; }
+  .lid {
+    width: 860px; margin: 0 auto; padding: 22px 22px 26px; border-radius: 26px 26px 0 0;
+    background: linear-gradient(170deg, #2b3542, #0c121a 70%);
+    box-shadow: 0 0 0 2px #3a4656 inset, 0 40px 80px rgba(0,0,0,0.45);
+    position: relative;
+  }
+  .lid::before { content: ""; position: absolute; top: 9px; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: #3d4a5c; }
+  .display { width: 100%; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 4px; background: #fff; }
+  .display img { display: block; width: 100%; height: auto; }
+  .base {
+    height: 26px; width: 960px; border-radius: 0 0 22px 22px;
+    background: linear-gradient(#c9d2dc, #8c98a7 60%, #5f6b7a);
+    position: relative; box-shadow: 0 30px 50px rgba(0,0,0,0.55);
+  }
+  .base::before { content: ""; position: absolute; top: 0; left: 50%; width: 150px; height: 10px; margin-left: -75px; border-radius: 0 0 10px 10px; background: #7a8696; }
+
+  /* floating callout */
+  .callout {
+    position: absolute; z-index: 4; left: 960px; top: 872px;
+    background: #fff; color: var(--ink); border-radius: 22px; padding: 18px 24px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.4);
+    font-family: var(--heading);
+  }
+  .callout .dot { width: 48px; height: 48px; border-radius: 14px; background: var(--primary); display: grid; place-items: center; }
+  .callout b { display: block; font-size: 21px; font-weight: 800; }
+  .callout small { font-family: var(--body); font-size: 16px; color: #5a6b80; }
+</style>
+</head>
+<body>
+
+  <section class="copy">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Book<span>Wise</span></div>
+        <div class="brand-sub">ONLINE BOOKSTORE</div>
+      </div>
+    </div>
+
+    <div class="eyebrow">READ MORE · PAY LESS</div>
+    <h1>Your next read,<span class="hl">one click away.</span></h1>
+    <p class="lede">A full bookstore in your browser — discover titles, compare deals, and check out with a clear order summary.</p>
+
+    <div class="chips">
+      <span class="chip">Best Sellers</span>
+      <span class="chip">New Releases</span>
+      <span class="chip">Book Sales</span>
+      <span class="chip">Wishlist</span>
+      <span class="chip">Cart &amp; Checkout</span>
+      <span class="chip">Order Tracking</span>
+    </div>
+  </section>
+
+  <div class="win back-top">
+    <div class="bar"><i></i><i></i><i></i><div class="url">BookWise · Atomic Habits</div></div>
+    <img src="screens/desktop-book.png" alt="" />
+  </div>
+
+  <div class="win back-bottom">
+    <div class="bar"><i></i><i></i><i></i><div class="url">BookWise · Your Shopping Cart</div></div>
+    <img src="screens/desktop-cart.png" alt="" />
+  </div>
+
+  <div class="laptop">
+    <div class="lid"><div class="display"><img src="screens/desktop-home.png" alt="" /></div></div>
+    <div class="base"></div>
+  </div>
+
+  <div class="callout">
+    <div class="dot">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <div><b>Order placed</b><small>3 books · ₱2,677 total</small></div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "title": "Pick the BookWise home page layout",
+  "question": "All three keep your name, colors and Montserrat headings and use your real books. The one you pick sets the layout for every other screen.",
+  "options": [
+    {
+      "id": "spotlight",
+      "kind": "assigned",
+      "kicker": "THE ROLL",
+      "label": "Genre Spotlight",
+      "lineage": "A bookshop's front table, one book at a time",
+      "thesis": "Pick a genre and one book takes over the whole screen.",
+      "palette": ["#035c96", "#01203f", "#ff3131", "#ffffff"],
+      "materials": ["Giant real covers on a full blue field", "Browse and book pages reuse the genre index"],
+      "viewport": "Genre index on the left, one huge cover in the middle, its details, price and buy buttons on the right.",
+      "risk": "Shows one book at a time, so a shopper sees fewer titles before scrolling.",
+      "html": ".impeccable/mocks/decision/spotlight.html"
+    },
+    {
+      "id": "chart",
+      "kind": "dealt",
+      "label": "The Reading Chart",
+      "lineage": "A record shop's top-five wall",
+      "thesis": "The store is a live ranking of what people actually bought.",
+      "palette": ["#ffffff", "#035c96", "#ff3131", "#01203f"],
+      "materials": ["Huge rank numerals behind stepped covers", "Ranks and sold counts carry into browse and admin"],
+      "viewport": "A countdown of your five real best sellers, growing from number 5 on the left to number 1 on the right.",
+      "risk": "Your real sold counts are small (the top book has sold 8), so the numbers look modest until sales grow.",
+      "html": ".impeccable/mocks/decision/chart.html"
+    },
+    {
+      "id": "shelves",
+      "kind": "dealt",
+      "label": "The Shelf Wall",
+      "lineage": "Standing in front of a wall of shelves",
+      "thesis": "No banner at all: the first thing you see is the books.",
+      "palette": ["#01203f", "#035c96", "#ff3131", "#f5f8fc"],
+      "materials": ["Blue shelf edges labeled by genre", "Wishlist, cart and orders become shelves too"],
+      "viewport": "Three full-width shelves of real covers, one genre per shelf, filling the screen under the header.",
+      "risk": "The most familiar of the three, so it depends on the covers and fine detail to feel special.",
+      "html": ".impeccable/mocks/decision/shelves.html"
+    }
+  ],
+  "steer": true,
+  "reroll": true,
+  "buildPath": { "value": "code", "toggle": false }
+}

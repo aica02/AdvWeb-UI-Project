@@ -28,9 +28,6 @@ import EditDeleteBooksSection from "../admin/editDeleteBook.jsx";
 import UserAccounts from "../admin/userAccounts.jsx";
 import AdminOrders from "../admin/adminOrders.jsx";
 import AdminLogs from "../admin/adminLogs.jsx";
-import Header from "../pages/header.jsx";
-import Footer from "../pages/footer.jsx";
-import InfoBanner from "../pages/services.jsx";
 
 
 // User protection
@@ -50,9 +47,6 @@ const router = createBrowserRouter([
       { path: "/newReleases", element: <NewReleaseBooks /> },
       { path: "/bookSales", element: <BookSales />},
       {path: "/help", element: <HelpPage />},
-      { path: "/header", element: <Header />},
-      { path: "/footer", element: <Footer />},
-      { path: "/services", element: <InfoBanner />},
       {path: "/forgot-password", element: <ForgotPassword />},
       // User protected routes
       {path: "/wishlist",element: (<ProtectedUserRoute> <Wishlists /></ProtectedUserRoute>),},

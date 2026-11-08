@@ -2,10 +2,20 @@ import User from "../models/userModel.js";
 import Book from "../models/bookModel.js";
 import Order from "../models/orderModel.js";
 
+// Returns a whole number of 1 or more, or null if the value isn't one
+const parseQuantity = (value) => {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 ? n : null;
+};
+
 // ADD TO CART
 export const addToCart = async (req, res) => {
   try {
-    const { bookId, quantity } = req.body;
+    const { bookId } = req.body;
+    const quantity = parseQuantity(req.body.quantity);
+    if (quantity === null) return res.status(400).json({ message: "Quantity must be a whole number of 1 or more" });
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -79,7 +89,10 @@ export const getCart = async (req, res) => {
 // UPDATE CART QUANTITY
 export const updateCart = async (req, res) => {
   try {
-    const { bookId, quantity } = req.body;
+    const { bookId } = req.body;
+    const quantity = parseQuantity(req.body.quantity);
+    if (quantity === null) return res.status(400).json({ message: "Quantity must be a whole number of 1 or more" });
+
     const user = await User.findById(req.user._id);
     if (!user || !user.cart) return res.status(404).json({ message: "Cart not found" });
 
@@ -168,46 +181,6 @@ export const checkoutCart = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-// CANCEL ORDER
-export const cancelOrder = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const userId = req.user._id;
-
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: "Order not found" });
-
-    // Check if the order belongs to the user
-    if (order.user.toString() !== userId.toString()) {
-      return res.status(403).json({ message: "You are not authorized to cancel this order" });
-    }
-
-    // Prevent cancellation if already complete or cancelled
-    if (order.status === "Complete") {
-      return res.status(400).json({ message: "Cannot cancel a completed order" });
-    }
-    if (order.status === "Cancelled") {
-      return res.status(400).json({ message: "Order is already cancelled" });
-    }
-
-    // Optional: enforce a time limit (e.g., 10 seconds) for cancellations
-    const createdTime = new Date(order.createdAt).getTime();
-    const now = Date.now();
-    if (now - createdTime > 10000) {
-      return res.status(400).json({ message: "Cancellation period has expired" });
-    }
-
-    // Update order status to Cancelled
-    order.status = "Cancelled";
-    await order.save();
-
-    res.json({ message: "Order cancelled successfully", order });
-  } catch (error) {
-    console.error("Cancel order error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
 // GET PENDING ORDERS
 export const getPendingOrders = async (req, res) => {
   try {

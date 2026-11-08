@@ -27,6 +27,18 @@ app.use(cors());
 app.use(express.json());
 
 
+// Express 5 re-parses req.query on every read, so edits to it are lost.
+// Pin one copy to the request so the sanitizers below actually take effect.
+app.use((req, res, next) => {
+  Object.defineProperty(req, "query", {
+    value: { ...req.query },
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
+  next();
+});
+
 //  Custom XSS Sanitizer 
 app.use((req, res, next) => {
   const sanitizeXSS = (obj) => {
@@ -71,7 +83,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/logs", logRoutes);
-app.use(trackVisit);
+app.post("/api/visit", trackVisit);
 
 
 // Serve static uploads

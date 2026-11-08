@@ -226,70 +226,32 @@ export default function Orders() {
 
                     {/* ACTION BUTTONS */}
                     {order.status === "Pending" && !receivedOrders[order._id] && (
-                      <div
-                        style={{
-                          marginTop: "15px",
-                          paddingTop: "15px",
-                          borderTop: "1px solid #ddd",
-                        }}
-                      >
-                        <div style={{ display: "flex", gap: 12 }}>
-                          {/* RECEIVE BUTTON */}
+                      <div className="order-actions">
+                        {/* CANCEL BUTTON: disappears when the timer ends */}
+                        {enabledCancelButtons[order._id] && (
                           <button
-                            onClick={() => handleReceiveOrder(order._id)}
-                            disabled={!enabledReceiveButtons[order._id]}
-                            style={{
-                              padding: "10px 20px",
-                              backgroundColor: enabledReceiveButtons[order._id]
-                                ? "#007bff"
-                                : "#ccc",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: enabledReceiveButtons[order._id]
-                                ? "pointer"
-                                : "not-allowed",
-                              fontSize: "14px",
-                              fontWeight: "600",
-                            }}
+                            className="cancel-btn"
+                            onClick={() => handleCancelOrder(order._id)}
                           >
-                            {enabledReceiveButtons[order._id]
-                              ? "Receive Order"
-                              : `Enable in ${receiveCountdown[order._id]}s`}
+                            Cancel Order ({cancelCountdown[order._id]}s)
                           </button>
+                        )}
 
-                          {/* CANCEL BUTTON — disappears when timer ends */}
-                          {enabledCancelButtons[order._id] && (
-                            <button
-                              onClick={() => handleCancelOrder(order._id)}
-                              style={{
-                                padding: "10px 20px",
-                                backgroundColor: "#dc3545",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                fontSize: "14px",
-                                fontWeight: "600",
-                              }}
-                            >
-                              Cancel Order ({cancelCountdown[order._id]}s)
-                            </button>
-                          )}
-                        </div>
+                        {/* RECEIVE BUTTON */}
+                        <button
+                          className={`receive-btn ${enabledReceiveButtons[order._id] ? "" : "disabled"}`}
+                          onClick={() => handleReceiveOrder(order._id)}
+                          disabled={!enabledReceiveButtons[order._id]}
+                        >
+                          {enabledReceiveButtons[order._id]
+                            ? "Receive Order"
+                            : `Enable in ${receiveCountdown[order._id]}s`}
+                        </button>
                       </div>
                     )}
 
                     {(receivedOrders[order._id] || order.status === "Complete") && (
-                      <div
-                        style={{
-                          marginTop: "15px",
-                          paddingTop: "15px",
-                          borderTop: "1px solid #ddd",
-                          color: "green",
-                          fontWeight: "600",
-                        }}
-                      >
+                      <div className="order-received-label">
                         ✓ Order Received
                       </div>
                     )}

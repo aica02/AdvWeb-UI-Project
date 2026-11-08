@@ -68,7 +68,7 @@ const HeroCarousel = () => {
         <button className="arrow left" onClick={prevSlide}>❮</button>
 
         <div className="carousel-content">
-          <div className="book-display">
+          <div className="book-display" key={`book-${current}`}>
             <div className="book-stack">
               <img
                 src={books[(current - 1 + books.length) % books.length].img}
@@ -90,7 +90,7 @@ const HeroCarousel = () => {
 
           <button className="arrow right" onClick={nextSlide}>❯</button>
 
-          <div className="text-content">
+          <div className="text-content" key={`text-${current}`}>
             <h2>{currentBook.category} Books</h2>
             <p>{currentBook.description}</p>
             <button

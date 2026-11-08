@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>BookWise feature series</title>
+<!-- Light "feature card" series, 1080x1350 (4:5). Pick a poster with ?v=sales | wishlist | orders | admin -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Brand tokens taken from frontend/src/App.css */
+  :root {
+    --primary: #035c96;
+    --secondary: #01203f;
+    --accent: #ff3131;
+    --paper: #f4f7fb;
+    --heading: 'Montserrat', sans-serif;
+    --body: 'Nunito Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; }
+  body { background: var(--paper); font-family: var(--body); color: var(--secondary); position: relative; }
+
+  /* dotted texture, top-right */
+  body::before {
+    content: ""; position: absolute; right: -40px; top: -40px; width: 520px; height: 520px;
+    background-image: radial-gradient(rgba(3, 92, 150, 0.16) 2px, transparent 2.5px);
+    background-size: 26px 26px;
+    mask-image: radial-gradient(closest-side, #000 30%, transparent 100%);
+  }
+
+  /* ---------- Top ---------- */
+  .top { position: absolute; left: 80px; right: 80px; top: 72px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 16px; font-family: var(--heading); font-weight: 800; font-size: 34px; }
+  .brand .mark { width: 58px; height: 58px; border-radius: 16px; background: var(--accent); display: grid; place-items: center; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14); }
+  .brand span { color: var(--accent); }
+
+  .copy { position: absolute; left: 80px; right: 80px; top: 190px; }
+  .tag { display: inline-flex; align-items: center; gap: 10px; font-family: var(--heading); font-weight: 700; font-size: 20px; letter-spacing: 4px; color: #d91c1c; text-transform: uppercase; }
+  .tag::before { content: ""; width: 34px; height: 4px; border-radius: 2px; background: #d91c1c; }
+  h1 { font-family: var(--heading); font-weight: 900; font-size: 84px; line-height: 1.02; letter-spacing: -2px; margin-top: 20px; }
+  h1 em { font-style: normal; color: var(--primary); position: relative; }
+  h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 14px; background: rgba(255, 49, 49, 0.22); z-index: -1; border-radius: 4px; }
+  .sub { font-size: 28px; line-height: 1.42; color: #3c5068; margin-top: 22px; max-width: 840px; }
+
+  /* ---------- Stage ---------- */
+  .stage {
+    position: absolute; left: 50px; right: 50px; bottom: 50px; height: 700px; border-radius: 44px; overflow: hidden;
+    background:
+      radial-gradient(600px 400px at 80% 0%, rgba(255,255,255,0.14), transparent 70%),
+      linear-gradient(160deg, var(--primary) 0%, #02467a 55%, var(--secondary) 100%);
+  }
+  .stage::after { /* soft rings */
+    content: ""; position: absolute; width: 900px; height: 900px; border-radius: 50%; left: -260px; bottom: -560px;
+    border: 2px solid rgba(255,255,255,0.10); box-shadow: 0 0 0 80px rgba(255,255,255,0.03), 0 0 0 160px rgba(255,255,255,0.02);
+  }
+
+  /* phone */
+  .phone { position: absolute; width: 380px; height: 790px; border-radius: 56px; padding: 12px; background: #0b1119; box-shadow: 0 0 0 2px #2c3644 inset, 0 40px 80px rgba(0, 0, 0, 0.38); z-index: 2; }
+  .phone .screen { width: 100%; height: 100%; border-radius: 45px; overflow: hidden; background: #fff; position: relative; }
+  .phone .status { height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; font: 600 15px -apple-system, 'Segoe UI', sans-serif; color: #111; background: #fff; }
+  .phone .cam { position: absolute; top: 12px; left: 50%; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: #0b1119; }
+  .phone img { display: block; width: 100%; }
+
+  /* browser */
+  .browser { position: absolute; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 40px 80px rgba(0, 0, 0, 0.38); z-index: 2; }
+  .browser .bar { height: 40px; background: #eef1f5; display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 1px solid #dde2e8; }
+  .browser .bar i { width: 12px; height: 12px; border-radius: 50%; }
+  .browser .bar i:nth-child(1) { background: #ff5f57; } .browser .bar i:nth-child(2) { background: #febc2e; } .browser .bar i:nth-child(3) { background: #28c840; }
+  .browser .url { margin-left: 16px; height: 26px; border-radius: 13px; background: #fff; border: 1px solid #dde2e8; padding: 0 16px; font: 700 13px/24px var(--body); color: #51627a; }
+  .browser img { display: block; width: 100%; }
+
+  /* feature list on the stage */
+  .points { position: absolute; z-index: 3; display: flex; flex-direction: column; gap: 18px; }
+  .point { display: flex; align-items: center; gap: 16px; background: #fff; border-radius: 20px; padding: 18px 24px 18px 18px; box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22); }
+  .point .ic { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex: none; background: #e7f1f9; }
+  .point .ic.red { background: #ffe9e9; }
+  .point b { display: block; font-family: var(--heading); font-weight: 800; font-size: 22px; color: var(--secondary); }
+  .point small { display: block; font-size: 17px; color: #4b5d72; margin-top: 2px; }
+
+  .stat { position: absolute; z-index: 3; color: #fff; font-family: var(--heading); }
+  .stat .n { font-weight: 900; font-size: 92px; line-height: 1; letter-spacing: -2px; }
+  .stat .n span { color: #ffb3b3; }
+  .stat .l { font-family: var(--body); font-weight: 700; font-size: 22px; color: #cfe2f1; margin-top: 8px; letter-spacing: 0.5px; }
+
+  .poster { display: none; }
+  .poster.on { display: block; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <div class="mark"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></div>
+    <div>Book<span>Wise</span></div>
+  </div>
+</div>
+
+<!-- 01 BOOK SALES -->
+<section class="poster" data-v="sales" data-n="01">
+  <div class="copy">
+    <div class="tag">Book Sales</div>
+    <h1>Deals worth<br><em>reading.</em></h1>
+    <p class="sub">Every discounted title in one place, with the original price crossed out and how many copies readers have bought.</p>
+  </div>
+  <div class="stage">
+    <div class="stat" style="left:70px; top:80px;"><div class="n">20<span>%</span></div><div class="l">OFF SELECTED TITLES</div></div>
+    <div class="points" style="left:70px; top:300px; width:440px;">
+      <div class="point"><div class="ic red"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff3131" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/></svg></div><div><b>Sale badges</b><small>Discount shown on every cover</small></div></div>
+      <div class="point"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#035c96" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></div><div><b>Sold counts</b><small>See what readers are buying</small></div></div>
+      <div class="point"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#035c96" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg></div><div><b>Sort &amp; filter</b><small>By genre, language and age</small></div></div>
+    </div>
+    <div class="phone" style="right:70px; top:70px; transform: rotate(4deg);"><div class="screen"><div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="cam"></div><img src="screens/sales.png" alt=""></div></div>
+  </div>
+</section>
+
+<!-- 02 WISHLIST -->
+<section class="poster" data-v="wishlist" data-n="02">
+  <div class="copy">
+    <div class="tag">Wishlist</div>
+    <h1>Save it now.<br><em>Buy it later.</em></h1>
+    <p class="sub">Tap the heart on any book to keep it for later, then move it to your cart in one tap when you're ready.</p>
+  </div>
+  <div class="stage">
+    <div class="phone" style="left:80px; top:70px; transform: rotate(-4deg);"><div class="screen"><div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="cam"></div><img src="screens/wishlist.png" alt=""></div></div>
+    <div class="points" style="right:70px; top:120px; width:440px;">
+      <div class="point"><div class="ic red"><svg width="26" height="26" viewBox="0 0 24 24" fill="#ff3131" stroke="#ff3131" stroke-width="2" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></div><div><b>One-tap save</b><small>Heart any title from its page</small></div></div>
+      <div class="point"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#035c96" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></div><div><b>Straight to cart</b><small>Add to Cart right from the list</small></div></div>
+      <div class="point"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#035c96" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div><div><b>Easy cleanup</b><small>Remove titles you've finished</small></div></div>
+    </div>
+    <div class="stat" style="right:70px; bottom:70px; text-align:right;"><div class="n">1 <span>tap</span></div><div class="l">FROM WISHLIST TO CART</div></div>
+  </div>
+</section>
+
+<!-- 03 ORDERS -->
+<section class="poster" data-v="orders" data-n="03">
+  <div class="copy">
+    <div class="tag">Order Tracking</div>
+    <h1>Know where<br>every order <em>is.</em></h1>
+    <p class="sub">Check each order's status from Pending to Complete, mark it received when it arrives, or cancel it if your plans change.</p>
+  </div>
+  <div class="stage">
+    <div class="points" style="left:70px; top:80px; width:440px;">
+      <div class="point"><div class="ic" style="background:#fff4e0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b>Pending</b><small>Your order is being prepared</small></div></div>
+      <div class="point"><div class="ic" style="background:#e3f6e8"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div><b>Complete</b><small>Marked received on delivery</small></div></div>
+      <div class="point"><div class="ic red"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff3131" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div><div><b>Cancelled</b><small>Pending orders can be cancelled</small></div></div>
+    </div>
+    <div class="stat" style="left:70px; bottom:70px;"><div class="n">₱<span>100</span></div><div class="l">FLAT SHIPPING PER ORDER</div></div>
+    <div class="phone" style="right:70px; top:70px; transform: rotate(4deg);"><div class="screen"><div class="status"><span>9:41</span><span>●●● ▮</span></div><div class="cam"></div><img src="screens/orders.png" alt=""></div></div>
+  </div>
+</section>
+
+<!-- 04 ADMIN -->
+<section class="poster" data-v="admin" data-n="04">
+  <div class="copy">
+    <div class="tag">Admin Dashboard</div>
+    <h1>Run the store<br>from <em>one screen.</em></h1>
+    <p class="sub">Sales, orders, inventory and best sellers at a glance — plus a daily, weekly or monthly sales report as a PDF.</p>
+  </div>
+  <div class="stage">
+    <div class="browser" style="left:60px; top:70px; width:760px; transform: rotate(-2deg);"><div class="bar"><i></i><i></i><i></i><div class="url">BookWise Admin · Dashboard</div></div><img src="screens/admin-dashboard.png" alt=""></div>
+    <div class="browser" style="right:-60px; top:330px; width:560px; transform: rotate(3deg);"><div class="bar"><i></i><i></i><i></i><div class="url">BookWise Admin · All Orders</div></div><img src="screens/admin-orders.png" alt=""></div>
+    <div class="points" style="left:70px; bottom:60px; flex-direction:row; gap:16px;">
+      <div class="point"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#035c96" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg></div><div><b>PDF reports</b><small>Daily · weekly · monthly</small></div></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const v = new URLSearchParams(location.search).get("v") || "sales";
+  const el = document.querySelector(`.poster[data-v="${v}"]`) || document.querySelector(".poster");
+  el.classList.add("on");
+</script>
+</body>
+</html>

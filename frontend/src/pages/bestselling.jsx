@@ -10,7 +10,7 @@ const API = import.meta.env.VITE_API_URL;
 
 const BestSellingBooks = ({ embedded = false }) => {
   const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [likedBooks, setLikedBooks] = useState([]);
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
@@ -83,12 +83,12 @@ const BestSellingBooks = ({ embedded = false }) => {
           : [];
         if (!mounted) return;
         setBooks(data);
-        setFilteredBooks(data); // initial fallback; real filtering happens below
       } catch (err) {
         console.error("Error fetching books:", err);
         if (!mounted) return;
         setBooks([]);
-        setFilteredBooks([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
     fetchBooks();
@@ -154,7 +154,7 @@ const BestSellingBooks = ({ embedded = false }) => {
   }, [books]);
 
   //filters + sorting ---
-  useEffect(() => {
+  const filteredBooks = useMemo(() => {
     let filtered = Array.isArray(bestItems) ? [...bestItems] : [];
 
     // categories
@@ -208,7 +208,7 @@ const BestSellingBooks = ({ embedded = false }) => {
       // default = keep bestItems order (already by sold or boolean/date)
     }
 
-    setFilteredBooks(filtered);
+    return filtered;
   }, [
     selectedCategories,
     selectedLanguages,
@@ -329,7 +329,9 @@ const BestSellingBooks = ({ embedded = false }) => {
             >❮</button>
 
             <div className="books-carousel" ref={carouselRef}>
-              {bestItems.length === 0 ? (
+              {loading ? (
+                <div className="loading-books">Loading best sellers…</div>
+              ) : bestItems.length === 0 ? (
                 <div className="no-found-labeled">No best sellers found.</div>
               ) : (
                 bestItems.map((book) => (
@@ -446,7 +448,9 @@ const BestSellingBooks = ({ embedded = false }) => {
           </div>
 
           <div className="book-grid">
-            {filteredBooks.length === 0 ? (
+            {loading ? (
+              <p className="loading-books">Loading books…</p>
+            ) : filteredBooks.length === 0 ? (
               <p>No books found.</p>
             ) : (
               filteredBooks.map((book) => (

@@ -16,6 +16,12 @@ const userSchema = new mongoose.Schema(
     barangay: { type: String },
     street: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    // Forgot-password state (hashed, never returned unless explicitly selected)
+    resetOtpHash: { type: String, select: false },
+    resetOtpExpire: { type: Date, select: false },
+    resetOtpAttempts: { type: Number, default: 0, select: false },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpire: { type: Date, select: false },
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
     cart: [
       {

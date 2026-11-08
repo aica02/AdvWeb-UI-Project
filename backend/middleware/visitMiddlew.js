@@ -1,18 +1,13 @@
 import Visit from "../models/visitModel.js";
 
-export const trackVisit = async (req, res, next) => {
+// POST /api/visit - the frontend calls this once per browser session
+export const trackVisit = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   try {
-    const visit = await Visit.findOne({ date: today });
-    if (visit) {
-      visit.count += 1;
-      await visit.save();
-    } else {
-      await Visit.create({ date: today, count: 1 });
-    }
+    await Visit.findOneAndUpdate({ date: today }, { $inc: { count: 1 } }, { upsert: true });
   } catch (err) {
     console.error("Visit tracking failed:", err);
   }
-  next();
+  res.sendStatus(204);
 };

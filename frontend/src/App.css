@@ -813,9 +813,6 @@ body{
 
 /* Medium screens (tablets) */
 @media (max-width: 768px) {
-  *{
-    font-size: 12px;
-  }
   .header {
     display: block;
     padding: 25px 20px;

@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import "../css/viewall.css";
 import "../css/modals.css";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import axios from "axios";
+import { getNewReleases } from "../utils/newReleases";
 
 const API = import.meta.env.VITE_API_URL;
 
 const NewReleaseBooks = ({ embedded = false }) => {
   const [books, setBooks] = useState([]);
-  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [likedBooks, setLikedBooks] = useState([]);
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
@@ -49,26 +50,17 @@ const NewReleaseBooks = ({ embedded = false }) => {
         const res = await axios.get(`${API}/api/books`);
         const data = Array.isArray(res.data) ? res.data : (res.data?.books ?? []);
         setBooks(data);
-        setFilteredBooks(data);
       } catch (err) {
         console.error("Error fetching books:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchBooks();
   }, [embedded, location.pathname]);
 
   // Compute new items (last 90 days or isNew)
-  const newItems = books.filter((b) => {
-    if (b.isNew) return true;
-    const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt;
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    if (isNaN(d)) return false;
-    const now = new Date();
-    const NEW_DAYS = 90;
-    const days = (now - d) / (1000 * 60 * 60 * 24);
-    return days <= NEW_DAYS;
-  });
+  const newItems = useMemo(() => getNewReleases(books), [books]);
 
   // Toggle filter helper
   const toggleFilter = (value, setter) => {
@@ -78,7 +70,7 @@ const NewReleaseBooks = ({ embedded = false }) => {
   };
 
   // sort and filter ang nagloop dito
-  useEffect(() => {
+  const filteredBooks = useMemo(() => {
     let filtered = newItems;
 
     if (selectedCategories.length > 0) {
@@ -120,8 +112,8 @@ const NewReleaseBooks = ({ embedded = false }) => {
       filtered = [...filtered].sort((a, b) => (a.newPrice ?? a.oldPrice) - (b.newPrice ?? b.oldPrice));
     }
 
-    setFilteredBooks(filtered);
-  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, books]);
+    return filtered;
+  }, [selectedCategories, selectedLanguages, selectedAges, onSale, sortOption, newItems]);
 
   // Toggle wishlist
   const toggleLike = async (bookId) => {
@@ -207,7 +199,9 @@ const NewReleaseBooks = ({ embedded = false }) => {
             >❮</button>
 
             <div ref={carouselRef} className="books-carousel">
-              {newItems.length === 0 ? (
+              {loading ? (
+                <div className="loading-books">Loading new releases…</div>
+              ) : newItems.length === 0 ? (
                 <div className="no-found-labeled">No new releases found.</div>
               ) : (
                 newItems.map((book) => (
@@ -325,7 +319,9 @@ const NewReleaseBooks = ({ embedded = false }) => {
             </div>
 
             <div className="book-grid">
-              {filteredBooks.length === 0 ? (
+              {loading ? (
+                <p className="loading-books">Loading books…</p>
+              ) : filteredBooks.length === 0 ? (
                 <p>No books found.</p>
               ) : (
                 filteredBooks.map((book) => (

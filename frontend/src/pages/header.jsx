@@ -3,6 +3,7 @@ import { FaUser, FaHeart, FaShoppingCart, FaUserCircle, FaSignOutAlt, FaQuestion
 import { FiSearch } from "react-icons/fi";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { getNewReleases } from "../utils/newReleases";
 import "../css/loginmodal.css";
 import "../css/modals.css";
 
@@ -116,12 +117,10 @@ useEffect(() => {
       console.debug("Header stats: fetched books length =", books.length);
 
       // ---- configuration ----
-      const NEW_DAYS = 90;
       const SALES_THRESHOLD = 5; // change this to whatever you want
       const topN = null; // set to a number (e.g. 10) to count only top N sellers; otherwise keep null to use threshold
 
       // ---- prepare arrays ----
-      const now = new Date();
       let newly = 0;
       let sales = 0;
 
@@ -152,19 +151,8 @@ useEffect(() => {
         }
       }
 
-      // ---- count new arrivals ----
-      soldList.forEach(({ book: b }) => {
-        const dateStr = b.releaseDate ?? b.createdAt ?? b.dateAdded ?? b.addedAt ?? b.publishedAt;
-        if (b.isNew === true) {
-          newly++;
-        } else if (dateStr) {
-          const d = new Date(dateStr);
-          if (!isNaN(d)) {
-            const days = (now - d) / (1000 * 60 * 60 * 24);
-            if (days <= NEW_DAYS) newly++;
-          }
-        }
-      });
+      // ---- count new arrivals (same rule as the New Releases page) ----
+      newly = getNewReleases(books).length;
 
       // ---- count sale items ----
       books.forEach((b) => {

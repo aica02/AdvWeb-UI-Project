@@ -81,8 +81,7 @@ const AuthPage = () => {
       <div className="auth-box">
         <div className="auth-image-side">
           <div className="logo-container">
-            <img alt="Bookstore Logo" className="auth-logo" />
-            <h2 className="brand-name">BooksStore Logo</h2>
+            <h2 className="brand-name">BookWise</h2>
           </div>
         </div>
 
@@ -121,7 +120,7 @@ const AuthPage = () => {
             </div>
           ) : (
             <div className="form-container signup-form">
-              <h2>Logo</h2>
+              <h2>BookWise</h2>
               <p>Sign Up to use all feature’s of the Application</p>
 
               <form onSubmit={handleSignup}>

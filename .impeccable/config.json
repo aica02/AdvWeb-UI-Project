@@ -1,0 +1,80 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "marketing/src/render.html"
+        ],
+        "createdAt": "2026-11-06T11:05:22.072Z",
+        "reason": "Claude: all text is light (#fff/#c4d4e6/#7fb7dd/#e9f3fb) on a dark navy gradient body background the checker cannot resolve; rendered PNG verified readable"
+      },
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "files": [
+          "marketing/src/render.html"
+        ],
+        "createdAt": "2026-11-06T11:05:45.898Z",
+        "reason": "Claude: Montserrat is the app's own heading font (frontend/src/App.css --font-heading); promo must match the product brand"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "marketing/src/render-desktop.html"
+        ],
+        "createdAt": "2026-11-06T11:08:43.753Z",
+        "reason": "Claude: light text on dark navy gradient body the checker cannot resolve; rendered PNG verified readable"
+      },
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "files": [
+          "marketing/src/render-desktop.html"
+        ],
+        "createdAt": "2026-11-06T11:09:25.620Z",
+        "reason": "Claude: Montserrat is the app's own heading font (frontend/src/App.css --font-heading)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "marketing/src/render-series.html"
+        ],
+        "createdAt": "2026-11-06T11:15:00.284Z",
+        "reason": "Claude: flagged text sits on the blue gradient .stage (#cfe2f1/#fff) which the checker can't resolve; small red labels darkened to #d91c1c; rendered PNGs verified"
+      },
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "files": [
+          "marketing/src/render-series.html"
+        ],
+        "createdAt": "2026-11-06T11:15:00.617Z",
+        "reason": "Claude: Montserrat is the app's own heading font (frontend/src/App.css --font-heading)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "marketing/src/render-series.html"
+        ],
+        "createdAt": "2026-11-06T11:15:50.818Z",
+        "reason": "Claude: flagged .screen/.bar are device and browser mockup chrome where screenshots are meant to sit edge-to-edge"
+      },
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "files": [
+          "frontend/src/App.css"
+        ],
+        "createdAt": "2026-11-08T13:10:15.630Z",
+        "reason": "user confirmed: asked to keep BookWise's Montserrat headings (identity answer: keep it, improve layouts)"
+      }
+    ]
+  }
+}
